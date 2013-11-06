@@ -1,0 +1,301 @@
+<mockup version="1.0" skin="sketch" fontFace="Balsamiq Sans" measuredW="1156" measuredH="1816" mockupW="1080" mockupH="1785">
+  <controls>
+    <control controlID="27" controlTypeID="com.balsamiq.mockups::Arrow" x="356" y="161" w="13" h="63" measuredW="150" measuredH="100" zOrder="0" locked="false" isInGroup="-1">
+      <controlProperties>
+        <backgroundAlpha>1</backgroundAlpha>
+        <color>10066329</color>
+        <curvature>0</curvature>
+        <direction>bottom</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+      </controlProperties>
+    </control>
+    <control controlID="36" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="76" y="155" w="303" h="293" measuredW="450" measuredH="400" zOrder="1" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>A%20Web%20Page%0Ahttp%3A//</text>
+      </controlProperties>
+    </control>
+    <control controlID="37" controlTypeID="com.balsamiq.mockups::TextInput" x="122" y="293" w="103" h="-1" measuredW="79" measuredH="26" zOrder="2" locked="false" isInGroup="-1"/>
+    <control controlID="39" controlTypeID="com.balsamiq.mockups::Button" x="226" y="294" w="127" h="25" measuredW="126" measuredH="27" zOrder="3" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Upload%20Dockerfile</text>
+      </controlProperties>
+    </control>
+    <control controlID="40" controlTypeID="com.balsamiq.mockups::Arrow" x="772" y="161" w="13" h="63" measuredW="150" measuredH="100" zOrder="4" locked="false" isInGroup="-1">
+      <controlProperties>
+        <backgroundAlpha>1</backgroundAlpha>
+        <color>10066329</color>
+        <curvature>0</curvature>
+        <direction>bottom</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+      </controlProperties>
+    </control>
+    <control controlID="41" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="492" y="155" w="429" h="300" measuredW="450" measuredH="400" zOrder="5" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>A%20Web%20Page%0Ahttp%3A//</text>
+      </controlProperties>
+    </control>
+    <control controlID="44" controlTypeID="com.balsamiq.mockups::VerticalTabBar" x="509" y="270" w="346" h="122" measuredW="200" measuredH="122" zOrder="6" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Create%20New%20Container%0AManage%20Container</text>
+      </controlProperties>
+    </control>
+    <control controlID="45" controlTypeID="com.balsamiq.mockups::ComboBox" x="517" y="239" w="-1" h="-1" measuredW="220" measuredH="24" zOrder="7" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Dockerfile%20Selected%20-%20ubuntu-%2001</text>
+      </controlProperties>
+    </control>
+    <control controlID="48" controlTypeID="com.balsamiq.mockups::HSplitter" x="427" y="167" w="-1" h="273" measuredW="11" measuredH="100" zOrder="8" locked="false" isInGroup="-1"/>
+    <control controlID="49" controlTypeID="com.balsamiq.mockups::Button" x="745" y="239" w="-1" h="-1" measuredW="50" measuredH="27" zOrder="9" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Build</text>
+      </controlProperties>
+    </control>
+    <control controlID="50" controlTypeID="com.balsamiq.mockups::Arrow" x="721" y="258" w="40" h="76" measuredW="150" measuredH="100" zOrder="10" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>13576743</color>
+        <curvature>0</curvature>
+        <direction>bottom</direction>
+        <text/>
+      </controlProperties>
+    </control>
+    <control controlID="52" controlTypeID="com.balsamiq.mockups::Arrow" x="379" y="525" w="13" h="63" measuredW="150" measuredH="100" zOrder="11" locked="false" isInGroup="-1">
+      <controlProperties>
+        <backgroundAlpha>1</backgroundAlpha>
+        <color>10066329</color>
+        <curvature>0</curvature>
+        <direction>bottom</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+      </controlProperties>
+    </control>
+    <control controlID="53" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="78" y="520" w="866" h="477" measuredW="450" measuredH="400" zOrder="12" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>A%20Web%20Page%0Ahttp%3A//</text>
+      </controlProperties>
+    </control>
+    <control controlID="54" controlTypeID="com.balsamiq.mockups::VerticalTabBar" x="116" y="634" w="821" h="306" measuredW="200" measuredH="122" zOrder="13" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>%5BCreate%20New%20Container%5D%0AManage%20Container</text>
+      </controlProperties>
+    </control>
+    <control controlID="55" controlTypeID="com.balsamiq.mockups::ComboBox" x="124" y="603" w="-1" h="-1" measuredW="220" measuredH="24" zOrder="14" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Dockerfile%20Selected%20-%20ubuntu-%2001</text>
+      </controlProperties>
+    </control>
+    <control controlID="57" controlTypeID="com.balsamiq.mockups::Button" x="352" y="603" w="-1" h="-1" measuredW="50" measuredH="27" zOrder="15" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Build</text>
+      </controlProperties>
+    </control>
+    <control controlID="60" controlTypeID="com.balsamiq.mockups::Button" x="417" y="603" w="-1" h="-1" measuredW="102" measuredH="27" zOrder="16" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Delete%20Image</text>
+      </controlProperties>
+    </control>
+    <control controlID="61" controlTypeID="com.balsamiq.mockups::Button" x="800" y="238" w="-1" h="-1" measuredW="102" measuredH="27" zOrder="17" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Delete%20Image</text>
+      </controlProperties>
+    </control>
+    <control controlID="62" controlTypeID="com.balsamiq.mockups::CallOut" x="186" y="114" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="18" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>1</text>
+      </controlProperties>
+    </control>
+    <control controlID="63" controlTypeID="com.balsamiq.mockups::CallOut" x="510" y="113" w="-1" h="-1" measuredW="39" measuredH="39" zOrder="19" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>2</text>
+      </controlProperties>
+    </control>
+    <control controlID="64" controlTypeID="com.balsamiq.mockups::Arrow" x="384" y="319" w="96" h="42" measuredW="150" measuredH="100" zOrder="20" locked="false" isInGroup="-1">
+      <controlProperties>
+        <backgroundAlpha>1</backgroundAlpha>
+        <color>40463</color>
+        <curvature>0</curvature>
+        <direction>bottom</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+        <text/>
+      </controlProperties>
+    </control>
+    <control controlID="65" controlTypeID="com.balsamiq.mockups::Arrow" x="614" y="444" w="10" h="87" measuredW="150" measuredH="100" zOrder="21" locked="false" isInGroup="-1">
+      <controlProperties>
+        <backgroundAlpha>1</backgroundAlpha>
+        <color>40463</color>
+        <curvature>0</curvature>
+        <direction>bottom</direction>
+        <leftArrow>true</leftArrow>
+        <rightArrow>false</rightArrow>
+        <text/>
+      </controlProperties>
+    </control>
+    <control controlID="66" controlTypeID="com.balsamiq.mockups::Arrow" x="378" y="1085" w="13" h="63" measuredW="150" measuredH="100" zOrder="22" locked="false" isInGroup="-1">
+      <controlProperties>
+        <backgroundAlpha>1</backgroundAlpha>
+        <color>10066329</color>
+        <curvature>0</curvature>
+        <direction>bottom</direction>
+        <leftArrow>false</leftArrow>
+        <rightArrow>true</rightArrow>
+      </controlProperties>
+    </control>
+    <control controlID="67" controlTypeID="com.balsamiq.mockups::BrowserWindow" x="77" y="1080" w="867" h="736" measuredW="450" measuredH="400" zOrder="23" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>A%20Web%20Page%0Ahttp%3A//</text>
+      </controlProperties>
+    </control>
+    <control controlID="68" controlTypeID="com.balsamiq.mockups::VerticalTabBar" x="116" y="1199" w="821" h="483" measuredW="200" measuredH="122" zOrder="24" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Create%20New%20Container%0A%5BList%20Container%5D</text>
+      </controlProperties>
+    </control>
+    <control controlID="69" controlTypeID="com.balsamiq.mockups::ComboBox" x="123" y="1163" w="-1" h="-1" measuredW="220" measuredH="24" zOrder="25" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Dockerfile%20Selected%20-%20ubuntu-%2001</text>
+      </controlProperties>
+    </control>
+    <control controlID="70" controlTypeID="com.balsamiq.mockups::Button" x="351" y="1163" w="-1" h="-1" measuredW="50" measuredH="27" zOrder="26" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Build</text>
+      </controlProperties>
+    </control>
+    <control controlID="71" controlTypeID="com.balsamiq.mockups::Arrow" x="359" y="1273" w="10" h="167" measuredW="150" measuredH="100" zOrder="30" locked="false" isInGroup="-1">
+      <controlProperties>
+        <curvature>-1</curvature>
+        <direction>bottom</direction>
+        <text/>
+      </controlProperties>
+    </control>
+    <control controlID="72" controlTypeID="com.balsamiq.mockups::DataGrid" x="272" y="1214" w="648" h="179" measuredW="614" measuredH="117" zOrder="27" locked="false" isInGroup="-1">
+      <controlProperties>
+        <rowHeight>16</rowHeight>
+        <text>Container%20Id%5Ev%2C%20Container-name%20%5Ev%2C%20Created%20%5Ev%2C%20%20State%20%5Ev%2C%20Action%0A234343%2C%20ubuntu/node.js%2C%202013-05-07T14%3A51%3A42.041847+02%3A00%2C%20Running%2C%20%5Bstop%5D%20%5BDelete%5D%0A863433%2C%20ubuntu/redis%2C%202013-05-07T14%3A51%3A42.041847+02%3A00%2C%20Stopped%2C%20%5BStart%5D%20%5BDelete%5D%0A%5B967343-selected%5D%2C%20ubuntu/abc%2C%202013-05-07T14%3A51%3A42.041847+02%3A00%2C%20Running%2C%20%5Bstop%5D%20%5BDelete%5D%0A098743%2C%20ubuntu/pqr%2C%202013-05-07T14%3A51%3A42.041847+02%3A00%2C%20Running%2C%20%5Bstop%5D%20%5BDelete%5D%0A132333%2C%20ubuntu/zys%2C%202013-05-07T14%3A51%3A42.041847+02%3A00%2C%20Stopped%2C%20%5BStart%5D%20%5BDelete%5D%0A234098%2C%20ubntu/abcd%2C%202013-05-07T14%3A51%3A42.041847+02%3A00%2C%20Stopped%2C%20%5BStart%5D%20%5BDelete%5D</text>
+      </controlProperties>
+    </control>
+    <control controlID="73" controlTypeID="com.balsamiq.mockups::Button" x="416" y="1163" w="-1" h="-1" measuredW="102" measuredH="27" zOrder="28" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Delete%20Image</text>
+      </controlProperties>
+    </control>
+    <control controlID="74" controlTypeID="com.balsamiq.mockups::CallOut" x="77" y="479" w="-1" h="-1" measuredW="36" measuredH="39" zOrder="29" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>3</text>
+      </controlProperties>
+    </control>
+    <control controlID="75" controlTypeID="com.balsamiq.mockups::TextInput" x="382" y="688" w="339" h="-1" measuredW="160" measuredH="27" zOrder="31" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>enter%20run%20command%20here</text>
+      </controlProperties>
+    </control>
+    <control controlID="76" controlTypeID="com.balsamiq.mockups::Button" x="747" y="689" w="-1" h="-1" measuredW="63" measuredH="27" zOrder="32" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Create</text>
+      </controlProperties>
+    </control>
+    <control controlID="77" controlTypeID="com.balsamiq.mockups::FieldSet" x="343" y="744" w="518" h="170" measuredW="200" measuredH="170" zOrder="33" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Log</text>
+      </controlProperties>
+    </control>
+    <control controlID="84" controlTypeID="com.balsamiq.mockups::FieldSet" x="272" y="1532" w="648" h="106" measuredW="200" measuredH="170" zOrder="34" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Log%20%5B967343%5D</text>
+      </controlProperties>
+    </control>
+    <control controlID="92" controlTypeID="com.balsamiq.mockups::CallOut" x="77" y="1039" w="-1" h="-1" measuredW="35" measuredH="39" zOrder="35" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>4</text>
+      </controlProperties>
+    </control>
+    <control controlID="93" controlTypeID="com.balsamiq.mockups::StickyNote" x="289" y="120" w="149" h="123" measuredW="109" measuredH="123" zOrder="36" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>If%20no%20image%20added%20yet%2C%20then%20show%20docker%20file%20upoad%20option%20%2C%20else%20jump%20to%20screen%202</text>
+      </controlProperties>
+    </control>
+    <control controlID="94" controlTypeID="com.balsamiq.mockups::RoundButton" x="494" y="237" w="24" h="26" measuredW="32" measuredH="32" zOrder="37" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>+</text>
+      </controlProperties>
+    </control>
+    <control controlID="95" controlTypeID="com.balsamiq.mockups::RoundButton" x="87" y="602" w="29" h="26" measuredW="32" measuredH="32" zOrder="38" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>+</text>
+      </controlProperties>
+    </control>
+    <control controlID="96" controlTypeID="com.balsamiq.mockups::RoundButton" x="87" y="1162" w="29" h="26" measuredW="32" measuredH="32" zOrder="39" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>+</text>
+      </controlProperties>
+    </control>
+    <control controlID="97" controlTypeID="com.balsamiq.mockups::StickyNote" x="902" y="167" w="149" h="123" measuredW="109" measuredH="123" zOrder="40" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>first%20row%3A%20option%20to%20add%20more%20dockfile%20and%20operations%20available%20on%20selected%20dockerfile</text>
+      </controlProperties>
+    </control>
+    <control controlID="98" controlTypeID="com.balsamiq.mockups::StickyNote" x="624" y="326" w="195" h="90" measuredW="109" measuredH="123" zOrder="41" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>15110456</color>
+        <text>Selected%20dockerfile%20management%20Panel%2C%20visible%20only%20after%20BUILD%20is%20complete</text>
+      </controlProperties>
+    </control>
+    <control controlID="99" controlTypeID="com.balsamiq.mockups::StickyNote" x="894" y="638" w="213" h="122" measuredW="109" measuredH="123" zOrder="42" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Create%20New%20Container%0A%20%0AUser%20will%20be%20prompted%20to%20enter%20new%20command%20to%20create%20new%20container.</text>
+      </controlProperties>
+    </control>
+    <control controlID="100" controlTypeID="com.balsamiq.mockups::StickyNote" x="839" y="791" w="172" h="81" measuredW="109" measuredH="123" zOrder="43" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>16750848</color>
+        <text>Log%20of%20entered%20docker%20run%20command</text>
+      </controlProperties>
+    </control>
+    <control controlID="101" controlTypeID="com.balsamiq.mockups::StickyNote" x="913" y="1213" w="243" h="187" measuredW="109" measuredH="123" zOrder="44" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>List%20Container%0A%20%0AShows%20table%20enlisting%20all%20the%20containers%20under%20selected%20dockerfile%20with%20Actions%20to%20control%20container.%0A%20%0Auser%20can%20Stop%20or%20Start%20container%20depending%20on%20running%20status%20and%20can%20destroy%20the%20container%20as%20well</text>
+      </controlProperties>
+    </control>
+    <control controlID="102" controlTypeID="com.balsamiq.mockups::StickyNote" x="148" y="1522" w="150" h="101" measuredW="109" measuredH="123" zOrder="45" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>16750848</color>
+        <text>User%20can%20see%20the%20log%20of%20selected%20container</text>
+      </controlProperties>
+    </control>
+    <control controlID="104" controlTypeID="com.balsamiq.mockups::Label" x="286" y="31" w="-1" h="-1" measuredW="450" measuredH="68" zOrder="46" locked="false" isInGroup="-1">
+      <controlProperties>
+        <size>60</size>
+        <state>disabled</state>
+        <text>Docker%20Manager</text>
+        <underline>true</underline>
+      </controlProperties>
+    </control>
+    <control controlID="105" controlTypeID="com.balsamiq.mockups::FieldSet" x="272" y="1419" w="648" h="106" measuredW="200" measuredH="170" zOrder="47" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>Info%20%5B967343%5D</text>
+      </controlProperties>
+    </control>
+    <control controlID="106" controlTypeID="com.balsamiq.mockups::StickyNote" x="885" y="1427" w="150" h="101" measuredW="109" measuredH="123" zOrder="48" locked="false" isInGroup="-1">
+      <controlProperties>
+        <color>16370588</color>
+        <text>Detail%20information%20on%20selected%20Container</text>
+      </controlProperties>
+    </control>
+    <control controlID="107" controlTypeID="com.balsamiq.mockups::Paragraph" x="289" y="1435" w="609" h="80" measuredW="200" measuredH="80" zOrder="49" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>%22Id%22%3A%20%224fa6e0f0c6786287e131c3852c58a2e01cc697a68231826813597e4994f1d6e2%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22Created%22%3A%20%222013-05-07T14%3A51%3A42.041847+02%3A00%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22Path%22%3A%20%22date%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22Args%22%3A%20%5B%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22Config%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Hostname%22%3A%20%224fa6e0f0c678%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22User%22%3A%20%22%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Memory%22%3A%200%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22MemorySwap%22%3A%200%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22AttachStdin%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22AttachStdout%22%3A%20true%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22AttachStderr%22%3A%20true%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22PortSpecs%22%3A%20null%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Tty%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22OpenStdin%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22StdinOnce%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Env%22%3A%20null%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Cmd%22%3A%20%5B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22date%22%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Dns%22%3A%20null%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Image%22%3A%20%22base%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Volumes%22%3A%20%7B%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22VolumesFrom%22%3A%20%22%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22WorkingDir%22%3A%22%22%0A%20%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22State%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Running%22%3A%20false%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Pid%22%3A%200%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22ExitCode%22%3A%200%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22StartedAt%22%3A%20%222013-05-07T14%3A51%3A42.087658+02%3A01360%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Ghost%22%3A%20false%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22Image%22%3A%20%22b750fe79269d2ec9a3c593ef05b4332b1d1a02a62b4accb2c21d589ff2f5f2dc%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22NetworkSettings%22%3A%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22IpAddress%22%3A%20%22%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22IpPrefixLen%22%3A%200%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Gateway%22%3A%20%22%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22Bridge%22%3A%20%22%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%22PortMapping%22%3A%20null%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%7D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22SysInitPath%22%3A%20%22/home/kitty/go/src/github.com/dotcloud/docker/bin/docker%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22ResolvConfPath%22%3A%20%22/etc/resolv.conf%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%22Volumes%22%3A%20%7B%7D</text>
+      </controlProperties>
+    </control>
+    <control controlID="109" controlTypeID="com.balsamiq.mockups::Paragraph" x="356" y="760" w="487" h="139" measuredW="200" measuredH="80" zOrder="50" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>from%20%20%20%20base%3Alatest%0Arun%20%20%20%20%20echo%20%22deb%20http%3A//ppa.launchpad.net/chris-lea/node.js/ubuntu%20precise%20main%22%20%3E%3E%20/etc/apt/sources.list%0Arun%20%20%20%20%20echo%20%22deb%20http%3A//ppa.launchpad.net/chris-lea/redis-server/ubuntu%20precise%20main%22%20%3E%3E%20/etc/apt/sources.list%0Arun%20%20%20%20%20apt-get%20update%0Arun%20%20%20%20%20apt-get%20install%20--force-yes%20-y%20nodejs%20redis-server%0Aadd%20%20%20%20%20.%20%20/app%0Aexpose%20%206379%0Aexpose%20%20%3A6967%0Aenv%20%20%20%20%20PORT%206967%0Acmd%20%20%20%20%20%5B%22sh%22%2C%20%22-c%22%2C%20%22sysctl%20vm.overcommit_memory%3D1%20%3B%20cd%20/redis%20%3B%20/usr/bin/redis-server%20--logfile%20redis.log%20--dbfilename%20/r</text>
+      </controlProperties>
+    </control>
+    <control controlID="110" controlTypeID="com.balsamiq.mockups::Paragraph" x="296" y="1556" w="487" h="67" measuredW="200" measuredH="80" zOrder="51" locked="false" isInGroup="-1">
+      <controlProperties>
+        <text>from%20%20%20%20base%3Alatest%0Arun%20%20%20%20%20echo%20%22deb%20http%3A//ppa.launchpad.net/chris-lea/node.js/ubuntu%20precise%20main%22%20%3E%3E%20/etc/apt/sources.list%0Arun%20%20%20%20%20echo%20%22deb%20http%3A//ppa.launchpad.net/chris-lea/redis-server/ubuntu%20precise%20main%22%20%3E%3E%20/etc/apt/sources.list%0Arun%20%20%20%20%20apt-get%20update%0Arun%20%20%20%20%20apt-get%20install%20--force-yes%20-y%20nodejs%20redis-server%0Aadd%20%20%20%20%20.%20%20/app%0Aexpose%20%206379%0Aexpose%20%20%3A6967%0Aenv%20%20%20%20%20PORT%206967%0Acmd%20%20%20%20%20%5B%22sh%22%2C%20%22-c%22%2C%20%22sysctl%20vm.overcommit_memory%3D1%20%3B%20cd%20/redis%20%3B%20/usr/bin/redis-server%20--logfile%20redis.log%20--dbfilename%20/r</text>
+      </controlProperties>
+    </control>
+  </controls>
+</mockup>

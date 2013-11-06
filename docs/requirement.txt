@@ -1,0 +1,9 @@
+Objective: Create a simple Web UI that creates, deletes, starts and stops Docker Containers
+ 
+For this project, please use node.js as the back-end and Rendr as the front-end (https://github.com/airbnb/rendr)
+ 
+Your project would allow a user to input a Dockerfile (look at Docker.io) from which it will create a container. The user can start and stop this container. The user can create multiple containers, and see a list of all containers on the system
+ 
+The application should report the status of each container, including it’s IP Address and state (running/stopped) by directly querying the docker API
+ 
+There is no need to use a database for this project. Use Github as your project repository

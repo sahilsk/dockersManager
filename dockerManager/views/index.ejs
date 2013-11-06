@@ -1,0 +1,13 @@
+<% include ../layouts/layout_top %>
+
+
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+
+
+<h3> Upload docfile </h3>
+
+<form method="post" enctype="multipart/form-data" action="/upload" >
+	<input type="file" name="dockerfile" id="dockerfile" /> 
+	<input type="submit" value="upload and build" />
+</form>
