@@ -25,5 +25,9 @@ exports.makeRoutes= function(app){
 
 	app.get("/docker/:docfileName", docker.index);
 
+	app.get("/docker/containers/list", docker.containers);
+
+	
+
 
 } 
