@@ -2,35 +2,61 @@ var fs = require("fs");
 var path = require('path');
 
 
-var progress  = 0;
+var progress = 0;
 /*
 	Upload Dockerfile
 */
-exports.upload = function(req, res){
+exports.upload = function (req, res) {
 
- var newFile = fs.createWriteStream(  path.join( __dirname, "uploads/dockerfile_copy") );
- req.pipe(newFile);
+	var newFilePath =  path.join( __dirname, "../uploads");
+	var newFileName = "dockerfile_copy";
 
- var fileBytes = req.headers['content-length'];
- var uploadedBytes = 0;
+	fs.exists(newFilePath, function (exists) {
+  		if(!exists){
+  			console.log("File path doesn't exist");
+  			res.end("Path doesn't exist: <" + newFilePath + ">");
+  			return;
+  		}
 
-  req.on('data', function(data){
-  	uploadedBytes += data.length;
-  	 progress = uploadedBytes/fileBytes* 100;
- // 	console.log("progress: " + parseInt(progress, 10) + "%\n");
-  	res.write("progress: " + parseInt(progress, 10) + "%\n");
+	    var newFile = fs.createWriteStream( path.join( newFilePath, newFileName) );
+	    req.pipe(newFile);
 
-  });
+	    var fileBytes = req.headers['content-length'];
+	    var uploadedBytes = 0;
 
-  req.on('end', function(){
-  	res.end("file uploaded");
+	    req.on('data', function (data) {
+	        uploadedBytes += data.length;
+	        progress = uploadedBytes / fileBytes * 100;
+	        // 	console.log("progress: " + parseInt(progress, 10) + "%\n");
+	        res.write("progress: " + parseInt(progress, 10) + "%\n");
 
-  })
+	    });
+
+	    req.on('end', function () {
+
+	    	buildDockerfile(newFilePath);
+
+	    	res.redirect('/dashboard');
+	       // res.end("file uploaded");
+
+	    })
+
+	});// end 'fs.exists'
+
+
+
 
 };
 
 
-exports.progressStatus = function(req, res){
+buildDockerfile = function(fielPath){
+	console.log( "Building file: " +  fielPath);
 
-		res.send("progress: " + parseInt(progress, 10) + "%\n");
+}
+
+
+
+exports.progressStatus = function (req, res) {
+
+    res.send("progress: " + parseInt(progress, 10) + "%\n");
 }
