@@ -13,19 +13,18 @@ exports.makeRoutes= function(app){
 
 	app.post("/upload", dockerfile.upload);
 
-
 	app.get("/progressStatus", dockerfile.progressStatus);
 
 
-	app.get("/dashboard", function(req, res){
-		res.redirect("/docker");
+	app.get("/dashboard/:docfileName", function(req, res){
+		res.redirect("/docker/" + req.params.docfileName );
 
 	});
 
 
 	app.get("/docker/:docfileName", docker.index);
 
-	app.get("/docker/containers/list", docker.containers);
+	app.get("/docker/:image/containers/list", docker.containers);
 
 	
 
