@@ -7,7 +7,7 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var connect  = require("connect");
-var router = require('./config/routes.js');
+var routes = require('./config/routes.js');
 
 
 var app = express();
@@ -28,10 +28,18 @@ app.use(express.urlencoded());
 app.use(express.methodOverride());
 app.use(express.cookieParser('your secret here'));
 app.use(express.session());
+
+
+app.use(function(req, res, next){
+    res.locals.messages = req.session.messages;
+    delete req.session.messages;
+    next();
+ });
+
+
 app.use(app.router);
 app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 
 
@@ -42,7 +50,7 @@ if ('development' == app.get('env')) {
 }
 
 
-router.makeRoutes(app);
+routes.makeRoutes(app);
 
 
 http.createServer(app).listen(app.get('port'), function(){

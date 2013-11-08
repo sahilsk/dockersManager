@@ -1,8 +1,100 @@
 body {
-  padding: 50px;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  background-left: 1px dashed #D1D1D1;
+  margin: 0;
+  padding: 0;
 }
 
 a {
   color: #00B7FF;
 }
+
+
+.site_wrapper{
+	width: 960px;
+	overflow: hidden;
+	margin: 0 auto;
+	padding: 0px 10px 0 10px;
+
+}
+
+
+.flash{
+
+	position: fixed;
+	top: 0;
+	left:0;
+	padding: 5px;
+	width: 100%;
+	text-align: center;
+	font-weight: bold;
+	font-family: monospace;
+
+
+
+
+
+	span{
+		cursor:pointer;
+	}
+
+	span:hover{
+		color:rgb(209, 209, 209);
+	}
+
+}
+
+.alert{
+	background-color: #B43C59;
+	color: #FFF;
+}
+
+.error{
+	background-color: rgb(190, 0, 0);
+	color: #FFF;
+}
+
+.warn{
+	background-color: #B4973C;
+	color: #FFF;
+}
+
+
+.logo{
+	color: #CA0071;
+	text-shadow: 1px 1px 1px #999;
+	font-family: sans-serif;
+	
+}
+
+.dockerfileName{
+
+	span{
+		color: rgb(255, 255, 255);
+		text-shadow: 1px 1px 1px #000;
+		background: green;
+		padding: 2px 10px 2px 10px;
+		border-radius: 5px;
+		font-size:14px;
+		margin-left: 5px;
+
+	}
+
+	span.delete{
+		color: #ffffff;
+		text-shadow: 1px 1px 1px #000;
+		background: rgb(197, 10, 47);
+		padding: 2px 10px 2px 10px;
+		border-radius: 5px;
+		font-size: 12px;
+
+		a{
+			text-decoration:none;
+			color: #FFF;
+		}
+
+	}
+
+
+}
+

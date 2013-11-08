@@ -22,11 +22,32 @@ exports.makeRoutes= function(app){
 	});
 
 
-	app.get("/docker/:docfileName", docker.index);
+	app.get("/docker", function(req, res){
+		req.session.messages = {text: "Please upload dockerfile first", type: "warn"};
+	    res.redirect("/"); 
 
+	  })
+
+	
+
+	/*
+	||Docker Operations
+	||
+	*/
+
+	app.get("/docker/:docfileName", docker.index);
+	app.get("/docker/:docfileName/inspect", docker.inspect);
+
+
+	/*
+	||Containers Operations
+	||
+	*/
 	app.get("/docker/:image/containers/list", docker.containers);
 
 	
+
+
 
 
 } 

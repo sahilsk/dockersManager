@@ -1,16 +1,31 @@
+/*
+||Dockerfiles.js
+||Description:   Contain functions speicific to operations on Dockerfile.
+||				->upload() : upload dockerfile
+||				->buildDockerfile() : Build dockerfile and create image
+||				->progressStatus() : function to track file uploading progress status 
+*/		
+
+
+
 var fs = require("fs");
 var path = require('path');
 
 
+
+
 var progress = 0;
+
 /*
-	Upload Dockerfile
+||	upload(req, res) 
+|| 	Description:  Upload dockerfile and build it
 */
 exports.upload = function (req, res) {
 
 	var newFilePath =  path.join( __dirname, "../uploads");
 	var newFileName = "dockerfile_copy";
 
+	
 
 	fs.exists(newFilePath, function (exists) {
   		if(!exists){
@@ -33,16 +48,29 @@ exports.upload = function (req, res) {
 
 	    });
 
-		var buildName = "";
 	    req.on('end', function () {
-	    	buildName =  req.body.build_name
+	    	var buildName =  req.body.build_name
 
 	    	console.log("Building dockfile with name : " + buildName);
-	    	buildDockerfile(newFilePath);
+	    	
+	    	//if build susccess redirect to dashboard 
+	    	if(  	buildDockerfile(newFilePath, buildName) ){
 
-	    	res.end("done");
+	    		req.session.messages = {text: "Dockerfile (" + buildName + ") built successfully.", type: "alert"};
+	   			res.redirect("/docker/" + buildName); 
+
+	    	}else{
+	    	// Redirect to upload page showing error in building file
+	    		req.session.messages = {text: "Error while building dockerfile", type: "error"};
+	   			res.redirect("/"); 
+
+	    	}
+
+	    	//res.end("done");
 
 	    });
+
+	    
 
 
 	});// end 'fs.exists'
@@ -50,11 +78,23 @@ exports.upload = function (req, res) {
 };
 
 
-buildDockerfile = function(fielPath){
-	console.log( "Building file: " +  fielPath);
-	return 0;
+/*
+||	buildDockerfile(filepath, buildname) 
+|| 	Description:  build dockerfile (filePath) and built it with tag 'buildName'
+*/
+
+ function buildDockerfile(filePath, buildName){
+	console.log( "Building file( "+ buildName + "): " +  filePath);
+	return false;
 }
 
+
+
+/*
+||	progressStatus() 
+|| 	Description:  function to track file uploading progress status 
+	ToDo
+*/
 
 exports.progressStatus = function (req, res) {
 
