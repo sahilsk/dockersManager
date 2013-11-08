@@ -1,6 +1,6 @@
 /*
 ||docker.js
-||Description:   Contain functions to operate image  using dockers remote api's
+||Description:   Contain functions to operate on containers  using dockers remote api's
 ||				->index() : entery file
 ||				->list() : lsit all containers 
 ||				->progressStatus() : function to track file uploading progress status 
@@ -21,18 +21,18 @@ exports.index = function(req, res){
 exports.inspect = function(req, res){
 
 	//makeGetRequest("/containers/json?all=1" , function(data){
-	  appUtil.makeGetRequest("/images/"+ req.params.docfileName +"/json", function(data,status){
+	  appUtil.makeGetRequest("/containers/"+ req.params.id +"/json", function(data,status){
 		if( data){
 			if( status ===404){
 				//res.end("no such image: " + req.params.docfileName);
-				jsonData = { "No such image" : req.params.docfileName};
+				jsonData = { "No such container" : req.params.docfileName};
 				//return;
 			}else{
 				jsonData = JSON.parse( data);
 			}
-			res.render("docker/inspect", {
+			res.render("container/inspect", {
 				title:"Inspect", 
-				dockerfile_name  : req.params.docfileName, 
+				id  : req.params.id, 
 				"data":jsonData,
 				statusCode : status
 			 });
@@ -43,13 +43,32 @@ exports.inspect = function(req, res){
 
 		}
 	}); 
+
 }
-
-
 
 exports.list =function(req, res){
 
-	res.send("list dockers");
+	appUtil.makeGetRequest("/containers/json?all=1" , function(data,status){
+		if( data){
+			if( status ===404){
+				//res.end("no such image: " + req.params.docfileName);
+				jsonData = { "No such container" : req.params.docfileName};
+				//return;
+			}else{
+				jsonData = JSON.parse( data);
+			}
+			res.render("container/list", {
+				title:"List", 
+				"data":jsonData,
+				statusCode : status
+			 });
+
+		}else{
+
+			res.end("Unable to fetch json");
+
+		}
+	}); 
 
 }
 

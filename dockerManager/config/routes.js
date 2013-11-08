@@ -3,6 +3,7 @@ var controllers = require('../controllers');
 var user = require('../controllers/user');
 var dockerfile = require("../controllers/dockerfiles");
 var docker = require("../controllers/docker");
+var container = require("../controllers/container");
 
 exports.makeRoutes= function(app){
 
@@ -43,7 +44,9 @@ exports.makeRoutes= function(app){
 	||Containers Operations
 	||
 	*/
-	app.get("/docker/:image/containers/list", docker.containers);
+	app.get("/containers/:id/inspect", container.inspect);
+	app.get("/containers/list", container.list);
+
 
 	
 

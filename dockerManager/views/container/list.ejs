@@ -6,23 +6,27 @@
 <h1> Dashboard </h1>
 
 
-<h3 class="dockerfileName"> Selected Dockerfile: 
-	<span > <%= dockerfile_name %> </span> 
-	<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
+<h3 class="dockerfileName"> Selected Container: 
+	<span >All Containers </span> 
 
 </h3>
 
 
 <% if( statusCode === 404 ) { %>
-	<h3> Image  not found  </h3>
+	<h3> Container  not found  </h3>
 
 <% }else{ %>
 	<% if( data.length > 0 ){ %>
 		<% data.forEach( function(item, index){ %>
+			<h1> <%= index + 1 %> </h1>
 			<% for(var k in item){ %>
 				<%= k %> : <%= item[k] %>
 				<br/>
 			<% } %>
+				<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
+
+			<hr/>
+
 		<% }) %>
 	<% }else { %>
 		<%= JSON.stringify(data) %>
@@ -31,7 +35,7 @@
 
 
 
-<a href="/docker/<%= dockerfile_name %>/inspect"  > Inspect Image </a>
+
 
 
 

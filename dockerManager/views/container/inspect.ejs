@@ -6,15 +6,15 @@
 <h1> Dashboard </h1>
 
 
-<h3 class="dockerfileName"> Selected Dockerfile: 
-	<span > <%= dockerfile_name %> </span> 
+<h3 class="dockerfileName"> Selected Container: 
+	<span > <%= id %> </span> 
 	<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
 
 </h3>
 
 
 <% if( statusCode === 404 ) { %>
-	<h3> Image  not found  </h3>
+	<h3> Container  not found  </h3>
 
 <% }else{ %>
 	<% if( data.length > 0 ){ %>
@@ -31,7 +31,8 @@
 
 
 
-<a href="/docker/<%= dockerfile_name %>/inspect"  > Inspect Image </a>
+
+<a href="/docker/<%= id %>/inspect"  > Inspect Image </a>
 
 
 
