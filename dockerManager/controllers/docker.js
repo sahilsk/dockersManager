@@ -12,34 +12,41 @@ var appUtil = require("./app_util");
 
 exports.index = function(req, res){
 
-	res.render("docker/index", {title:"Dashboard", 
-			dockerfile_name  : req.params.docfileName });
+	res.render("docker/index", {
+			title:"Dashboard", 
+			id  : req.params.id });
 
 }
 
 
 exports.inspect = function(req, res){
 
-	//makeGetRequest("/containers/json?all=1" , function(data){
-	  appUtil.makeGetRequest("/images/"+ req.params.docfileName +"/json", function(data,status){
+	  appUtil.makeGetRequest("/images/"+ req.params.id +"/json", function(data,status){
 		if( data){
 			if( status ===404){
-				//res.end("no such image: " + req.params.docfileName);
-				jsonData = { "No such image" : req.params.docfileName};
+				//res.end("no such image: " + req.params.id);
+				jsonData = { "No such image" : req.params.id};
 				//return;
 			}else{
 				jsonData = JSON.parse( data);
 			}
 			res.render("docker/inspect", {
-				title:"Inspect", 
-				dockerfile_name  : req.params.docfileName, 
+				title:"Inspect Docker Image", 
+				id  : req.params.id, 
 				"data":jsonData,
 				statusCode : status
 			 });
 
 		}else{
-
-			res.end("Unable to fetch json");
+			req.session.messages = {text: "Unable to query docker image.", type: "alert"};
+			jsonData = { "Unable to query docker image. Please check your internet connection" : req.params.id};
+			res.render("docker/inspect", {
+				title:"Inspect Docker Image", 
+				id  : req.params.id, 
+				"data":jsonData,
+				statusCode : status,
+				messages : req.session.messages
+			 });
 
 		}
 	}); 

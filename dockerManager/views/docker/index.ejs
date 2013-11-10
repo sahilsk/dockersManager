@@ -7,12 +7,12 @@
 
 
 <h3 class="dockerfileName"> Selected Dockerfile: 
-	<span > <%= dockerfile_name %> </span> 
-	<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
+	<span > <%= id %> </span> 
+	<span class="delete"> 
+		<a href="/docker/delete"> Delete &cross; </a> 
+	</span>
 
 </h3>
-
-
 
 <!--
 
@@ -21,7 +21,7 @@
 	-> Delete
 -->
 
-<a href="/docker/<%= dockerfile_name %>/inspect"  > Inspect Image </a>
+<a href="/docker/<%= id %>/inspect"  > Inspect Image </a>
 
 
 

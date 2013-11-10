@@ -36,8 +36,8 @@ exports.makeRoutes= function(app){
 	||
 	*/
 
-	app.get("/docker/:docfileName", docker.index);
-	app.get("/docker/:docfileName/inspect", docker.inspect);
+	app.get("/docker/:id", docker.index);
+	app.get("/docker/:id/inspect", docker.inspect);
 
 
 	/*

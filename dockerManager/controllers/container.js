@@ -52,7 +52,7 @@ exports.list =function(req, res){
 		if( data){
 			if( status ===404){
 				//res.end("no such image: " + req.params.docfileName);
-				jsonData = { "No such container" : req.params.docfileName};
+				jsonData = { "No such container" : req.params.id};
 				//return;
 			}else{
 				jsonData = JSON.parse( data);
@@ -64,8 +64,15 @@ exports.list =function(req, res){
 			 });
 
 		}else{
-
-			res.end("Unable to fetch json");
+			req.session.messages = {text: "Unable to query docker api !!", type: "error"};
+			jsonData = { "Unable to query docker api " : req.params.id};
+			res.render("container/list", {
+				title:"List", 
+				"data":jsonData,
+				statusCode : status,
+				messages : req.session.messages
+			 });
+			//res.end();
 
 		}
 	}); 
