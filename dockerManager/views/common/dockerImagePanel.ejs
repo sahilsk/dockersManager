@@ -1,0 +1,49 @@
+
+<div class="imageWrapper">
+	
+	<div class="dockerImageIcon">
+
+		<div style="background-color: #FFF; font-size:100%; font-weight:bold; height:20px; margin-top:40px; padding-top:1px;color: #333;text-shadow: 1px 1px 1px #999;opacity: 0.9; text-align:center;"> 
+			Docker Image <br> 
+		</div>
+
+	</div>
+
+	<div class="dockerImageInfo key_val">
+		<br/>
+		<label> ID : </label>
+		<span> <%= id %> </span> <br/>
+
+		<label> Name : </label>
+		<span> <%= id %> </span> <br/>
+
+		<label> Built Date : </label>
+		<span> <%= id %> </span>
+
+	</div>
+
+	<div class="dockerImageAction">
+		<br/>
+		<ul>
+			<li > <a href="/docker/<%=id%>/inspect"> Inspect &radic; </a>  </li>
+
+			<li class="delete"> <a href="/docker/<%=id%>/delete"> Delete &cross; </a>  </li>
+		</ul>
+	</div>
+
+	<div class="clr"> </div>
+
+</div>
+
+
+ <hr style="
+   
+    color: rgb(216, 226, 226);
+    border-color: rgb(179, 93, 178);
+    border-width: 1px;
+    border-style: solid;
+
+    border-bottom: 5px solid rgb(143, 20, 143);
+    box-shadow: 1px 1px 1px #9E9797;
+
+"/>
