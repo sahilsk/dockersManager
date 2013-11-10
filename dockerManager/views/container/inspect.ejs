@@ -1,6 +1,5 @@
 <% include ../../layouts/dashboard_layout_top %>
 
-<h1> Dashboard </h1>
 
 <h3 class="dockerfileName"> Selected Container: 
 	<span > <%= id %> </span> 
@@ -9,26 +8,36 @@
 </h3>
 
 
+<div class="inspectDataWrapper">
+
 <% if( statusCode === 404 ) { %>
-	<h3> Container  not found  </h3>
+	<h3> Image  not found  </h3>
 
 <% }else{ %>
-	<% if( data.length > 0 ){ %>
+	<% if( data.length > 0 && typeof data === "object" ){ %>
+		<div class="key_val">
+
 		<% data.forEach( function(item, index){ %>
 			<% for(var k in item){ %>
-				<%= k %> : <%= item[k] %>
+				<label> <%= k %> : </label>
+				<span> <%= item[k] %> </span>
 				<br/>
 			<% } %>
 		<% }) %>
+
+		</div> <!--/key_val-->
+
 	<% }else { %>
-		<%= JSON.stringify(data) %>
+		<div class="somethingWentWrong">
+			<span > <%= JSON.stringify(data) %> </span>
+		</div>
 	<% } %>
 <% } %>
 
 
+</div> <!--/inspectDataWrapper -->
 
 
-<a href="/docker/<%= id %>/inspect"  > Inspect Image </a>
 
 
 <% include ../../layouts/dashboard_layout_bottom %>

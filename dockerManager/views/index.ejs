@@ -1,17 +1,24 @@
 <% include ../layouts/layout_top %>
 
 
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-
 
 <h3> Upload docfile </h3>
 
 
+<div class="uploaderWrapper">
+
+	<form method="post" enctype="multipart/form-data" action="/upload" >
+
+		<label> Image Name </label>
+		<input type="text" name="build_name"  id="build_name" />
+		<br/> <br/>
+
+		<input type="file" name="dockerfile" id="dockerfile" /> 
+		<br/> <Br/>
+		<input type="submit" value="upload and build" class="btn lrg" />
+	</form>
+
+</div>
 
 
-<form method="post" enctype="multipart/form-data" action="/upload" >
-	<input type="file" name="dockerfile" id="dockerfile" /> 
-	<input type="text" name="build_name"  id="build_name" />
-	<input type="submit" value="upload and build" />
-</form>
+<% include ../layouts/layout_bottom %>

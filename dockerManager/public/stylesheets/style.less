@@ -11,7 +11,7 @@ a {
 
 
 .site_wrapper{
-	width: 960px;
+	width: 90%; //960px;
 	overflow: hidden;
 	margin: 0 auto;
 	padding: 0px 10px 0 10px;
@@ -60,6 +60,44 @@ a {
 }
 
 
+.clr{
+	float:none;
+	clear:both;
+}
+
+/******** Buttons ********/
+
+.btn {
+	background-color: #B43C59;
+	border: none;
+	color: #FFF;
+	border-radius: 5px;
+	text-transform: capitalize;
+	box-shadow: 1px 1px 1px #8D8D8D;
+	text-align:center;
+	outline:none;
+	cursor: pointer;
+}
+
+.lrg{
+	padding: 5px;
+}
+
+.somethingWentWrong{
+	border: 1px dashed #CCC;
+	background-color: #eee;
+	padding: 10;
+	text-align: center;
+	span{
+		background: url("../images/warning_60.png") 0 8px no-repeat;
+		padding: 10px 40px 10px 40px;
+		color: rgb(194, 22, 22);
+	}
+}
+
+
+
+
 .logo{
 	color: #CA0071;
 	text-shadow: 1px 1px 1px #999;
@@ -67,12 +105,47 @@ a {
 	
 }
 
+
+
+/*
+||	Page:  Index (Upload Dockerfile )
+||
+*/
+
+.uploaderWrapper{
+	border: 1px dashed #ccc;
+	background-color: #eee;
+	border-radius:5px;
+	width: 300px;
+	height: 100px;
+	margin: 0 auto;
+	padding: 10px;
+
+
+	#dockerfile{
+		background-color: #fff;
+		padding: 2px;
+		border-radius: 5px;
+		width: 300px;
+		margin: 0 auto;
+	}
+
+	.btn{
+		margin : 0 auto;
+		display:block;
+	}
+
+
+}
+
+
+
 .dockerfileName{
 
 	span{
 		color: rgb(255, 255, 255);
 		text-shadow: 1px 1px 1px #000;
-		background: green;
+		background-color: green;
 		padding: 2px 10px 2px 10px;
 		border-radius: 5px;
 		font-size:14px;
@@ -98,3 +171,98 @@ a {
 
 }
 
+
+.dockerImageIcon{
+	
+	background: url("../images/docker_image.png") 0 0 no-repeat;
+	width: 100px;
+	height:100px;
+	overflow:hidden;
+	border: 1px solid #333;
+	background-size:100%;
+	float:left;
+}
+
+
+
+.key_val{
+
+	label {
+	    background-color: #8F148F;
+	    border-left: medium none;
+	    border-radius: 5px 5px 5px 5px;
+	    border-top: medium none;
+	    box-shadow: 1px 1px 1px #000000;
+	    color: #FFFFFF;
+	    display: inline-block;
+	    margin-bottom: 5px;
+	    padding: 1px 15px 1px 10px;
+	    text-shadow: 1px 1px 1px #000000;
+
+	}
+	span{
+	    background-color: #9C9C9C;
+	    border-radius: 3px 3px 3px 3px;
+	    color: #E6E6E6;
+	    margin-left: -7px;
+	    padding-left: 10px;
+	    padding-right: 5px;
+	    text-shadow: 1px 1px 1px #666666;
+	}	
+
+
+}
+
+.inspectDataWrapper .key_val label{
+	background-color: rgb(85, 85, 85);
+}
+
+
+.dockerImageInfo{
+	float:left;
+	margin-left: 20px;
+}
+
+.dockerImageAction{
+	float:right;
+
+	ul li{
+
+		color: rgb(255, 255, 255);
+		text-shadow: 1px 1px 1px #000;
+		background: rgb(8, 154, 173);
+		padding: 2px 10px 2px 10px;
+		border-radius: 5px;
+		font-size:14px;
+		margin-left: 5px;
+		list-style:none;
+
+		a{
+			text-decoration:none;
+			color: #FFF;
+		}
+		a:hover{
+			color: #eee;
+			border-bottom:1px dashed #FFF;
+		}
+
+		margin-top: 5px;
+
+	}
+
+	li.delete{
+			color: #ffffff;
+			text-shadow: 1px 1px 1px #000;
+			background: rgb(197, 10, 47);
+			padding: 2px 10px 2px 10px;
+			border-radius: 5px;
+			font-size: 12px;
+
+			a{
+				text-decoration:none;
+				color: #FFF;
+			}
+
+
+	}	
+}

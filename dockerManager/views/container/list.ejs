@@ -13,10 +13,10 @@
 
 
 <% if( statusCode === 404 ) { %>
-	<h3> Container  not found  </h3>
+	<h3> Container list not found  </h3>
 
 <% }else{ %>
-	<% if( data.length > 0 ){ %>
+	<% if( data.length > 0  && typeof data === "object"){ %>
 		<% data.forEach( function(item, index){ %>
 			<h1> <%= index + 1 %> </h1>
 			<% for(var k in item){ %>

@@ -39,7 +39,15 @@ exports.inspect = function(req, res){
 
 		}else{
 
-			res.end("Unable to fetch json");
+			req.session.messages = {text: "Unable to query docker.", type: "error"};
+			alertMessage = "Unable to query docker. Please check your internet connection";
+			res.render("container/inspect", {
+				title:"Inspect Container", 
+				id  : req.params.id, 
+				"data":alertMessage,
+				statusCode : status,
+				messages : req.session.messages
+			 });
 
 		}
 	}); 
@@ -65,10 +73,10 @@ exports.list =function(req, res){
 
 		}else{
 			req.session.messages = {text: "Unable to query docker api !!", type: "error"};
-			jsonData = { "Unable to query docker api " : req.params.id};
+			alertMessage = "Unable to query docker api " ;
 			res.render("container/list", {
 				title:"List", 
-				"data":jsonData,
+				"data":alertMessage,
 				statusCode : status,
 				messages : req.session.messages
 			 });

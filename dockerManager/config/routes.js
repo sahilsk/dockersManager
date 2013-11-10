@@ -38,6 +38,7 @@ exports.makeRoutes= function(app){
 
 	app.get("/docker/:id", docker.index);
 	app.get("/docker/:id/inspect", docker.inspect);
+	app.get("/docker/:id/delete", docker.delete);
 
 
 	/*

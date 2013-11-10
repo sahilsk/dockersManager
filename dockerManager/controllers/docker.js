@@ -38,12 +38,23 @@ exports.inspect = function(req, res){
 			 });
 
 		}else{
-			req.session.messages = {text: "Unable to query docker image.", type: "alert"};
-			jsonData = { "Unable to query docker image. Please check your internet connection" : req.params.id};
+			req.session.messages = {text: "Unable to query docker image.", type: "error"};
+			alertMessage = "Unable to query docker image. Please check your internet connection" ;
+			
+			/*
+			jsonData = [
+					{
+						"Name": "name goes here", 
+						"id" : "3443434343434",
+						 "built on": "2/23/3422"
+					 }
+					];
+			*/
+
 			res.render("docker/inspect", {
 				title:"Inspect Docker Image", 
 				id  : req.params.id, 
-				"data":jsonData,
+				"data":alertMessage,
 				statusCode : status,
 				messages : req.session.messages
 			 });
@@ -58,6 +69,12 @@ exports.list =function(req, res){
 
 	res.send("list dockers");
 
+}
+
+
+exports.delete = function(req, res){
+	req.session.messages = {text: "'"+ req.params.id + "' image deleted successfully.", type: "alert"};
+	res.redirect("/");
 }
 
 
