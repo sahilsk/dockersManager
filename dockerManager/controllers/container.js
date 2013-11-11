@@ -57,7 +57,7 @@ exports.inspect = function(req, res){
 
 exports.list =function(req, res){
 
-	appUtil.makeGetRequest("/containers/json?all=1" , function(data,statusCode){
+	appUtil.makeGetRequest("/containers/json?all=1" , function(data,statusCode, errorMessage){
 
 		switch( statusCode){
 
@@ -68,17 +68,16 @@ exports.list =function(req, res){
 				viewData =  "No such container : " + req.params.id;
 				break;
 			case 500:
-				viewData = "Server Error";
+				viewData = "Server Error : " + errorMessage;
 				break;
 			default:
-				console.log("Unable to query list of containers");
-				req.session.messages = {text: "Unable to query list of containers. Please check your network connection.", type: "error"};
+				req.session.messages = {text: "Unable to query list of containers. Please check your network connection. : <" + errorMessage+ 
+				">", type: "error"};
 				res.redirect("docker/" + req.params.id);
 				res.end();
+				return;
 		}
 
-
-		console.log( viewData);
 
 
 		res.render("docker/inspect", {

@@ -18,16 +18,10 @@ exports.makeGetRequest = function(queryString, callback){
 	  res.setEncoding('utf8');
 	  res.on('data', function (chunk) {
 	  	 inspectData += (chunk);
-
-	   // console.log('BODY: ' + inspectData);
-	   // callback( inspectData.toString(), res.statusCode);
-
 	  });
 
 	  res.on("end", function(){
-	  //	var data =   JSON.parse( inspectData);
-	  //	console.log( data);
-	  	callback(  inspectData, res.statusCode);
+	  	callback(  inspectData, res.statusCode, null);
 
 	  });
 
@@ -37,7 +31,7 @@ exports.makeGetRequest = function(queryString, callback){
 	req.on('error', function(e) {
 	  inspectData = "";
 	  console.log('problem with request: ' + e.message);
-	  callback( null, null);
+	  callback( null, null, e.message);
 
 	});
 

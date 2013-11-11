@@ -21,8 +21,9 @@ exports.index = function(req, res){
 
 exports.inspect = function(req, res){
 
-	  appUtil.makeGetRequest("/images/"+ req.params.id +"/json", function(data,statusCode){
+	  appUtil.makeGetRequest("/images/"+ req.params.id +"/json", function(data,statusCode, errorMessage){
 
+	  		var viewData = "";
 			switch( statusCode){
 
 				case 200:
@@ -36,9 +37,10 @@ exports.inspect = function(req, res){
 					break;
 				default:
 					console.log("Unable to query docker image");
-					req.session.messages = {text: "Unable to query docker image. Please check your internet connection.", type: "error"};
+					req.session.messages = {text: "Unable to query docker image. Please check your internet connection. <"+ errorMessage + ">", type: "error"};
 					res.redirect("docker/" + req.params.id);
 					res.end();
+					return ;
 			}
 
 
