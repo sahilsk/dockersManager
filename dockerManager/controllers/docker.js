@@ -21,45 +21,37 @@ exports.index = function(req, res){
 
 exports.inspect = function(req, res){
 
-	  appUtil.makeGetRequest("/images/"+ req.params.id +"/json", function(data,status){
-		if( data){
-			if( status ===404){
-				//res.end("no such image: " + req.params.id);
-				jsonData = { "No such image" : req.params.id};
-				//return;
-			}else{
-				jsonData = JSON.parse( data);
+	  appUtil.makeGetRequest("/images/"+ req.params.id +"/json", function(data,statusCode){
+
+			switch( statusCode){
+
+				case 200:
+					viewData = JSON.parse(data);
+					break;
+				case 404:
+					viewData =  "No such image : " + req.params.id;
+					break;
+				case 500:
+					viewData = "Server Error";
+					break;
+				default:
+					console.log("Unable to query docker image");
+					req.session.messages = {text: "Unable to query docker image. Please check your internet connection.", type: "error"};
+					res.redirect("docker/" + req.params.id);
+					res.end();
 			}
-			res.render("docker/inspect", {
-				title:"Inspect Docker Image", 
-				id  : req.params.id, 
-				"data":jsonData,
-				statusCode : status
-			 });
 
-		}else{
-			req.session.messages = {text: "Unable to query docker image.", type: "error"};
-			alertMessage = "Unable to query docker image. Please check your internet connection" ;
-			
-			/*
-			jsonData = [
-					{
-						"Name": "name goes here", 
-						"id" : "3443434343434",
-						 "built on": "2/23/3422"
-					 }
-					];
-			*/
+
+			console.log( viewData);
+
 
 			res.render("docker/inspect", {
 				title:"Inspect Docker Image", 
 				id  : req.params.id, 
-				"data":alertMessage,
-				statusCode : status,
-				messages : req.session.messages
+				"data":viewData,
+				statusCode : statusCode
 			 });
 
-		}
 	}); 
 }
 
@@ -73,8 +65,45 @@ exports.list =function(req, res){
 
 
 exports.delete = function(req, res){
-	req.session.messages = {text: "'"+ req.params.id + "' image deleted successfully.", type: "alert"};
-	res.redirect("/");
+
+
+	appUtil.makeDELETERequest("/images/" + req.params.id, function( result, statusCode){
+
+			var resultJson =   JSON.parse(result);
+			
+			switch( statusCode){
+
+				case 409:
+					req.session.messages = {text: "Conflict in deleting image : '"+ req.params.id + "' ", type: "error"};
+					res.redirect("/docker/" + req.params.id);
+					break;				
+
+				case 404:
+					req.session.messages = {text: "No such image : '"+ req.params.id + "' ", type: "error"};
+					res.redirect("/docker/" + req.params.id);
+					break;
+				case 200:
+					req.session.messages = {text: "'"+ req.params.id + "' image deleted successfully.", type: "alert"};
+					res.redirect("/");
+					break;
+
+				case 500:
+					req.session.messages = {text: "Server Error.", type: "error"};
+					res.redirect("/");
+					break;					
+
+				default:
+					req.session.messages = {text: "'"+ req.params.id + "' image deleted successfully.", type: "alert"};
+					res.redirect("/");
+
+			}
+
+
+	});
+
+
+
+
 }
 
 

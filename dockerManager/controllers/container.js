@@ -21,68 +21,75 @@ exports.index = function(req, res){
 exports.inspect = function(req, res){
 
 	//makeGetRequest("/containers/json?all=1" , function(data){
-	  appUtil.makeGetRequest("/containers/"+ req.params.id +"/json", function(data,status){
-		if( data){
-			if( status ===404){
-				//res.end("no such image: " + req.params.docfileName);
-				jsonData = { "No such container" : req.params.docfileName};
-				//return;
-			}else{
-				jsonData = JSON.parse( data);
-			}
-			res.render("container/inspect", {
-				title:"Inspect", 
-				id  : req.params.id, 
-				"data":jsonData,
-				statusCode : status
-			 });
+	  appUtil.makeGetRequest("/containers/"+ req.params.id +"/json", function(data,statusCode){
+		switch( statusCode){
 
-		}else{
-
-			req.session.messages = {text: "Unable to query docker.", type: "error"};
-			alertMessage = "Unable to query docker. Please check your internet connection";
-			res.render("container/inspect", {
-				title:"Inspect Container", 
-				id  : req.params.id, 
-				"data":alertMessage,
-				statusCode : status,
-				messages : req.session.messages
-			 });
-
+			case 200:
+				viewData = JSON.parse(data);
+				break;
+			case 404:
+				viewData =  "No such container : " + req.params.id;
+				break;
+			case 500:
+				viewData = "Server Error";
+				break;
+			default:
+				console.log("Unable to query list of containers");
+				req.session.messages = {text: "Unable to query list of containers. Please check your network connection.", type: "error"};
+				res.redirect("docker/" + req.params.id);
+				res.end();
 		}
+
+
+		console.log( viewData);
+
+
+		res.render("container/inspect", {
+			title:"Inspect Container", 
+			id  : req.params.id, 
+			"data":viewData,
+			statusCode : statusCode
+		 });
+
 	}); 
 
 }
 
 exports.list =function(req, res){
 
-	appUtil.makeGetRequest("/containers/json?all=1" , function(data,status){
-		if( data){
-			if( status ===404){
-				//res.end("no such image: " + req.params.docfileName);
-				jsonData = { "No such container" : req.params.id};
-				//return;
-			}else{
-				jsonData = JSON.parse( data);
-			}
-			res.render("container/list", {
-				title:"List", 
-				"data":jsonData,
-				statusCode : status
-			 });
+	appUtil.makeGetRequest("/containers/json?all=1" , function(data,statusCode){
 
-		}else{
-			req.session.messages = {text: "Unable to query docker api !!", type: "error"};
-			alertMessage = "Unable to query docker api " ;
-			res.render("container/list", {
-				title:"List", 
-				"data":alertMessage,
-				statusCode : status,
-				messages : req.session.messages
-			 });
-			//res.end();
+		switch( statusCode){
 
+			case 200:
+				viewData = JSON.parse(data);
+				break;
+			case 404:
+				viewData =  "No such container : " + req.params.id;
+				break;
+			case 500:
+				viewData = "Server Error";
+				break;
+			default:
+				console.log("Unable to query list of containers");
+				req.session.messages = {text: "Unable to query list of containers. Please check your network connection.", type: "error"};
+				res.redirect("docker/" + req.params.id);
+				res.end();
 		}
+
+
+		console.log( viewData);
+
+
+		res.render("docker/inspect", {
+			title:"Inspect Docker Image", 
+			id  : req.params.id, 
+			"data":viewData,
+			statusCode : statusCode
+		 });
+
+
+
 	}); 
 
 }

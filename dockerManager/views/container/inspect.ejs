@@ -10,11 +10,13 @@
 
 <div class="inspectDataWrapper">
 
-<% if( statusCode === 404 ) { %>
-	<h3> Image  not found  </h3>
+<% if( statusCode === 404  ||  statusCode === null || statusCode === 500) { %>
+	<div class="somethingWentWrong">
+		<span ><%= data %> </span>
+	</div>
 
 <% }else{ %>
-	<% if( data.length > 0 && typeof data === "object" ){ %>
+	<% if( typeof data === "object" ){ %>
 		<div class="key_val">
 
 		<% data.forEach( function(item, index){ %>
@@ -27,10 +29,6 @@
 
 		</div> <!--/key_val-->
 
-	<% }else { %>
-		<div class="somethingWentWrong">
-			<span > <%= JSON.stringify(data) %> </span>
-		</div>
 	<% } %>
 <% } %>
 

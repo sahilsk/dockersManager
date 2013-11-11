@@ -1,38 +1,41 @@
 <% include ../../layouts/dashboard_layout_top %>
 
-
-
-
-
-<h3 class="dockerfileName"> Selected Dockerfile: 
-	<span > <%= id %> </span> 
-	<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
-
-</h3>
+<a href="/containers/list"> List all containers </a>
 
 <div class="inspectDataWrapper">
 
-<% if( statusCode === 404 ) { %>
-	<h3> Image  not found  </h3>
+<% if( statusCode === 404  ||  statusCode === null || statusCode === 500) { %>
+	<div class="somethingWentWrong">
+		<span ><%= data %> </span>
+	</div>
 
 <% }else{ %>
-	<% if( data.length > 0 && typeof data === "object" ){ %>
+
+	<% if( typeof data === "object" ){ %>
 		<div class="key_val">
 
-		<% data.forEach( function(item, index){ %>
-			<% for(var k in item){ %>
+			<% for(var k in data){ %>
 				<label> <%= k %> : </label>
-				<span> <%= item[k] %> </span>
+
+				<% if(  k === "container_config" || k === "config") { %>
+					<br/>
+					<% for(var l in data[k]){ %>
+						<label class='sub'> <%=l %> : </label>
+
+
+
+
+						<span class="sub"> <%= JSON.stringify( data[k][l]) %> </span> <br/>
+					<% }%> 	
+				
+				<% }else{ %>
+				<span> <%= data[k] %> </span>
+				<% } %>
 				<br/>
 			<% } %>
-		<% }) %>
 
 		</div> <!--/key_val-->
 
-	<% }else { %>
-		<div class="somethingWentWrong">
-			<span > <%= JSON.stringify(data) %> </span>
-		</div>
 	<% } %>
 <% } %>
 

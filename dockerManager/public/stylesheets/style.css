@@ -143,13 +143,19 @@ a {
   text-shadow: 1px 1px 1px #000000;
 }
 .key_val span {
-  background-color: #9C9C9C;
+  background-color: #BBBBBB;
   border-radius: 3px 3px 3px 3px;
-  color: #E6E6E6;
+  color: #FFF;
   margin-left: -7px;
   padding-left: 10px;
   padding-right: 5px;
   text-shadow: 1px 1px 1px #666666;
+  font-weight: bolder;
+}
+.key_val label.sub {
+  font-size: 12px;
+  background-color: #3a5c64 !important;
+  margin-left: 20px;
 }
 .inspectDataWrapper .key_val label {
   background-color: #555555;

@@ -49,7 +49,7 @@ exports.makeRoutes= function(app){
 	app.get("/containers/list", container.list);
 
 
-	
+	app.delete("/docker/:id/delete", docker.delete)
 
 
 
