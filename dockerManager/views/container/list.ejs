@@ -6,10 +6,10 @@
 <h1> Dashboard </h1>
 
 
-<h3 class="dockerfileName"> Selected Container: 
 	<span >All Containers </span> 
+	<hr/>
 
-</h3>
+
 
 
 <% if( statusCode === 404 ) { %>
@@ -17,17 +17,44 @@
 
 <% }else{ %>
 	<% if( data.length > 0  && typeof data === "object"){ %>
+		<table border='1' cellspacing='0'>
+			<thead>
+				<tr>
+					<th></th>
+					<th> ID </th>
+					<th> Image </th>
+					<th> Command </th>
+					<th> Created </th>
+					<th> Status </th>
+					<th> Ports </th>
+					<th> SizeRW </th>
+					<th> SizeRootFs </th>	
+					<th> Names </th>						
+				</tr>
+			</thead>
+			<tbody>
 		<% data.forEach( function(item, index){ %>
-			<h1> <%= index + 1 %> </h1>
+			<tr>
+			<td>  <%= index + 1 %> </td>
 			<% for(var k in item){ %>
-				<%= k %> : <%= item[k] %>
-				<br/>
+				<td>
+						<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+							<%= item[k] %>
+						</div>
+
+						
+					
+				</td>
 			<% } %>
-				<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
-
-			<hr/>
-
+				<td>
+				<span class="delete"> <a href="/containers/<%=data[index].Id %>/delete"> Delete &cross; </a> </span>
+				<span class="inspect"> <a href="/containers/<%=data[index].Id %>/inspect"> Inspect </a> </span>
+				</td>
+			<tr/>
 		<% }) %>
+			</tbody>
+		</table>
+
 	<% }else { %>
 		<%= JSON.stringify(data) %>
 	<% } %>

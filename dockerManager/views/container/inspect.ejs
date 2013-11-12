@@ -2,7 +2,12 @@
 
 
 <h3 class="dockerfileName"> Selected Container: 
-	<span > <%= id %> </span> 
+	<span > <%= id %> ( <%= data.State.Running? "Running.." : "Stoppped" %>)</span> 
+	<span class="status" style="background-color: rgb(172, 172, 172);"> 
+
+		<a href="container/<%=id %>/<%= data.State.Running? "Stop" : "Run" %>" > <%= data.State.Running? "Stop" : "Run" %>  </a>
+
+	</span>
 	<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
 
 </h3>
@@ -16,16 +21,29 @@
 	</div>
 
 <% }else{ %>
+
 	<% if( typeof data === "object" ){ %>
 		<div class="key_val">
 
-		<% data.forEach( function(item, index){ %>
-			<% for(var k in item){ %>
+			<% for(var k in data){ %>
 				<label> <%= k %> : </label>
-				<span> <%= item[k] %> </span>
+
+				<% if(  k === "State" || k === "Config" || k === "NetworkSettings" ||  k === "Volumes" || k === "VolumesRW") { %>
+					<br/>
+					<% for(var l in data[k]){ %>
+						<label class='sub'> <%=l %> : </label>
+
+
+
+
+						<span class="sub"> <%= JSON.stringify( data[k][l]) %> </span> <br/>
+					<% }%> 	
+				
+				<% }else{ %>
+				<span> <%= data[k] %> </span>
+				<% } %>
 				<br/>
 			<% } %>
-		<% }) %>
 
 		</div> <!--/key_val-->
 

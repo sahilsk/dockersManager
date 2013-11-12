@@ -1,6 +1,5 @@
 body {
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
-  background-left: 1px dashed #D1D1D1;
   margin: 0;
   padding: 0;
 }
@@ -99,12 +98,33 @@ a {
 
 
 .logo{
-	color: #CA0071;
+	color: #8F148F;
 	text-shadow: 1px 1px 1px #999;
 	font-family: sans-serif;
+
+	a{
+		text-decoration:none;
+		color: #8F148F;
+	}
+	a:visit{
+		text-decoration:none;
+		color: #8F148F;
+	}
 	
 }
 
+
+
+.footer{
+	border-top: 1px dashed #333;
+	background-color: #52274B;
+	color: #FFF;
+	border-top: 1px dashed #fff;
+	margin-top: 10px;
+	padding: 10px;
+	text-align:center;
+
+}
 
 
 /*
@@ -139,6 +159,42 @@ a {
 }
 
 
+
+/*
+|| Page : Containers List
+||
+*/
+
+table{
+	
+	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 12px;
+	//width: 90%;
+	text-align: left;
+	border-collapse: collapse;
+	border: 1px solid #D8D8D8;
+	margin: 20px;
+}
+
+th{
+	font-weight: normal;
+	font-size: 13px;
+	color: purple;
+	text-transform: uppercase;
+	border-right: 1px solid #333;
+	border-top: 1px solid #333;
+	border-left: 1px solid #333;
+	border-bottom: 1px solid #fff;
+	padding: 20px;
+}
+
+
+tr:odd{
+	background-color:red;
+}
+
+
+/****  END Containers List ******/
 
 .dockerfileName{
 

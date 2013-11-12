@@ -57,15 +57,15 @@ exports.inspect = function(req, res){
 
 exports.list =function(req, res){
 
-	appUtil.makeGetRequest("/containers/json?all=1" , function(data,statusCode, errorMessage){
+	appUtil.makeGetRequest("/containers/json?all=1&size=1" , function(data,statusCode, errorMessage){
 
 		switch( statusCode){
 
 			case 200:
 				viewData = JSON.parse(data);
 				break;
-			case 404:
-				viewData =  "No such container : " + req.params.id;
+			case 400:
+				viewData =  "Bad Parameters ";
 				break;
 			case 500:
 				viewData = "Server Error : " + errorMessage;
@@ -73,14 +73,12 @@ exports.list =function(req, res){
 			default:
 				req.session.messages = {text: "Unable to query list of containers. Please check your network connection. : <" + errorMessage+ 
 				">", type: "error"};
-				res.redirect("docker/" + req.params.id);
-				res.end();
-				return;
+				viewData = "Unable to communicate";
 		}
 
 
 
-		res.render("docker/inspect", {
+		res.render("container/list", {
 			title:"Inspect Docker Image", 
 			id  : req.params.id, 
 			"data":viewData,
@@ -94,9 +92,9 @@ exports.list =function(req, res){
 }
 
 
-exports.containers =function(req, res){
+exports.index =function(req, res){
 
-	res.send("list dockers containers");
+	res.redirect("/containers/list");
 
 }
 
