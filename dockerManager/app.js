@@ -12,7 +12,7 @@ var routes = require('./config/routes.js');
 
 var app = express();
 
-app.use(express.bodyParser());
+app.use(express.bodyParser({ keepExtensions: true, uploadDir: "uploads" }));
 
 //app.use(require('connect').bodyParser());
 
