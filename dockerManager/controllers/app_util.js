@@ -62,17 +62,10 @@ exports.makeDELETERequest = function(queryString, callback){
 	  res.setEncoding('utf8');
 	  res.on('data', function (chunk) {
 	  	 inspectData += (chunk);
-
-	   // console.log('BODY: ' + inspectData);
-	   // callback( inspectData.toString(), res.statusCode);
-
 	  });
 
 	  res.on("end", function(){
-	  //	var data =   JSON.parse( inspectData);
-	  //	console.log( data);
-	  	callback(  inspectData, res.statusCode);
-
+	  	callback(  inspectData, res.statusCode, null);
 	  });
 
 
@@ -81,7 +74,7 @@ exports.makeDELETERequest = function(queryString, callback){
 	req.on('error', function(e) {
 	  inspectData = "";
 	  console.log('problem with request: ' + e.message);
-	  callback( null, null);
+	  callback( null, null, e.message);
 
 	});
 
@@ -121,6 +114,9 @@ exports.makeFileUploadRequest = function( filePath, queryString, onResult){
 
 	});
 
+	req.setHeader("Content-Type", "application/tar");
+
+
 	req.on('error', function(e) {
 	  console.log('problem with request: ' + e.message);
 	  onResult( null, null, e.message);
@@ -137,4 +133,47 @@ exports.makeFileUploadRequest = function( filePath, queryString, onResult){
 	  });
 	
 	
+}
+
+
+
+
+exports.makePostRequest = function(queryString, callback){
+
+	var inspectData = ""; 
+	var options = {
+	  hostname: '192.168.0.231',
+	  port: 4273,
+	  path: queryString,
+	  method: 'POST'
+	};
+
+	console.log( queryString);
+	var req = http.request(options, function(res) {
+	  console.log('STATUS: ' + res.statusCode);
+	  console.log('HEADERS: ' + JSON.stringify(res.headers));
+	  res.setEncoding('utf8');
+	  res.on('data', function (chunk) {
+	  	 inspectData += (chunk);
+	  });
+
+	  res.on("end", function(){
+	  	console.log( "BODY", inspectData);
+	  	callback(  inspectData, res.statusCode, null);
+
+	  });
+
+
+	});
+
+	req.on('error', function(e) {
+	  inspectData = "";
+	  console.log('problem with request: ' + e.message);
+	  callback( null, null, e.message);
+
+	});
+
+	req.end();
+
+
 }

@@ -12,9 +12,40 @@ var appUtil = require("./app_util");
 
 exports.index = function(req, res){
 
-	res.render("docker/index", {
-			title:"Dashboard", 
-			id  : req.params.id });
+
+	appUtil.makeGetRequest("/images/"+ req.params.id +"/json", function(data, statusCode, errorMessage){
+	  		var viewData = "";
+		switch( statusCode){
+
+			case 200:
+				viewData = JSON.parse(data);
+				break;
+			case 404:
+				viewData =  "No such image : " + req.params.id;
+				break;
+			case 500:
+				viewData = "Server Error";
+				break;
+			default:
+				console.log("Unable to query docker image");
+				viewData = "Unable to query docker image. Please check your internet connection. <"+ errorMessage + ">";
+		}
+
+
+		console.log( viewData);
+			console.log( statusCode);
+
+
+		res.render("docker/index", {
+			title:"Manage Image", 
+			id  : req.params.id, 
+			"data":viewData,
+			statusCode : statusCode,
+			imgInfo : {id:  viewData.id , name: req.params.id, created: viewData.created}
+		 });	
+
+
+	});
 
 }
 
@@ -37,11 +68,8 @@ exports.inspect = function(req, res){
 					break;
 				default:
 					console.log("Unable to query docker image");
-					req.session.messages = {text: "Unable to query docker image. Please check your internet connection. <"+ errorMessage + ">", type: "error"};
-					res.redirect("docker/" + req.params.id);
-					res.end();
-					return ;
-			}
+					viewData = "Unable to query docker image. Please check your internet connection. <"+ errorMessage + ">";
+		}
 
 
 			console.log( viewData);
@@ -51,7 +79,8 @@ exports.inspect = function(req, res){
 				title:"Inspect Docker Image", 
 				id  : req.params.id, 
 				"data":viewData,
-				statusCode : statusCode
+				statusCode : statusCode,
+			imgInfo : {id:  viewData.id , name: req.params.id, created: viewData.created}
 			 });
 
 	}); 
@@ -69,7 +98,7 @@ exports.list =function(req, res){
 exports.delete = function(req, res){
 
 
-	appUtil.makeDELETERequest("/images/" + req.params.id, function( result, statusCode){
+	appUtil.makeDELETERequest("/images/" + req.params.id, function( result, statusCode, errorMessage){
 
 			var resultJson =   JSON.parse(result);
 			
@@ -95,16 +124,13 @@ exports.delete = function(req, res){
 					break;					
 
 				default:
-					req.session.messages = {text: "'"+ req.params.id + "' image deleted successfully.", type: "alert"};
-					res.redirect("/");
+					req.session.messages = {text: "Unable to query docker image. Please check your internet connection. <"+ errorMessage + ">", type: "error"};
+					res.redirect("/docker/" + req.params.id);
 
 			}
 
 
 	});
-
-
-
 
 }
 

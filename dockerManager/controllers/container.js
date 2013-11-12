@@ -98,8 +98,138 @@ exports.index =function(req, res){
 
 }
 
+exports.toggleStatus = function(req, res){
+
+	isContainerRunning( req.params.id, function(running){
+
+		var taskToPerform = running ? "stop" : "start";
+		console.log(  running? "Stopping container..." : "Starting container...");
+
+		appUtil.makePostRequest("/containers/" + req.params.id + "/"+ taskToPerform , function( result, statusCode, error){
+
+			
+				switch( statusCode){
+
+					case 404:
+						req.session.messages = {text: "No such container : '"+ req.params.id + "' ", type: "error"};
+						break;
+					case 204:
+						req.session.messages = {text: "'"+ req.params.id + "' container " + (running? "stopped": "started") +  " successfully. ", type: "alert"};
+						break;
+
+					case 500:
+						req.session.messages = {text: "Server Error. Cause: " + result, type: "error"};
+						break;					
+
+					default:
+						req.session.messages = {text: "Unable to query list of containers. Please check your network connection. : <" + errorMessage+ 
+						">", type: "error"};
+										
+				}
+
+
+				res.redirect("/containers/list");
+				res.end();
+
+
+		});
+
+
+	}); //  end 'isContainerRunning'
+
+
+	
 
 
 
+}
+
+
+
+exports.kill = function(req, res){
+
+
+	appUtil.makePostRequest("/containers/" + req.params.id + "/kill" , function( result, statusCode, error){
+
+		
+			switch( statusCode){
+
+				case 404:
+					req.session.messages = {text: "No such container : '"+ req.params.id + "' ", type: "error"};
+					break;
+				case 204:
+					req.session.messages = {text: "'"+ req.params.id + "' container killed successfully.", type: "alert"};
+					break;
+
+				case 500:
+					req.session.messages = {text: "Server Error.", type: "error"};
+					break;					
+
+				default:
+					req.session.messages = {text: "'"+ req.params.id + "' container killed successfully.", type: "alert"};
+					
+			}
+
+
+			res.redirect("/containers/list");
+			res.end();
+
+
+	});
+
+}
+
+
+exports.delete = function(req, res){
+
+
+	appUtil.makeDELETERequest("/containers/" + req.params.id, function( result, statusCode, errorMessage){
+
+			
+			switch( statusCode){
+
+				case 409:
+					req.session.messages = {text: "Conflict in removing container : '"+ req.params.id + "' ", type: "error"};
+					break;				
+
+				case 404:
+					req.session.messages = {text: "No such container : '"+ req.params.id + "' ", type: "error"};
+					break;
+				case 204:
+					req.session.messages = {text: "'"+ req.params.id + "' container removed successfully.", type: "alert"};
+					break;
+
+				case 500:
+					req.session.messages = {text: "Server Error.", type: "error"};
+					break;					
+
+				default:
+					req.session.messages = {text: "Unable to query docker container. Please check your internet connection. <"+ errorMessage + ">", type: "error"};
+
+			}
+
+			res.redirect("/containers/list");
+			res.end();
+
+
+	});
+
+}
+
+
+
+
+function isContainerRunning( containerID, onResult){
+
+	var running = false;
+
+	appUtil.makeGetRequest("/containers/"+ containerID +"/json", function(data, statusCode){
+		if( statusCode === 200){
+			running = JSON.parse(data).State.Running;		
+		}
+		onResult( running);
+	});
+
+}
 
 

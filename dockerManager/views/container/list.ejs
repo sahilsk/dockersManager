@@ -47,8 +47,14 @@
 				</td>
 			<% } %>
 				<td>
-				<span class="delete"> <a href="/containers/<%=data[index].Id %>/delete"> Delete &cross; </a> </span>
-				<span class="inspect"> <a href="/containers/<%=data[index].Id %>/inspect"> Inspect </a> </span>
+					<span class="inspect"> <a href="/containers/<%=data[index].Id %>/inspect"> Inspect </a> </span>
+					<br/>
+					<span class="inspect"> <a href="/containers/<%=data[index].Id %>/kill"> Kill  </a> </span>
+					<br/>
+					<span class="inspect"> <a href="/containers/<%=data[index].Id %>/delete"> Remove &cross;  </a> </span>
+					<br/>
+						<span class="inspect">  <a href="/containers/<%=data[index].Id %>/toggle"> Toggle </a>  </span>
+					<br/>
 				</td>
 			<tr/>
 		<% }) %>

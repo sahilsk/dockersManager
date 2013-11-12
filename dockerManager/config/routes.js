@@ -46,6 +46,8 @@ exports.makeRoutes= function(app){
 	app.get("/docker/:id", docker.index);
 	app.get("/docker/:id/inspect", docker.inspect);
 	app.get("/docker/:id/delete", docker.delete);
+//	app.delete("/docker/:id/delete", docker.delete)
+
 
 
 	/*
@@ -57,8 +59,12 @@ exports.makeRoutes= function(app){
 	app.get("/containers", container.index);
 	app.get("/containers/list", container.list);
 
+	app.get("/containers/:id/toggle", container.toggleStatus);
 
-	app.delete("/docker/:id/delete", docker.delete)
+	app.get("/containers/:id/kill", container.kill)
+	app.get("/containers/:id/delete", container.delete);
+
+
 
 
 

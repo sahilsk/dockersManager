@@ -64,7 +64,8 @@ exports.upload = function (req, res) {
 	 			console.log("Dockerfile Built successfully" );
 	 			req.session.messages = {text: "Dockerfile Built successfully.", type: "alert"};
 			 	res.redirect("/docker/" + buildTagName);
-			 	res.end();	 			
+			 	res.end();	 
+			 	return true;			
 	 			break;
 	 		case 500:
 	 			//jResult = JSON.parse(result);
