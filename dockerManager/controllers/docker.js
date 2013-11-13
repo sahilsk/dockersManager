@@ -80,7 +80,7 @@ exports.inspect = function(req, res){
 				id  : req.params.id, 
 				"data":viewData,
 				statusCode : statusCode,
-			imgInfo : {id:  viewData.id , name: req.params.id, created: viewData.created}
+				imgInfo : {id:  viewData.id , name: req.params.id, created: viewData.created}
 			 });
 
 	}); 
@@ -90,7 +90,39 @@ exports.inspect = function(req, res){
 
 exports.list =function(req, res){
 
-	res.send("list dockers");
+
+	appUtil.makeGetRequest("/images/json?all=1" , function(data,statusCode, errorMessage){
+
+		switch( statusCode){
+
+			case 200:
+				viewData = JSON.parse(data);
+				break;
+			case 400:
+				viewData =  "Bad Parameters ";
+				break;
+			case 500:
+				viewData = "Server Error : " + errorMessage;
+				break;
+			default:
+				req.session.messages = {text: "Unable to query list of containers. Please check your network connection. : <" + errorMessage+ 
+				">", type: "error"};
+				viewData = "Unable to communicate";
+		}
+
+
+		console.log( viewData);
+		res.render("docker/list", {
+			title:"List of images", 
+			id  : req.params.id, 
+			"data":viewData,
+			statusCode : statusCode,
+			page :"images_list"
+		 });
+
+
+
+	}); 
 
 }
 
@@ -100,18 +132,17 @@ exports.delete = function(req, res){
 
 	appUtil.makeDELETERequest("/images/" + req.params.id, function( result, statusCode, errorMessage){
 
-			var resultJson =   JSON.parse(result);
-			
+		
 			switch( statusCode){
 
 				case 409:
 					req.session.messages = {text: "Conflict in deleting image : '"+ req.params.id + "' ", type: "error"};
-					res.redirect("/docker/" + req.params.id);
+					res.redirect("/dockers/" + req.params.id);
 					break;				
 
 				case 404:
 					req.session.messages = {text: "No such image : '"+ req.params.id + "' ", type: "error"};
-					res.redirect("/docker/" + req.params.id);
+					res.redirect("/dockers/" + req.params.id);
 					break;
 				case 200:
 					req.session.messages = {text: "'"+ req.params.id + "' image deleted successfully.", type: "alert"};
@@ -125,9 +156,11 @@ exports.delete = function(req, res){
 
 				default:
 					req.session.messages = {text: "Unable to query docker image. Please check your internet connection. <"+ errorMessage + ">", type: "error"};
-					res.redirect("/docker/" + req.params.id);
+					
 
 			}
+
+			res.redirect(req.headers['referer']);
 
 
 	});

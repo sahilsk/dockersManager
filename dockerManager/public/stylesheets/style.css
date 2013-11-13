@@ -70,18 +70,52 @@ a {
   padding: 10px 40px 10px 40px;
   color: #c21616;
 }
-.logo {
+.header {
+  position: relative;
+}
+.header .logo {
   color: #8F148F;
   text-shadow: 1px 1px 1px #999;
   font-family: sans-serif;
+  float: left;
 }
-.logo a {
+.header .logo a {
   text-decoration: none;
   color: #8F148F;
 }
-.logo a:visit {
+.header .logo a:visit {
   text-decoration: none;
   color: #8F148F;
+}
+.header .top_nav {
+  position: absolute;
+  bottom: -7px;
+  right: 0;
+}
+.header .top_nav ul {
+  list-style: none;
+}
+.header .top_nav ul li {
+  float: left;
+  margin-left: 10px;
+}
+.header .top_nav li {
+  border: 1px dashed #333;
+  text-align: center;
+}
+.header .top_nav li a {
+  text-decoration: none;
+  color: #8F148F;
+  padding: 0px 15px;
+}
+.header .top_nav .active {
+  background-color: #831C5A;
+  color: #F7F7F7;
+  text-shadow: 1px 1px 1px #000;
+  font-weight: bolder;
+}
+.header .top_nav .active a {
+  color: #FFF;
 }
 .footer {
   border-top: 1px dashed #333;
@@ -91,6 +125,44 @@ a {
   margin-top: 10px;
   padding: 10px;
   text-align: center;
+}
+/*
+|| Page: Inspect
+||
+*/
+.operation_menu span {
+  color: #ffffff;
+  text-shadow: 1px 1px 1px #000;
+  padding: 2px 10px 2px 10px;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-left: 5px;
+}
+.operation_menu span a {
+  text-decoration: none;
+  color: #FFF;
+}
+.operation_menu span a:hover {
+  border-bottom: 1px dashed #FFF;
+}
+.operation_menu .id {
+  background-color: #eee;
+  color: #707070;
+  text-shadow: none;
+  font-weight: normal;
+  border: 1px dashed #ccc;
+}
+.operation_menu .id strong {
+  color: #8F148F;
+}
+.operation_menu .delete {
+  background: #c50a2f;
+}
+.operation_menu .status {
+  background: #649c00;
+}
+.operation_menu .kill {
+  background-color: #A2361C;
 }
 /*
 ||	Page:  Index (Upload Dockerfile )

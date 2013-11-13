@@ -63,7 +63,7 @@ exports.upload = function (req, res) {
 	 		case 200:
 	 			console.log("Dockerfile Built successfully" );
 	 			req.session.messages = {text: "Dockerfile Built successfully.", type: "alert"};
-			 	res.redirect("/docker/" + buildTagName);
+			 	res.redirect("/dockers/" + buildTagName);
 			 	res.end();	 
 			 	return true;			
 	 			break;
@@ -131,7 +131,7 @@ exports.upload = function (req, res) {
 	    	if(  	buildDockerfile(newFilePath, buildName) ){
 
 	    		req.session.messages = {text: "Dockerfile (" + buildName + ") built successfully.", type: "alert"};
-	   			res.redirect("/docker/" + buildName); 
+	   			res.redirect("/dockers/" + buildName); 
 
 	    	}else{
 	    	// Redirect to upload page showing error in building file

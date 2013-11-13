@@ -79,10 +79,11 @@ exports.list =function(req, res){
 
 
 		res.render("container/list", {
-			title:"Inspect Docker Image", 
+			title:"List of Containers", 
 			id  : req.params.id, 
 			"data":viewData,
-			statusCode : statusCode
+			statusCode : statusCode,
+			page :"containers_list"
 		 });
 
 
@@ -128,7 +129,7 @@ exports.toggleStatus = function(req, res){
 				}
 
 
-				res.redirect("/containers/list");
+				res.redirect( req.headers['referer'] );
 				res.end();
 
 
@@ -171,7 +172,8 @@ exports.kill = function(req, res){
 			}
 
 
-			res.redirect("/containers/list");
+			res.redirect( req.headers['referer'] );
+			//res.redirect("/containers/list");
 			res.end();
 
 

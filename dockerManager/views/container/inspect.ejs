@@ -1,21 +1,25 @@
 <% include ../../layouts/dashboard_layout_top %>
 
 
-<h3 class="dockerfileName"> Selected Container: 
-	<span > <%= id %> ( <%= data.State.Running? "Running.." : "Stoppped" %>)</span> 
-	<span class="status" style="background-color: rgb(172, 172, 172);"> 
+<Div class="operation_menu"> Selected Container: 
+	<span class="id" > <%= id %> <strong>  ( <%= data.State.Running? "Running.." : "Stoppped" %>) </strong> </span> 
+	<span class="status" > 
 
-		<a href="container/<%=id %>/<%= data.State.Running? "Stop" : "Run" %>" > <%= data.State.Running? "Stop" : "Run" %>  </a>
+		<% if( statusCode === 200){ %>
+			<a href="/containers/<%=id %>/toggle" > <%= data.State.Running? "Stop" : "Run" %>  </a>
+		<% } %>
 
 	</span>
-	<span class="delete"> <a href="/docker/delete"> Delete &cross; </a> </span>
+	<span class="kill"> <a href="/containers/<%=id %>/kill"> Kill  </a> </span>
+	<span class="delete"> <a href="/containers/<%=id %>/delete"> Remove &cross;  </a> </span>
+</Div>
 
-</h3>
+<br/>
 
 
 <div class="inspectDataWrapper">
 
-<% if( statusCode === 404  ||  statusCode === null || statusCode === 500) { %>
+<% if( statusCode !== 200) { %>
 	<div class="somethingWentWrong">
 		<span ><%= data %> </span>
 	</div>
