@@ -12,58 +12,66 @@
 
 
 
-<% if( statusCode === 404 ) { %>
-	<h3> Container list not found  </h3>
+<% if( statusCode !== 200 ) { %>
+	<div class="somethingWentWrong">
+		<span ><%= data %> </span>
+	</div>	
 
-<% }else{ %>
-	<% if( data.length > 0  && typeof data === "object"){ %>
-		<table border='1' cellspacing='0'>
-			<thead>
-				<tr>
-					<th></th>
-					<th> ID </th>
-					<th> Image </th>
-					<th> Command </th>
-					<th> Created </th>
-					<th> Status </th>
-					<th> Ports </th>
-					<th> SizeRW </th>
-					<th> SizeRootFs </th>	
-					<th> Names </th>						
-				</tr>
-			</thead>
-			<tbody>
-		<% data.forEach( function(item, index){ %>
+<% } %>
+
+<% if( typeof data === "object" && data.length == 0 ){ %>
+	
+	<div class="somethingWentWrong">
+		<span > No Image Created Yet. </span>
+		<a href="/"> Create New Image </a>
+	</div>	
+<% } %>
+
+<% if( data.length > 0  && typeof data === "object"){ %>
+	<table border='1' cellspacing='0'>
+		<thead>
 			<tr>
-			<td>  <%= index + 1 %> </td>
-			<% for(var k in item){ %>
-				<td>
-						<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
-							<%= item[k] %>
-						</div>
+				<th></th>
+				<th> ID </th>
+				<th> Image </th>
+				<th> Command </th>
+				<th> Created </th>
+				<th> Status </th>
+				<th> Ports </th>
+				<th> SizeRW </th>
+				<th> SizeRootFs </th>	
+				<th> Names </th>						
+			</tr>
+		</thead>
+		<tbody>
+	<% data.forEach( function(item, index){ %>
+		<tr>
+		<td>  <%= index + 1 %> </td>
+		<% for(var k in item){ %>
+			<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item[k] %>
+					</div>
 
-						
 					
-				</td>
-			<% } %>
-				<td>
+				
+			</td>
+		<% } %>
+			<td>
 
-					<Div class="operation_menu"> 	
-						<span class="inspect"> <a href="/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
-						<span class="status" >  <a href="/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
-						<span class="kill"> <a href="/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>
-						<span class="delete"> <a href="/containers/<%=item.Id %>/delete" title="remove"> &cross;  </a></span>
-					</Div>
+				<Div class="operation_menu"> 	
+					<span class="inspect"> <a href="/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
+					<span class="status" >  <a href="/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
+					<span class="kill"> <a href="/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>
+					<span class="delete"> <a href="/containers/<%=item.Id %>/delete" title="remove"> &cross;  </a></span>
+				</Div>
 
-				</td>
-			<tr/>
-		<% }) %>
-			</tbody>
-		</table>
+			</td>
+		<tr/>
+	<% }) %>
+		</tbody>
+	</table>
 
-	<% }else { %>
-		<%= JSON.stringify(data) %>
-	<% } %>
 <% } %>
 
 

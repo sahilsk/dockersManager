@@ -52,7 +52,7 @@ exports.inspect = function (req, res) {
       viewData = 'Server Error';
       break;
     default:
-      console.log('Unable to query docker image');
+      console.log('Unable to query docker image. Please check your internet connection. <' + errorMessage + '>');
       viewData = 'Unable to query docker image. Please check your internet connection. <' + errorMessage + '>';
     }
     console.log(viewData);
@@ -87,7 +87,7 @@ exports.list = function (req, res) {
         text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
         type: 'error'
       };
-      viewData = 'Unable to communicate';
+      viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
     console.log(viewData);
     res.render('docker/list', {
@@ -166,7 +166,7 @@ exports.containers = function (req, res) {
         text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
         type: 'error'
       };
-      viewData = 'Unable to communicate';
+      viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
     console.log(req.query.repository.length == 0 ? req.query.repository : '-');
     res.render('docker/containers', {

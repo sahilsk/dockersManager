@@ -14,7 +14,7 @@ exports.index = function (req, res) {
 };
 exports.inspect = function (req, res) {
   //makeGetRequest("/containers/json?all=1" , function(data){
-  appUtil.makeGetRequest('/containers/' + req.params.id + '/json', function (data, statusCode) {
+  appUtil.makeGetRequest('/containers/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
     switch (statusCode) {
     case 200:
       viewData = JSON.parse(data);
@@ -26,9 +26,9 @@ exports.inspect = function (req, res) {
       viewData = 'Server Error';
       break;
     default:
-      console.log('Unable to query list of containers');
+      console.log('Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>');
       req.session.messages = {
-        text: 'Unable to query list of containers. Please check your network connection.',
+        text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
         type: 'error'
       };
       res.redirect('docker/' + req.params.id);
@@ -60,7 +60,7 @@ exports.list = function (req, res) {
         text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
         type: 'error'
       };
-      viewData = 'Unable to communicate';
+      viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
     console.log(viewData);
     res.render('container/list', {
@@ -79,7 +79,7 @@ exports.toggleStatus = function (req, res) {
   isContainerRunning(req.params.id, function (running) {
     var taskToPerform = running ? 'stop' : 'start';
     console.log(running ? 'Stopping container...' : 'Starting container...');
-    appUtil.makePostRequest('/containers/' + req.params.id + '/' + taskToPerform, function (result, statusCode, error) {
+    appUtil.makePostRequest('/containers/' + req.params.id + '/' + taskToPerform, function (result, statusCode, errorMessage) {
       switch (statusCode) {
       case 404:
         req.session.messages = {
@@ -111,7 +111,7 @@ exports.toggleStatus = function (req, res) {
   });  //  end 'isContainerRunning'
 };
 exports.kill = function (req, res) {
-  appUtil.makePostRequest('/containers/' + req.params.id + '/kill', function (result, statusCode, error) {
+  appUtil.makePostRequest('/containers/' + req.params.id + '/kill', function (result, statusCode, errorMessage) {
     switch (statusCode) {
     case 404:
       req.session.messages = {
@@ -127,14 +127,14 @@ exports.kill = function (req, res) {
       break;
     case 500:
       req.session.messages = {
-        text: 'Server Error.',
+        text: 'Server Error : ' + result,
         type: 'error'
       };
       break;
     default:
       req.session.messages = {
-        text: '\'' + req.params.id + '\' container killed successfully.',
-        type: 'alert'
+        text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+        type: 'error'
       };
     }
     res.redirect(req.headers.referer);
@@ -165,7 +165,7 @@ exports.delete = function (req, res) {
       break;
     case 500:
       req.session.messages = {
-        text: 'Server Error.',
+        text: 'Server Error : ' + result,
         type: 'error'
       };
       break;
@@ -179,6 +179,7 @@ exports.delete = function (req, res) {
     res.end();
   });
 };
+
 function isContainerRunning(containerID, onResult) {
   var running = false;
   appUtil.makeGetRequest('/containers/' + containerID + '/json', function (data, statusCode) {
