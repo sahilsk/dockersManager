@@ -8,7 +8,7 @@ a {
 }
 .site_wrapper {
   width: 90%;
-  overflow: hidden;
+  overflow: visible;
   margin: 0 auto;
   padding: 0px 10px 0 10px;
 }
@@ -21,6 +21,7 @@ a {
   text-align: center;
   font-weight: bold;
   font-family: monospace;
+  z-index: 1111;
 }
 .flash span {
   cursor: pointer;
@@ -130,6 +131,9 @@ a {
 || Page: Inspect
 ||
 */
+.operation_menu {
+  padding: 5px;
+}
 .operation_menu span {
   color: #ffffff;
   text-shadow: 1px 1px 1px #000;
