@@ -1,0 +1,83 @@
+<% include ../../layouts/dashboard_layout_top %>
+
+
+
+
+<h1> Dashboard </h1>
+
+
+	<span >All Containers </span> 
+	<hr/>
+
+
+
+
+<% if( statusCode === 404 ) { %>
+	<h3> Container list not found  </h3>
+
+<% }else{ %>
+	<% if( data.length > 0  && typeof data === "object"){ %>
+		<table border='1' cellspacing='0'>
+			<thead>
+				<tr>
+					<th></th>
+					<th> ID </th>
+					<th> Tag </th>
+					<th> Repository </th>
+					<th> Created </th>
+					<th> Size </th>
+					<th> virtual Size </th>
+			</thead>
+			<tbody>
+		<% data.forEach( function(item, index){ %>
+			<tr>
+			<td>  <%= index + 1 %> </td>
+			<% if( !item.Repository) { %>
+				<td> --</td>
+			<% } %>
+			<% if( !item.Tag) { %>
+				<td>-- </td>
+			<% } %>
+
+			<% for(var k in item){ %>
+				
+
+				<td>
+
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+							<%= item[k] %>
+				</div>
+						
+					
+				</td>
+
+
+
+			<% } %>
+				<td>
+
+					<Div class="operation_menu"> 	
+						<span class="inspect"> <a href="/dockers/<%=data[index].Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
+						<span class="delete"> <a href="/dockers/<%=data[index].Id %>/delete" title="remove"> &cross;  </a></span>
+					</Div>
+
+				</td>
+			<tr/>
+		<% }) %>
+			</tbody>
+		</table>
+
+	<% }else { %>
+		<%= JSON.stringify(data) %>
+	<% } %>
+<% } %>
+
+
+
+
+
+
+
+
+<% include ../../layouts/dashboard_layout_bottom %>
+
