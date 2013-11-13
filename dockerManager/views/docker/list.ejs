@@ -32,36 +32,24 @@
 		<% data.forEach( function(item, index){ %>
 			<tr>
 			<td>  <%= index + 1 %> </td>
-			<% if( !item.Repository) { %>
-				<td> --</td>
-			<% } %>
-			<% if( !item.Tag) { %>
-				<td>-- </td>
-			<% } %>
 
-			<% for(var k in item){ %>
-				
+			<td> <%= item.Id %> </td>
 
-				<td>
-
-					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
-							<%= item[k] %>
-				</div>
-						
-					
-				</td>
+			<td> <% if( !item.Tag) { %> --  <% }else { %> <%= item.Tag %>  <% } %> </td>
+			<td> <% if( !item.Repository) { %> --  <% }else { %> <%= item.Repository %>  <% } %> </td>
+			<td> <% if( !item.Created) { %> --  <% }else { %> <%= item.Created %>  <% } %>  </td>
+			<td> <% if( !item.Size) { %> --  <% }else { %> <%= item.Size %>  <% } %> </td>
+			<td><% if( !item.VirtualSize) { %> --  <% }else { %> <%= item.VirtualSize %>  <% } %> </td>
 
 
+			<td>
 
-			<% } %>
-				<td>
+				<Div class="operation_menu"> 	
+					<span class="inspect"> <a href="/dockers/<%=data[index].Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
+					<span class="delete"> <a href="/dockers/<%=data[index].Id %>/delete" title="remove"> &cross;  </a></span>
+				</Div>
 
-					<Div class="operation_menu"> 	
-						<span class="inspect"> <a href="/dockers/<%=data[index].Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
-						<span class="delete"> <a href="/dockers/<%=data[index].Id %>/delete" title="remove"> &cross;  </a></span>
-					</Div>
-
-				</td>
+			</td>
 			<tr/>
 		<% }) %>
 			</tbody>
