@@ -47,7 +47,7 @@
 
 			<td> <div style="width:150px; overflow:hidden; text-overflow:ellipsis;" title=" <%= item.Id %>" > <%= item.Id %> </div> </td>
 
-			<td> <% if( !item.Tag) { %> --  <% }else { %> <%= item.Tag %>  <% } %> </td>
+			<td> <% if( !item.Tag) { %>-- <% }else { %> <%= item.Tag %>  <% } %> </td>
 			<td> <% if( !item.Repository) { %> --  <% }else { %> <%= item.Repository %>  <% } %> </td>
 			<td> <% if( !item.Created) { %> --  <% }else { %> <%= item.Created %>  <% } %>  </td>
 			<td> <% if( !item.Size) { %> --  <% }else { %> <%= item.Size %>  <% } %> </td>
@@ -57,7 +57,7 @@
 			<td>
 
 				<Div class="operation_menu"> 	
-					<span class="inspect"> <a href="/dockers/<%=data[index].Id %>/containers?repository=<%= item.Repository%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> </span>					
+					<span class="inspect"> <a href="/dockers/<%=data[index].Id %>/containers?repository=<% if( !item.Repository) { %>--<% }else { %> <%= item.Repository %><% }%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> </span>					
 					<span class="delete"> <a href="/dockers/<%=data[index].Id %>/delete" title="remove"> &cross;  </a></span>
 				</Div>
 

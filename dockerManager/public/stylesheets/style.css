@@ -295,6 +295,7 @@ tr:odd {
   font-size: 14px;
   margin-left: 5px;
   list-style: none;
+  text-align: center;
   margin-top: 5px;
 }
 .dockerImageAction ul li a {

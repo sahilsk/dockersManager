@@ -28,12 +28,17 @@
 		<br/>
 		<ul>
 			<% if( !( typeof page !== 'undefined' && page === "inspect_image" ) ) { %>
-					<li> <a href="/dockers/<%=id%>/inspect"> Inspect &radic; </a>  </li>
+					<li> <a href="/dockers/<%=id%>/inspect"> Inspect  </a>  </li>
 			<% }else{ %>
-					<li> <a href="/dockers/<%=id%>/containers"> List Containers </a>  </li>
+					<li> <a href="/dockers/<%=id%>/containers?repository=<%= imgInfo.name %>&created=<%= imgInfo.created %> "> List Containers </a>  </li>
+			<% } %>
+
+			<% if(  typeof page !== 'undefined' && page === "image_page" ){ %>
+					<li> <a href="/dockers/<%=id%>/containers?repository=<%= imgInfo.name %>&created=<%= imgInfo.created %> ">List Containers </a>  </li>
 			<% } %>
 
 			<li class="delete"> <a href="/dockers/<%=id%>/delete"> Delete &cross; </a>  </li>
+
 		</ul>
 	</div>
 

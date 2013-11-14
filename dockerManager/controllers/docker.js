@@ -34,7 +34,8 @@ exports.index = function (req, res) {
         id: viewData.id,
         name: req.params.id,
         created: viewData.created
-      }
+      },
+      page: "image_page"
     });
   });
 };
@@ -169,6 +170,7 @@ exports.containers = function (req, res) {
       viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
     console.log(req.query.repository.length == 0 ? req.query.repository : '-');
+
     res.render('docker/containers', {
       title: 'List of Containers',
       id: req.params.id,

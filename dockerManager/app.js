@@ -4,7 +4,7 @@
 var express = require('express');
 var http = require('http');
 var path = require('path');
-var connect = require('connect');
+//var connect = require('connect');
 var routes = require('./config/routes.js');
 var app = express();
 app.use(express.bodyParser({
