@@ -169,7 +169,7 @@ exports.containers = function (req, res) {
       };
       viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
-    console.log(req.query.repository.length == 0 ? req.query.repository : '-');
+    console.log(req.query.repository.length === 0 ?'-': req.query.repository );
 
     res.render('docker/containers', {
       title: 'List of Containers',
@@ -179,7 +179,7 @@ exports.containers = function (req, res) {
       page: 'containers_list',
       imgInfo: imgInfo = {
         id: dockerID,
-        name: req.query.repository.length == 0 ? req.query.repository : '---',
+        name: req.query.repository.length == 0 ? '---': req.query.repository,
         created: req.query.created
       },
       containerList: containerList
