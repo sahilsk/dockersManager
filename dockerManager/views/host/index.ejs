@@ -1,0 +1,63 @@
+<% include ../../layouts/dashboard_layout_top %>
+
+
+
+<h3> Hosts list </h3>
+<a href="/hosts/new"> Add new host </a>
+
+<% if( typeof hostList === "object" && hostList.length > 0  ){ %>
+	<table border='1' cellspacing='0'>
+		<thead>
+			<tr>
+				<th></th>
+				<th> ID </th>
+				<th> IP </th>
+				<th> PORT </th>
+				<th> NAME </th>
+		</thead>
+		<tbody>
+	<% hostList.forEach( function(item, index){ %>
+
+		<% if( typeof item.id !== "undefined"){ %> 
+		<tr>
+			<td>  <%= index + 1 %> </td>
+
+			<td> <div style="width:150px; overflow:hidden; text-overflow:ellipsis;" title=" <%= item.Id %>" > <%= item.id %> </div> </td>
+			<td> <% if( !item.ip) { %> --  <% }else { %><%= item.ip %><% } %> </td>
+			<td> <% if( !item.port) { %> --  <% }else { %> <%= item.port %>  <% } %>  </td>
+			<td> <% if( !item.name) { %> --  <% }else { %> <%= item.name %>  <% } %> </td>
+
+			<td>
+
+				<Div class="operation_menu"> 	
+				
+					<span class="inspect"> 
+						<a href="/hosts/<%=item.id %>/edit" title="edit"> &hellip;  </a>
+					</span>
+					<span class="delete"> 
+						<a href="/hosts/<%=item.id %>/delete" title="remove"> &cross;  </a>
+					</span>
+				</Div>
+
+			</td>
+		<tr/>
+		<%} %>
+	<% }) %>
+		</tbody>
+	</table>
+
+	<% } %>
+	<% if( typeof hostList !== "undefined" && hostList.length === 0) { %>
+		<div class="somethingWentWrong">
+			<span > No host added yet </span>
+			<a href="/hosts/new"> Add new host </a>
+		</div>	
+
+
+	<%}%>
+
+
+
+
+
+<% include ../../layouts/dashboard_layout_bottom %>
