@@ -3,6 +3,7 @@ var controllers = require('../controllers');
 var dockerfile = require("../controllers/dockerfiles");
 var docker = require("../controllers/docker");
 var container = require("../controllers/container");
+var host = require("../controllers/hosts");
 
 exports.makeRoutes= function(app){
 
@@ -70,7 +71,14 @@ exports.makeRoutes= function(app){
 
 
 
+	/*
+	||	Hosts Operation
+	||
+	*/
 
+	app.get("/hosts", host.index);
+	app.get("/hosts/list", host.list);
+	app.get("/hosts/add", host.add);
 
 
 } 
