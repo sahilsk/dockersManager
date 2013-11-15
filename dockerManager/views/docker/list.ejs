@@ -57,8 +57,8 @@
 			<td>
 
 				<Div class="operation_menu"> 	
-					<span class="inspect"> <a href="/dockers/<%=data[index].Id %>/containers?repository=<% if( !item.Repository) { %>--<% }else { %><%= item.Repository %><% }%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> </span>					
-					<span class="delete"> <a href="/dockers/<%=data[index].Id %>/delete" title="remove"> &cross;  </a></span>
+					<span class="inspect"> <a href="/dockers/<%=item.Id %>/containers?repository=<% if( !item.Repository) { %>--<% }else { %><%= item.Repository %><% }%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> </span>					
+					<span class="delete"> <a href="/dockers/<%=item.Id %>/delete" title="remove"> &cross;  </a></span>
 				</Div>
 
 			</td>
@@ -67,7 +67,7 @@
 		</tbody>
 	</table>
 
-	<% }%>
+	<% } %>
 
 
 
