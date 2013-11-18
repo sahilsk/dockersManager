@@ -88,15 +88,23 @@ exports.makeFileUploadRequest = function (filePath, queryString, onResult) {
     req.end();
   });
 };
-exports.makePostRequest = function (queryString, callback) {
+exports.makePostRequest = function (queryString, headers, body,  callback) {
   var inspectData = '';
+  
   var options = {
       hostname: config.docker.hostname,
       port: config.docker.port,
       path: queryString,
       method: 'POST'
-    };
-  console.log(queryString);
+  };
+  
+
+  if(headers)
+    options.headers = headers;
+
+
+
+  console.log(options);
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
@@ -114,5 +122,10 @@ exports.makePostRequest = function (queryString, callback) {
     console.log('problem with request: ' + e.message);
     callback(null, null, e.message);
   });
+
+  if( body)
+      req.write(body);
+
+
   req.end();
 };

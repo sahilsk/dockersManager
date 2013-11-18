@@ -75,11 +75,117 @@ exports.list = function (req, res) {
 exports.index = function (req, res) {
   res.redirect('/containers/list');
 };
+
+exports.new = function (req, res) {
+  res.render('container/new', {title: "Create New Container"});
+};
+
+
+exports.create = function (req, res) {
+  
+
+  var containerName = req.body.name;
+
+  var Hostname   = req.body.Hostname ;
+  var User     = req.body.User ;
+  var Memory     = parseInt(req.body.Memory) ;
+  var MemorySwap     = parseInt( req.body.MemorySwap );
+  var AttachStdin     = typeof req.body.AttachStdin === "undefined"? false: true ;
+  var AttachStdout   = typeof req.body.AttachStdout === "undefined"? false: true;
+  var AttachStderr    = typeof req.body.AttachStderr === "undefined"? false: true ;
+  var PortSpecs   = req.body.PortSpecs ==="null"?null:req.body.PortSpecs ;
+  var Privileged     = typeof req.body.Privileged === "undefined"? false: true ;
+  var Tty     = typeof req.body.Tty === "undefined"? false: true ;
+  var OpenStdin     = typeof req.body.OpenStdin === "undefined"? false: true;
+  var StdinOnce     = typeof req.body.StdinOnce === "undefined"? false: true;
+  var Env     = req.body.Env ==="null"?null:req.body.Env ;
+  var Cmd     =[]; Cmd.push( req.body.Cmd );
+  var Dns     = req.body.Dns ==="null"?null:req.body.Dns ;
+  var Image     = req.body.Image ;
+  var Valumes     = req.body.Valumes ;
+  var ValumesFrom   = req.body.ValumesFrom ;
+  var workingDir   = req.body.workingDir ;
+
+  console.log("AttachStdin : " + req.body.AttachStdin );    
+
+  var jsonContainerData = {
+     Hostname   :  Hostname     ,           
+     User       :  User         ,           
+     Memory     :  Memory       ,           
+     MemorySwap    :  MemorySwap    ,           
+     AttachStdin   :  AttachStdin   ,           
+     AttachStdout  :  AttachStdout  ,           
+     AttachStderr  :  AttachStderr  ,           
+     PortSpecs   :  PortSpecs     ,           
+     Privileged    :  Privileged    ,           
+     Tty      :  Tty        ,           
+     OpenStdin     :  OpenStdin     ,           
+     StdinOnce    :  StdinOnce      ,           
+     Env      :  Env        ,           
+     Cmd      :  Cmd        ,           
+     Dns      :  Dns        ,           
+     Image    :  Image      ,           
+     Valumes    :  Valumes      ,           
+     ValumesFrom  :  ValumesFrom    ,           
+     workingDir   :  workingDir                   
+  }
+
+  var stringContainerData = JSON.stringify( jsonContainerData);
+
+
+  var headers = {
+    'Content-Type' : 'application/json',
+    'Content-Length': stringContainerData.length
+  }
+
+  appUtil.makePostRequest('/containers/create' ,  headers, stringContainerData,  function (result, statusCode, errorMessage) {
+    switch (statusCode) {
+    case 404:
+      req.session.messages = {
+        text: 'No such image : \'' + Image+ '\' ',
+        type: 'error',
+        oData: jsonContainerData
+      };
+      break;
+    case 201:
+      var jResult = JSON.parse(result);
+      console.log( jResult);
+      req.session.messages = {
+        text: "Container[" + jResult.Id + "] created successfully.  Warnings: " + jResult.Warnings,
+        type: 'alert'
+      };
+      res.redirect("/containers/list");
+      res.end();
+      return;
+      break;
+    case 500:
+      req.session.messages = {
+        text: 'Server Error. Cause: ' + result,
+        type: 'error',
+        oData: jsonContainerData
+      };
+      break;
+    default:
+      req.session.messages = {
+        text: 'Unable to query docker server. Please check network connection. : <' + errorMessage + '>',
+        type: 'error',
+        oData: jsonContainerData
+      };
+    }
+
+    res.redirect(req.headers.referer);
+    res.end();
+  });
+
+
+
+};
+
 exports.toggleStatus = function (req, res) {
   isContainerRunning(req.params.id, function (running) {
     var taskToPerform = running ? 'stop' : 'start';
     console.log(running ? 'Stopping container...' : 'Starting container...');
-    appUtil.makePostRequest('/containers/' + req.params.id + '/' + taskToPerform, function (result, statusCode, errorMessage) {
+    appUtil.makePostRequest('/containers/' + req.params.id + '/' + taskToPerform,  null, null, function (result, statusCode, errorMessage) {
       switch (statusCode) {
       case 404:
         req.session.messages = {
@@ -111,7 +217,7 @@ exports.toggleStatus = function (req, res) {
   });  //  end 'isContainerRunning'
 };
 exports.kill = function (req, res) {
-  appUtil.makePostRequest('/containers/' + req.params.id + '/kill', function (result, statusCode, errorMessage) {
+  appUtil.makePostRequest('/containers/' + req.params.id + '/kill',  null, null, function (result, statusCode, errorMessage) {
     switch (statusCode) {
     case 404:
       req.session.messages = {
@@ -141,6 +247,7 @@ exports.kill = function (req, res) {
     //res.redirect("/containers/list");
     res.end();
   });
+
 };
 exports.delete = function (req, res) {
   appUtil.makeDELETERequest('/containers/' + req.params.id, function (result, statusCode, errorMessage) {
