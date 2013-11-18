@@ -1,0 +1,98 @@
+
+<% include ../../layouts/dashboard_layout_top %>
+
+<h1> Create New Container </h1>
+
+	<fieldset>
+
+	<form method="Post" action="/containers/create" >
+
+		<label> Container Name </label>
+		<input type="text" name="name"  id="name"  placeholder="name" value=" "/>
+		<br/> <br/>
+
+
+		<label> hostname </label>
+		<input type="text" name="hostname"  id="hostname"  placeholder="hostname" value="<% if( messages && messages.oData){ %> <%= messages.oData.Hostname %><% } %>" />
+		<br/> <br/>
+
+		<label> User </label>
+		<input type="text" name="User"  id="User"  placeholder="name" value="<% if( messages && messages.oData){ %> <%= messages.oData.User %><% } %>" />
+		<br/> <br/>	
+
+		<label> Memory </label>
+		<input type="text" name="Memory"  id="Memory"  placeholder="name"  value='0'  />
+		<br/> <br/>	
+
+		<label> MemorySwap </label>
+		<input type="text" name="MemorySwap"  id="MemorySwap"  placeholder="name"   value='0'  />
+		<br/> <br/>
+
+		<label> AttachStdin </label>
+		<input type="checkbox" name="AttachStdin"  id="AttachStdin"  placeholder="name" />
+		<br/> <br/>	
+
+		<label> AttachStdout </label>
+		<input type="checkbox" name="AttachStdout"  id="AttachStdout"  placeholder="name" />
+		<br/> <br/>	
+
+		<label> AttachStderr </label>
+		<input type="checkbox" name="AttachStderr"  id="AttachStderr"  placeholder="name" />
+		<br/> <br/>
+
+		<label> PortSpecs </label>
+		<input type="text" name="PortSpecs"  id="PortSpecs"  placeholder="name"   value='null'  />
+		<br/> <br/>	
+
+		<label> Privileged </label>
+		<input type="checkbox" name="Privileged"  id="Privileged"  placeholder="name" />
+		<br/> <br/>	
+
+		<label> Tty </label>
+		<input type="checkbox" name="Tty"  id="Tty"  placeholder="name" />
+		<br/> <br/>
+
+		<label> OpenStdin </label>
+		<input type="checkbox" name="OpenStdin"  id="OpenStdin"  placeholder="name" />
+		<br/> <br/>	
+
+		<label> StdinOnce </label>
+		<input type="checkbox" name="StdinOnce"  id="StdinOnce"  placeholder="name" />
+		<br/> <br/>	
+
+		<label> Env </label>
+		<input type="text" name="Env"  id="Env"  placeholder="name"  value='null'  />
+		<br/> <br/>
+
+		<label> Cmd </label>
+		<input type="text" name="Cmd"  id="Cmd"  placeholder="name"  value='date'   />
+		<br/> <br/>	
+
+		<label> Dns </label>
+		<input type="text" name="Dns"  id="Dns"  placeholder="name"  value='null'   />
+		<br/> <br/>	
+
+		<label> Image </label>
+		<input type="text" name="Image"  id="Image"  placeholder="name"  value="base" />
+		<br/> <br/>
+
+		<label> Volumes </label>
+		<input type="text" name="Volumes"  id="Volumes"  placeholder="name" />
+		<br/> <br/>	
+
+		<label> Volumes From </label>
+		<input type="text" name="VolumesFrom"  id="VolumesFrom"  placeholder="name" />
+		<br/> <br/>		
+
+		<label> Working Dir </label>
+		<input type="text" name="WorkingDir"  id="WorkingDir"  placeholder="name" />
+		<br/> <br/>		
+
+		<input type="submit"  value="create container" />
+
+	</form>
+	</fieldset>
+
+
+
+<% include ../../layouts/dashboard_layout_bottom %>
