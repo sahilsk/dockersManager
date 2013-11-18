@@ -14,6 +14,7 @@
 				<th> IP </th>
 				<th> PORT </th>
 				<th> NAME </th>
+				<th> Status </th>
 		</thead>
 		<tbody>
 	<% hostList.forEach( function(item, index){ %>
@@ -26,6 +27,7 @@
 			<td> <% if( !item.ip) { %> --  <% }else { %><%= item.ip %><% } %> </td>
 			<td> <% if( !item.port) { %> --  <% }else { %> <%= item.port %>  <% } %>  </td>
 			<td> <% if( !item.name) { %> --  <% }else { %> <%= item.name %>  <% } %> </td>
+			<td> <% if( !item.status) { %> --  <% }else { %> <%= item.status %>  <% } %> </td>
 
 			<td>
 

@@ -41,8 +41,12 @@
 						<li <% if( typeof page !== 'undefined' && page ) { %>
 								<%= page === "hosts_list" ? "class='active' " : " " %>
 							<% } %>
-						 > <a href="/hosts/list" >Hosts </a> </li>					 	
+						 > <a href="/hosts/list" >Hosts </a> </li>			
 
+						<li <% if( typeof page !== 'undefined' && page ) { %>
+								<%= page === "hosts_list" ? "class='active' " : " " %>
+							<% } %>
+						 > <a href="/hosts/list" >Create </a> </li>		
 
 
 					</ul>

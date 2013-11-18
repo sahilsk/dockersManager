@@ -82,7 +82,7 @@ exports.makeRoutes= function(app){
 	app.post("/hosts/create", host.add)
 	app.get("/hosts/:id/delete", host.delete);
 	app.get("/hosts/:id/edit", host.edit)
-	app.get("/hosts/:id/update", host.update)
+	app.post("/hosts/:id/update", host.update)
 
 
 } 
