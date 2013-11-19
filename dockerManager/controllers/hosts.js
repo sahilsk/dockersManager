@@ -79,16 +79,26 @@ exports.list = function (req, res) {
 exports.serverStatus =function (req, res) {
  if( req.xhr){
     var address = req.query.address;
-    ping.sys.probe(address, function(isAlive){
+    isHostAlive(address, function(isAlive){
       var msg = isAlive ? 'host ' + address + ' is alive' : 'host ' +address + ' is dead'; 
-      console.log(msg); 
-      res.end( isAlive ? 'Alive':'Dead');      
-    });   
+      console.log(msg);
+      res.end( isAlive ? 'Alive':'Dead');   
+    });
+
   }else{
     res.end("Unauthorized Access");
   }
 
+};
+
+function isHostAlive(hostAddress, callback){
+
+    ping.sys.probe(hostAddress, function(isAlive){ 
+      callback(isAlive);     
+    });  
+
 }
+
 
 
 exports.new = function (req, res) {
