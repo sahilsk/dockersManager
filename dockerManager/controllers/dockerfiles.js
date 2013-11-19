@@ -41,40 +41,42 @@ exports.upload = function (req, res) {
     res.end();
     return true;
   }
+      res.connection.setTimeout(0); 
+
   buildDockerfile(tarFileUploadedPath, buildTagName, function (result, status, error) {
     switch (status) {
-    case 200:
-      console.log('Dockerfile Built successfully');
-      req.session.messages = {
-        text: 'Dockerfile Built successfully.',
-        type: 'alert'
-      };
-      res.redirect('/dockers/' + buildTagName);
-      res.end();
-      return true;
-      break;
-    case 500:
-      //jResult = JSON.parse(result);
-      console.log(result.message);
-      if (result.message.indexOf('exit status 2') !== -1) {
+      case 200:
+        console.log('Dockerfile Built successfully');
         req.session.messages = {
-          text: 'Not a valid tar format.!!',
+          text: 'Dockerfile Built successfully.',
+          type: 'alert'
+        };
+        res.redirect('/dockers/' + buildTagName);
+        res.end();
+        return true;
+        break;
+      case 500:
+        //jResult = JSON.parse(result);
+        console.log(result.message);
+        if (result.message.indexOf('exit status 2') !== -1) {
+          req.session.messages = {
+            text: 'Not a valid tar format.!!',
+            type: 'error'
+          };
+        } else {
+          req.session.messages = {
+            text: 'Dockerfile not found inside tar. !! ',
+            type: 'error'
+          };
+        }
+        break;
+      default:
+        console.log('Please check your network connection.: ', error);
+        req.session.messages = {
+          text: 'Unable to query docker image. Please check your internet connection. <' + error + '>',
           type: 'error'
         };
-      } else {
-        req.session.messages = {
-          text: 'Dockerfile not found inside tar. !! ',
-          type: 'error'
-        };
-      }
-      break;
-    default:
-      console.log('Please check your network connection.: ', error);
-      req.session.messages = {
-        text: 'Unable to query docker image. Please check your internet connection. <' + error + '>',
-        type: 'error'
-      };
-      break;
+        break;
     }
     res.redirect('/');
     res.end();

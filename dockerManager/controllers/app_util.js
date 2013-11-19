@@ -76,7 +76,7 @@ exports.makeFileUploadRequest = function (filePath, queryString, onResult) {
       res.on('end', function () {
         onResult(dockerResponse, res.statusCode, null);
       });
-    });
+  });
   req.setHeader('Content-Type', 'application/tar');
   req.on('error', function (e) {
     console.log('problem with request: ' + e.message);

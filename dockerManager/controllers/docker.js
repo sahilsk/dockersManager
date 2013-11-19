@@ -1,12 +1,13 @@
 /*
 ||docker.js
 ||Description:   Contain functions to operate image  using dockers remote api's
-||				->index() : entery file
+||				->index() : entry file
 ||				->list() : lsit all containers 
 ||				->progressStatus() : function to track file uploading progress status 
 */
 var appUtil = require('./app_util');
 exports.index = function (req, res) {
+
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
     var viewData = '';
     switch (statusCode) {
@@ -39,6 +40,7 @@ exports.index = function (req, res) {
     });
   });
 };
+
 exports.inspect = function (req, res) {
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
     var viewData = '';

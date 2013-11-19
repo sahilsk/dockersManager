@@ -95,6 +95,21 @@ exports.new = function (req, res) {
   res.render('host/new', { title: 'Add new host' });
 };
 exports.add = function (req, res) {
+
+   var hostname =  req.body.hostname;
+   var port =  req.body.port;
+   var ip =  req.body.ip;
+
+    if (port.length === 0 || port.length===0) {
+    req.session.messages = {
+      text: 'Please provide IP and Port to point to docker host',
+      type: 'error'
+    };
+    res.redirect('/hosts/new');
+    res.end();
+    return true;
+  }
+
   var host = {
       name: req.body.hostname,
       ip: req.body.ip,
@@ -125,6 +140,8 @@ exports.add = function (req, res) {
     }
   });
 };
+
+
 exports.delete = function (req, res) {
   console.log('Id to delete: ', req.params.id);
   var id = req.params.id;
