@@ -41,7 +41,6 @@ exports.upload = function (req, res) {
     res.end();
     return true;
   }
-      res.connection.setTimeout(0); 
 
   buildDockerfile(tarFileUploadedPath, buildTagName, function (result, status, error) {
     switch (status) {
@@ -89,6 +88,12 @@ exports.upload = function (req, res) {
     res.redirect('/' + req.params.id);
     res.end();
   });
+
+
+
+
+
+  
 };
 /*
 ||	buildDockerfile(filepath, buildname) 

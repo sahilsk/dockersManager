@@ -9,8 +9,8 @@
 
 */
 var config = require('../config/config');
-var ping = require('ping');
 var redis = require('redis');
+var appUtil = require('./app_util');
 
 var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
 exports.index = function (req, res) {
@@ -79,7 +79,7 @@ exports.list = function (req, res) {
 exports.serverStatus =function (req, res) {
  if( req.xhr){
     var address = req.query.address;
-    isHostAlive(address, function(isAlive){
+    appUtil.isHostAlive(address, function(isAlive){
       var msg = isAlive ? 'host ' + address + ' is alive' : 'host ' +address + ' is dead'; 
       console.log(msg);
       res.end( isAlive ? 'Alive':'Dead');   
@@ -91,13 +91,7 @@ exports.serverStatus =function (req, res) {
 
 };
 
-function isHostAlive(hostAddress, callback){
 
-    ping.sys.probe(hostAddress, function(isAlive){ 
-      callback(isAlive);     
-    });  
-
-}
 
 
 

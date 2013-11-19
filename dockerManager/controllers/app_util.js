@@ -1,5 +1,7 @@
 var http = require('http');
 var fs = require('fs');
+var ping = require('ping');
+
 var config = require('../config/config');
 exports.makeGetRequest = function (queryString, callback) {
   var inspectData = '';
@@ -27,6 +29,7 @@ exports.makeGetRequest = function (queryString, callback) {
     callback(null, null, e.message);
   });
   req.end();
+
 };
 exports.makeDELETERequest = function (queryString, callback) {
   console.log('called delete');
@@ -129,3 +132,45 @@ exports.makePostRequest = function (queryString, headers, body,  callback) {
 
   req.end();
 };
+
+
+exports.isHostAlive =  function(hostAddress, callback){
+
+    ping.sys.probe(hostAddress, function(isAlive){ 
+      callback(isAlive);     
+    });  
+
+}
+
+
+exports.isDockerServerAlive = function( dockerHost, dockerPort, callback){
+
+  var inspectData = '';
+  var options = {
+      hostname: dockerHost,
+      port: dockerPort,
+      path: "/version",
+      method: 'GET'
+    };
+
+  console.log( "Checking Dockerhost - " + dockerHost + ":" + dockerPort );
+  
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        inspectData += chunk;
+      });
+      res.on('end', function () {
+        callback(inspectData, res.statusCode, null);
+      });
+  });
+  req.on('error', function (e) {
+    inspectData = '';
+    console.log('problem with request: ' + e.message);
+    callback(null, null, e.message);
+  });
+  req.end();
+
+}
