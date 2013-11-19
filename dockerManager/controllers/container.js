@@ -102,13 +102,14 @@ exports.create = function (req, res) {
   var Cmd     =[]; Cmd.push( req.body.Cmd );
   var Dns     = req.body.Dns ==="null"?null:req.body.Dns ;
   var Image     = req.body.Image ;
-  var Valumes     = req.body.Valumes ;
-  var ValumesFrom   = req.body.ValumesFrom ;
-  var workingDir   = req.body.workingDir ;
+  var Volumes     = null;// req.body.Volumes ;
+  var VolumesFrom   = req.body.VolumesFrom ;
+  var WorkingDir   = req.body.WorkingDir ;
 
   console.log("AttachStdin : " + req.body.AttachStdin );    
 
   var jsonContainerData = {
+     Name : containerName,
      Hostname   :  Hostname     ,           
      User       :  User         ,           
      Memory     :  Memory       ,           
@@ -125,13 +126,14 @@ exports.create = function (req, res) {
      Cmd      :  Cmd        ,           
      Dns      :  Dns        ,           
      Image    :  Image      ,           
-     Valumes    :  Valumes      ,           
-     ValumesFrom  :  ValumesFrom    ,           
-     workingDir   :  workingDir                   
+     Volumes    :  Volumes      ,           
+     VolumesFrom  :  VolumesFrom    ,           
+     WorkingDir   :  WorkingDir                   
   }
 
   var stringContainerData = JSON.stringify( jsonContainerData);
 
+  //res.end( stringContainerData);
 
   var headers = {
     'Content-Type' : 'application/json',

@@ -29,6 +29,7 @@ app.use(function (req, res, next) {
   next();
 });
 app.use(app.router);
+app.use(express.csrf());
 app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
 app.use(express.static(path.join(__dirname, 'public')));
 // development only

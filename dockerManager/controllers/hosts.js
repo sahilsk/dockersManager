@@ -16,25 +16,51 @@ var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
 exports.index = function (req, res) {
   res.redirect('/hosts/list');
 };
+
+
 exports.list = function (req, res) {
   var jHostList = [];
-  var i = 0;
+  var i = 0, pendingPingCount = 0;
   rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
-    for (i = 0; i < hostsList.length; i++) {
-      var jHost = JSON.parse(hostsList[i]);
-      jHostList.push(jHost);
-      if (typeof jHost.ip !== 'undefined') {
-        ping.sys.probe(jHost.ip, function (isAlive) {
-          var msg = isAlive ? 'host ' + jHost.ip + ' is alive' : 'host ' + jHost.ip + ' is dead';
-          console.log(msg);
-          jHost.status = isAlive ? 'Up' : 'Down';
-          console.log(jHost);
-          jHostList.push(jHost);
-        });
+
+    hostsList.forEach( function(host){
+      var jHost =  JSON.parse(host);
+      if( typeof jHost.ip !== "undefined" ){
+        jHostList.push(jHost);
       }
-      // end 'if'
-      console.log('========== ||||||||------------- ' + i + ' : ' + hostsList.length);
-      if (i === hostsList.length - 1) {
+
+
+
+   });  
+
+    res.render('host/index', {
+        title: 'Hosts List',
+        hostList: jHostList,
+        page: 'hosts_list'
+      });
+
+
+  /*   
+      if( typeof jHost.ip !== "undefined" ){
+        pendingPingCount++;
+
+        ping.sys.probe(jHost.ip, function(isAlive){
+            pendingPingCount--;
+            var msg = isAlive ? 'host ' + jHost.ip + ' is alive' : 'host ' + jHost.ip + ' is dead'; 
+            console.log(msg); 
+            jHost.status = isAlive?"Up":"Down";
+            console.log(jHost);
+            jHostList.push(jHost);
+            areAllHostQueried(pendingPingCount);
+        });
+
+
+      }// end 'if'
+      
+    });// end 'hostsList'  
+
+    function areAllHostQueried(pendingPingCount){
+      if(pendingPingCount === 0){
         res.render('host/index', {
           title: 'Hosts List',
           hostList: jHostList,
@@ -42,30 +68,29 @@ exports.list = function (req, res) {
         });
       }
     }
-  });  /*
 
-	rdsClient.lrange( "hosts", 0, -1, function(err, hostsList){
-		hostsList.forEach( function(host){
-			var jHost =  JSON.parse(host);
-		//	console.log(jHost);
-			if( typeof jHost.ip !== "undefined" ){
-				ping.sys.probe(jHost.ip, function(isAlive){
-					var msg = isAlive ? 'host ' + jHost.ip + ' is alive' : 'host ' + jHost.ip + ' is dead'; 
-					console.log(msg); 
-					jHost.status = isAlive?"Up":"Down";
-					console.log(jHost);
-					jHostList.push(jHost);
-				});
-			}// end 'if'
-			
-		});// end 'hostsList'
-
-		res.render("host/index", {title:"Hosts List", hostList: jHostList, page: "hosts_list"});
-
-	});
-
-	*/
+  */
+     
+ 
+  });
 };
+
+
+exports.serverStatus =function (req, res) {
+ if( req.xhr){
+    var address = req.query.address;
+    ping.sys.probe(address, function(isAlive){
+      var msg = isAlive ? 'host ' + address + ' is alive' : 'host ' +address + ' is dead'; 
+      console.log(msg); 
+      res.end( isAlive ? 'Alive':'Dead');      
+    });   
+  }else{
+    res.end("Unauthorized Access");
+  }
+
+}
+
+
 exports.new = function (req, res) {
   res.render('host/new', { title: 'Add new host' });
 };
