@@ -10,8 +10,8 @@
 */
 var config = require('../config/config');
 var ping = require('ping');
-var Q = require('q');
 var redis = require('redis');
+
 var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
 exports.index = function (req, res) {
   res.redirect('/hosts/list');
