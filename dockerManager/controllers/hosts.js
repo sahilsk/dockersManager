@@ -9,10 +9,13 @@
 
 */
 var config = require('../config/config');
-var redis = require('redis');
 var appUtil = require('./app_util');
+var logger = require("../config/logger");
+
+var redis = require('redis');
 
 var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
+
 exports.index = function (req, res) {
   res.redirect('/hosts/list');
 };
@@ -21,11 +24,14 @@ exports.index = function (req, res) {
 exports.list = function (req, res) {
   var jHostList = [];
   var i = 0, pendingPingCount = 0;
-  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
+  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) 
+  {
 
-    hostsList.forEach( function(host){
+    hostsList.forEach( function(host)
+    {
       var jHost =  JSON.parse(host);
-      if( typeof jHost.ip !== "undefined" ){
+      if( typeof jHost.ip !== "undefined" )
+      {
         jHostList.push(jHost);
       }
 

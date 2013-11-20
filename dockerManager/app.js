@@ -4,7 +4,8 @@
 var express = require('express');
 var http = require('http');
 var path = require('path');
-//var connect = require('connect');
+var logger = require("./config/logger.js");
+
 var routes = require('./config/routes.js');
 var app = express();
 app.use(express.bodyParser({
@@ -32,6 +33,11 @@ app.use(app.router);
 app.use(express.csrf());
 app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+
+logger.info("init...");
+
 // development only
 if ('development' == app.get('env')) {
   app.use(express.errorHandler());
@@ -40,3 +46,5 @@ routes.makeRoutes(app);
 http.createServer(app).listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
+
+

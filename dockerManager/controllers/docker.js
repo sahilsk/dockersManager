@@ -6,6 +6,8 @@
 ||				->progressStatus() : function to track file uploading progress status 
 */
 var appUtil = require('./app_util');
+var logger = require("../config/logger");
+
 exports.index = function (req, res) {
 
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
@@ -21,11 +23,11 @@ exports.index = function (req, res) {
       viewData = 'Server Error';
       break;
     default:
-      console.log('Unable to query docker image');
+      logger.info('Unable to query docker image');
       viewData = 'Unable to query docker image. Please check your internet connection. <' + errorMessage + '>';
     }
-    console.log(viewData);
-    console.log(statusCode);
+    logger.info(viewData);
+    logger.info(statusCode);
     res.render('docker/index', {
       title: 'Manage Image',
       id: req.params.id,
@@ -55,10 +57,10 @@ exports.inspect = function (req, res) {
       viewData = 'Server Error';
       break;
     default:
-      console.log('Unable to query docker image. Please check your internet connection. <' + errorMessage + '>');
+      logger.info('Unable to query docker image. Please check your internet connection. <' + errorMessage + '>');
       viewData = 'Unable to query docker image. Please check your internet connection. <' + errorMessage + '>';
     }
-    console.log(viewData);
+    logger.info(viewData);
     res.render('docker/inspect', {
       title: 'Inspect Docker Image',
       id: req.params.id,
@@ -92,7 +94,7 @@ exports.list = function (req, res) {
       };
       viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
-    console.log(viewData);
+    logger.info(viewData);
     res.render('docker/list', {
       title: 'List of images',
       id: req.params.id,
@@ -152,7 +154,7 @@ exports.containers = function (req, res) {
     case 200:
       viewData = JSON.parse(data);
       viewData.forEach(function (container, index) {
-        console.log(container.Image);
+        logger.info(container.Image);
         if (container.Image === dockerID.substr(0, 12)) {
           containerList.push(container);
         }
@@ -171,7 +173,7 @@ exports.containers = function (req, res) {
       };
       viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
-    console.log(req.query.repository.length === 0 ?'-': req.query.repository );
+    logger.info(req.query.repository.length === 0 ?'-': req.query.repository );
 
     res.render('docker/containers', {
       title: 'List of Containers',

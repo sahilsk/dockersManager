@@ -22,7 +22,7 @@ exports.makeRoutes= function(app){
 	||Dockerfile Upload Operations
 	||
 	*/
-	app.post("/upload", dockerfile.upload);
+	app.post("/upload", dockerfile.uploadToAll);
 
 	app.get("/progressStatus", dockerfile.progressStatus);
 

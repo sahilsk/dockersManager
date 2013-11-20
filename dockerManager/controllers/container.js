@@ -6,6 +6,8 @@
 ||				->progressStatus() : function to track file uploading progress status 
 */
 var appUtil = require('./app_util');
+var logger = require("../config/logger");
+
 
 exports.index = function (req, res) {
   res.render('docker/index', {
@@ -393,6 +395,32 @@ exports.create = function (req, res) {
     'Content-Type' : 'application/json',
     'Content-Length': str_ContainerData.length
   }
+
+
+
+  /*
+  1) Get list of alive docker host 
+  2) Verify they have images present (also checking if docker server is up/dead)
+  3) Identify load on server
+  4) Sort by server load 
+  5) dispatch request to top three servers
+  
+  */
+
+  /*
+  1) Get list of live docker hosts
+  2) Identify laod on server
+  3) dispatch request to least loaded server
+  */
+
+
+
+
+
+
+
+
+
 
   appUtil.makePostRequest('/containers/create' ,  headers, str_ContainerData,  function (result, statusCode, errorMessage) {
     switch (statusCode) {
