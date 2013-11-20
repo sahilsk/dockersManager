@@ -6,8 +6,12 @@
 ||				->progressStatus() : function to track file uploading progress status 
 */
 var appUtil = require('./app_util');
+var config = require("../config/config");
 var logger = require("../config/logger");
+var async  = require("async");
+var redis = require('redis');
 
+var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
 
 exports.index = function (req, res) {
   res.render('docker/index', {
@@ -338,15 +342,15 @@ function isContainerRunning(containerID, onResult) {
 
 
 
-exports.create = function (req, res) {
+exports.createInAll = function (req, res) {
   
 
-  var containerName = req.body.name;
+  var containerName = require("querystring").escape(req.body.name.trim() );
 
-  var Hostname   = req.body.Hostname ;
-  var User     = req.body.User ;
-  var Memory     = parseInt(req.body.Memory) ;
-  var MemorySwap     = parseInt( req.body.MemorySwap );
+  var Hostname   = req.body.Hostname.trim() ;
+  var User     = req.body.User.trim() ;
+  var Memory     = parseInt(req.body.Memory.trim()) ;
+  var MemorySwap     = parseInt( req.body.MemorySwap.trim() );
   var AttachStdin     = typeof req.body.AttachStdin === "undefined"? false: true ;
   var AttachStdout   = typeof req.body.AttachStdout === "undefined"? false: true;
   var AttachStderr    = typeof req.body.AttachStderr === "undefined"? false: true ;
@@ -356,14 +360,13 @@ exports.create = function (req, res) {
   var OpenStdin     = typeof req.body.OpenStdin === "undefined"? false: true;
   var StdinOnce     = typeof req.body.StdinOnce === "undefined"? false: true;
   var Env     = req.body.Env ==="null"?null:req.body.Env ;
-  var Cmd     =[]; Cmd.push( req.body.Cmd );
-  var Dns     = req.body.Dns ==="null"?null:req.body.Dns ;
-  var Image     = req.body.Image ;
+  var Cmd     =[]; Cmd.push( req.body.Cmd.trim() );
+  var Dns     = req.body.Dns ==="null"?null:req.body.Dns.trim() ;
+  var Image     = req.body.Image.trim() ;
   var Volumes     = null;// req.body.Volumes ;
-  var VolumesFrom   = req.body.VolumesFrom ;
-  var WorkingDir   = req.body.WorkingDir ;
+  var VolumesFrom   = req.body.VolumesFrom.trim() ;
+  var WorkingDir   = req.body.WorkingDir.trim() ;
 
-  console.log("AttachStdin : " + req.body.AttachStdin );    
 
   var jsonContainerData = {
      Name : containerName,
@@ -399,8 +402,8 @@ exports.create = function (req, res) {
 
 
   /*
-  1) Get list of alive docker host 
-  2) Verify they have images present (also checking if docker server is up/dead)
+  1) Get list of live docker host 
+  2) Verify they have image present (also checking if docker server is up/dead)
   3) Identify load on server
   4) Sort by server load 
   5) dispatch request to top three servers
@@ -409,20 +412,65 @@ exports.create = function (req, res) {
 
   /*
   1) Get list of live docker hosts
-  2) Identify laod on server
+  2) Identify load on server
   3) dispatch request to least loaded server
   */
 
 
+  var totalHosts = 0;
+  var liveHostsList = [];
+  var dockerfileBuiltStatus = [];
+
+
+
+  async.series([
+    function(callback){
+        getLiveHostsLive(function(err){
+          if(err) callback(err);
+          else callback();
+        });
+    }, 
+    function(callback){
+      callback();
+    }
+    ], function(err){
+      if(err) return next(err);
+      res.end("Live host count: " + liveHostsList.length );
+      return;
+  });
+
+
+
+  function getLiveHostsLive(callback){
+    rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
+    totalHosts = hostsList.length;
+    //var pendingHostsCount = hostsList.length;
+    hostsList.forEach(function (host) {
+      var jHost = JSON.parse(host);
+      if (typeof jHost.ip !== 'undefined') 
+      {
+        appUtil.isDockerServerAlive(jHost.ip, jHost.port, function (isAlive, errorMessage) {
+          logger.info('Alive : ' + isAlive);
+          if (isAlive === true) liveHostsList.push(jHost);
+          else logger.info('Server %s:%s is not reachable.', jHost.ip, jHost.port);
+          //pendingHostsCount--;
+          callback(null, callback);
+         // prcessLiveHostsIfComplete(pendingHostsCount);
+        });  //  end 'isDockerServerAlive()'
+      } 
+    });  // end 'forEach'
+    });
+  }
 
 
 
 
 
+  return ;
 
 
 
-  appUtil.makePostRequest('/containers/create' ,  headers, str_ContainerData,  function (result, statusCode, errorMessage) {
+  appUtil.makePostRequest( host, '/containers/create?name='+ containerName ,  headers, str_ContainerData,  function (result, statusCode, errorMessage) {
     switch (statusCode) {
     case 404:
       req.session.messages = {
@@ -434,8 +482,9 @@ exports.create = function (req, res) {
     case 201:
       var jResult = JSON.parse(result);
       console.log( jResult);
+
       req.session.messages = {
-        text: "Container[" + jResult.Id + "] created successfully.  Warnings: " + jResult.Warnings,
+        text: "Container[" + jResult.Id + "] created successfully." + ( (typeof jResult.Warnings !== "undefined" )? " Warnings: " + JSON.stringify(jResult.Warnings) : ""),
         type: 'alert'
       };
       res.redirect("/containers/list");

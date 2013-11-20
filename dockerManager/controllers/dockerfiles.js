@@ -122,7 +122,8 @@ exports.uploadToAll = function (req, res) {
   console.log('file name', uploadedFileName);
   console.log('file path', tarFileUploadedPath);
   console.log('build name', buildTagName);
-  if (buildTagName.length == 0) {
+  if (buildTagName.length == 0)
+  {
     req.session.messages = {
       text: 'Please provide tag name to build image',
       type: 'error'
@@ -131,7 +132,7 @@ exports.uploadToAll = function (req, res) {
     res.end();
     return true;
   }
-  if (req.files.dockerfile.name === undefined || req.files.dockerfile.name.length == 0) {
+  if( typeof req.files.dockerfile.name === "undefined" || req.files.dockerfile.name.length === 0) {
     req.session.messages = {
       text: 'Please select Dockerfile containing .tar file first',
       type: 'error'

@@ -136,22 +136,18 @@ exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onR
 
 };
 
-
-exports.makePostRequest = function (queryString, headers, body,  callback) {
+exports.makePostRequestToHost = function (host, queryString, headers, requestBody,  callback) {
   var inspectData = '';
   
   var options = {
-      hostname: config.docker.hostname,
-      port: config.docker.port,
+      hostname: host.ip,
+      port: host.port,
       path: queryString,
       method: 'POST'
   };
   
 
-  if(headers)
-    options.headers = headers;
-
-
+  if(headers) options.headers = headers;
 
   console.log(options);
   var req = http.request(options, function (res) {
@@ -172,10 +168,44 @@ exports.makePostRequest = function (queryString, headers, body,  callback) {
     callback(null, null, e.message);
   });
 
-  if( body)
-      req.write(body);
+  if( requestBody) req.write(requestBody);
+  req.end();
+};
 
 
+exports.makePostRequest = function (queryString, headers, body,  callback) {
+  var inspectData = '';
+  
+  var options = {
+      hostname: config.docker.hostname,
+      port: config.docker.port,
+      path: queryString,
+      method: 'POST'
+  };
+  
+
+  if(headers) options.headers = headers;
+
+  console.log(options);
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        inspectData += chunk;
+      });
+      res.on('end', function () {
+        console.log('BODY', inspectData);
+        callback(inspectData, res.statusCode, null);
+      });
+    });
+  req.on('error', function (e) {
+    inspectData = '';
+    console.log('problem with request: ' + e.message);
+    callback(null, null, e.message);
+  });
+
+  if( body) req.write(body);
   req.end();
 };
 
