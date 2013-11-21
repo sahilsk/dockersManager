@@ -369,7 +369,7 @@ exports.createInAll = function (req, res) {
     },
     function (callback) {
       if (dockerHostList.length === 0) {
-        callback('No dockerhost available yet.', null);
+        callback('No Docker host available yet.', null);
         return;
       }
       async.filter(dockerHostList, function (host, cb) {
@@ -383,12 +383,20 @@ exports.createInAll = function (req, res) {
       });
     },
     function (callback) {
+      if (liveHostsList.length === 0) {
+        callback('No Docker Server is up. Please try later. ', null);
+        return;
+      }      
       async.filter(liveHostsList, appUtil.isServerFullyLoaded, function (results) {
         partialLoadedHosts = results;
         callback();
       });
     },
     function (callback) {
+      if (partialLoadedHosts.length === 0) {
+        callback('All Docker Servers are heavily loaded. Please try later', null);
+        return;
+      }       
       logger.info('Total requests to dispatch ' + partialLoadedHosts.length);
       async.each(partialLoadedHosts, function (host, doneWithHost) {
         //Dispatching requests
