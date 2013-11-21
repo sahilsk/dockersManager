@@ -368,8 +368,8 @@ exports.createInAll = function (req, res) {
       });
     },
     function (callback) {
-      if( dockerHostList.length === 0 ){
-        callback( "No dockerhost available yet.",null);
+      if (dockerHostList.length === 0) {
+        callback('No dockerhost available yet.', null);
         return;
       }
       async.filter(dockerHostList, function (host, cb) {
@@ -444,22 +444,21 @@ exports.createInAll = function (req, res) {
           req.session.messages = err;
         else
           req.session.messages = { errorList: hostResponseResultArr };
-          logger.info('Completed.');
-          callback(null, "/containers/list");
+        logger.info('Completed.');
+        callback(null, '/containers/list');
       });
     }
-  ], function(err, results){
+  ], function (err, results) {
     //if(err) return next(err);
-    if( err){
+    if (err) {
       req.session.messages = {
         text: JSON.stringify(err),
         type: 'error',
-        oData :jsonContainerData
+        oData: jsonContainerData
       };
-      res.redirect("/containers/new");
-    }else
-      res.redirect("/containers/list");
-
+      res.redirect('/containers/new');
+    } else
+      res.redirect('/containers/list');
     res.end();
     return;
   });
