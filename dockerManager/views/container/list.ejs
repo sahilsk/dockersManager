@@ -3,6 +3,26 @@
 
 
 
+<% if( messages && typeof messages.errorList !== "undefined" && messages.errorList ){ %>
+
+   	<ul class="flash" >
+   		<% messages.errorList.forEach( function(item, index){ %> 
+   				
+   			<li class="<%= item.type %>" >
+   				<%= item.text %>
+				<span> &cross; </span>
+			</li>
+
+   		<%  }); %>
+		
+	</ul>
+
+<% } %>
+
+
+
+
+
 <h1> Dashboard </h1>
 
 
@@ -23,8 +43,8 @@
 <% if( typeof data === "object" && data.length == 0 ){ %>
 	
 	<div class="somethingWentWrong">
-		<span > No Image Created Yet. </span>
-		<a href="/"> Create New Image </a>
+		<span > No container Created Yet. </span>
+		<a href="/containers/new"> Create New Container </a>
 	</div>	
 <% } %>
 

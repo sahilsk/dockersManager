@@ -29,6 +29,13 @@ a {
 .flash span:hover {
   color: #d1d1d1;
 }
+ul.flash {
+  position: relative;
+  list-style: none;
+}
+ul.flash li {
+  border-bottom: 1px dashed #fff;
+}
 .alert {
   background-color: #B43C59;
   color: #FFF;
@@ -39,6 +46,10 @@ a {
 }
 .warn {
   background-color: #B4973C;
+  color: #FFF;
+}
+.success {
+  background-color: #188039;
   color: #FFF;
 }
 .clr {

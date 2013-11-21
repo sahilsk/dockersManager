@@ -273,3 +273,6 @@ exports.isDockerServerAlive = function( dockerHost, dockerPort, callback){
 }
 
 
+exports.isServerFullyLoaded = function(server, callback){
+    callback(true);
+}

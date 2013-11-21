@@ -1,5 +1,5 @@
 
-<% if( messages ){ %>
+<% if( messages &&  typeof messages.type !== "undefined"){ %>
 
 	<div class="flash  <%= messages.type %>" >
 		<%= messages.text %>
