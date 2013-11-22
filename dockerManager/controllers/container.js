@@ -386,7 +386,8 @@ exports.createInAll = function (req, res) {
       if (liveHostsList.length === 0) {
         callback('No Docker Server is up. Please try later. ', null);
         return;
-      }      
+      }
+      logger.info("Checking server load ...");
       async.filter(liveHostsList, appUtil.isServerFullyLoaded, function (results) {
         partialLoadedHosts = results;
         callback();

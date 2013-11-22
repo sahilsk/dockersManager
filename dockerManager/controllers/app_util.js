@@ -274,5 +274,37 @@ exports.isDockerServerAlive = function( dockerHost, dockerPort, callback){
 
 
 exports.isServerFullyLoaded = function(server, callback){
-    callback(true);
+
+  logger.info("Checking Load on server <%s:%s>", server.ip, server.port);
+  var resBody = '';
+  var options = {
+      hostname: server.ip,
+      port: 3005, //server.port,
+      path: "/host/avgLoad?minutes=15",
+      method: 'GET'
+    };
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        resBody += chunk;
+      });
+      res.on('end', function () {
+
+        jResBody = JSON.parse(resBody);
+        if( typeof jResBody.AverageLoad !== "undefined" && jResBody.AverageLoad ){
+            logger.info("Load on server <%s:%s>: %s", server.ip, server.port, jResBody.AverageLoad);
+            if( jResBody.AverageLoad >= 0.7) callback(false);
+            else callback(true);
+        }else 
+          callback(false);
+
+      });
+    });
+  req.on('error', function (e) {
+    logger.error('Problem requesting avg. load: ' + e.message);
+    callback(false);
+  });
+  req.end();
 }
