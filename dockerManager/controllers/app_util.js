@@ -99,8 +99,6 @@ exports.makeFileUploadRequest = function (filePath, queryString, onResult) {
     req.end();
   });
 };
-
-
 exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onResult) {
 
   var dockerResponse = {};
@@ -135,7 +133,6 @@ exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onR
   });
 
 };
-
 exports.makePostRequestToHost = function (host, queryString, headers, requestBody,  callback) {
   var inspectData = '';
   
@@ -171,8 +168,6 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
   if( requestBody) req.write(requestBody);
   req.end();
 };
-
-
 exports.makePostRequest = function (queryString, headers, body,  callback) {
   var inspectData = '';
   
@@ -208,17 +203,12 @@ exports.makePostRequest = function (queryString, headers, body,  callback) {
   if( body) req.write(body);
   req.end();
 };
-
-
 exports.isHostAlive =  function(hostAddress, callback){
 
     ping.sys.probe(hostAddress, function(isAlive){ 
       callback(isAlive);     
     });  
-
 }
-
-
 exports.isDockerServerAlive = function( dockerHost, dockerPort, callback){
 
   var options = {
@@ -269,10 +259,7 @@ exports.isDockerServerAlive = function( dockerHost, dockerPort, callback){
   });
 
   req.end();
-
 }
-
-
 exports.isServerFullyLoaded = function(server, callback){
 
   logger.info("Checking Load on server <%s:%s>", server.ip, server.port);
@@ -294,8 +281,8 @@ exports.isServerFullyLoaded = function(server, callback){
 
         jResBody = JSON.parse(resBody);
         if( typeof jResBody.AverageLoad !== "undefined" && jResBody.AverageLoad ){
-            logger.info("Load on server <%s:%s>: %s", server.ip, server.port, jResBody.AverageLoad);
-            if( jResBody.AverageLoad >= 0.7) callback(false);
+            logger.info("Load on server <%s:%s>: %s", server.ip, server.port,parseFloat(jResBody.AverageLoad));
+            if( parseFloat(jResBody.AverageLoad) >= 2.7) callback(false);
             else callback(true);
         }else 
           callback(false);
@@ -303,8 +290,42 @@ exports.isServerFullyLoaded = function(server, callback){
       });
     });
   req.on('error', function (e) {
-    logger.error('Problem requesting avg. load: ' + e.message);
+    logger.error('Error in requesting average load: ' + e.message);
     callback(false);
   });
   req.end();
+}
+exports.sendImagePullRequestToHost = function(host, imageName, repository, callback){
+
+  var resposeBody = '';
+  
+  var options = {
+      hostname: host.ip,
+      port: 3005,
+      path: "/pullImage/image="+imageName+"&repository="+repository,
+      method: 'POST'
+  };
+  
+
+  logger.info(options);
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        resposeBody += chunk;
+      });
+      res.on('end', function () {
+        console.log('BODY', resposeBody);
+        callback(resposeBody, res.statusCode, null);
+      });
+    });
+  req.on('error', function (e) {
+    resposeBody = '';
+    console.log('problem with request: ' + e.message);
+    callback(null, null, e.message);
+  });
+
+  if( requestBody) req.write(requestBody);
+  req.end(); 
 }

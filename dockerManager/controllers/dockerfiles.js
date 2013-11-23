@@ -9,6 +9,9 @@ var fs = require('fs');
 var path = require('path');
 var appUtil = require('./app_util');
 var winston = require('winston');
+var async = require('async');
+var util = require('util');
+
 var config = require('../config/config');
 var logger = require('../config/logger');
 var redis = require('redis');
@@ -130,7 +133,7 @@ exports.uploadToAll = function (req, res) {
     };
     res.redirect('/');
     res.end();
-    return true;
+    return ;
   }
   if( typeof req.files.dockerfile.name === "undefined" || req.files.dockerfile.name.length === 0) {
     req.session.messages = {
@@ -139,47 +142,148 @@ exports.uploadToAll = function (req, res) {
     };
     res.redirect('/');
     res.end();
-    return true;
+    return ;
   }
   var totalHosts = 0;
   var liveHostsList = [];
-  var dockerfileBuiltStatus = [];
-  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
-    totalHosts = hostsList.length;
-    var pendingHostsCount = hostsList.length;
-    hostsList.forEach(function (host) {
-      var jHost = JSON.parse(host);
-      if (typeof jHost.ip !== 'undefined') {
-        appUtil.isDockerServerAlive(jHost.ip, jHost.port, function (isAlive, errorMessage) {
+  var dockerHostList =[];
+  var dockerfileBuiltReport = [];
+
+  async.series([
+   function (callback) {
+      getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList;
+          callback();
+        }
+      });
+    },
+    function (callback) {
+      if (dockerHostList.length === 0) {
+        callback('No Docker host available yet.', null);
+        return;
+      }
+      async.filter(dockerHostList, function (host, cb) {
+        appUtil.isDockerServerAlive(host.ip, host.port, function (isAlive, errorMessage) {
           logger.info('Alive : ' + isAlive);
-          if (isAlive === true)
-            liveHostsList.push(jHost);
-          else
-            logger.info('Server %s:%s is not reachable.', jHost.ip, jHost.port);
-          pendingHostsCount--;
-          prcessLiveHostsIfComplete(pendingHostsCount);
-        });  //  end 'isDockerServerAlive()'
-      } else
-        pendingHostsCount--;
-    });  // end 'forEach'
-  });
-  function prcessLiveHostsIfComplete(pendingHostsCount) {
+          cb(isAlive);
+        });
+      }, function (results) {
+        liveHostsList = results;
+        callback();
+      });
+    },
+    function(callback){
+      if (liveHostsList.length === 0) {
+        callback('No Docker Server is up. Please try again later. ', null);
+        return;
+      }
 
-    if( pendingHostsCount !== 0){
-        logger.info('live host count: %d', liveHostsList.length);
-        return 0;
+      /*
+      || Dispatch build request
+          |-> Build on one dockerhost
+          |-> Send pull request to all other livehosts
+      ||
+      */
+      var liveHost = liveHostsList.pop();
+
+      //Building Image on dockerhost
+
+      buildDockerfileOnHost(liveHost, tarFileUploadedPath, '/build?t=' + require("querystring").escape(buildTagName), function (result, statusCode, error){
+          switch(statusCode){
+            case 200:
+              logger.info("<%s:%s> : Dockerfile Built successfully.", liveHost.ip, liveHost.port);
+              dockerfileBuiltReport.push( {text: util.format("<%s:%s> : Dockerfile Built successfully.", liveHost.ip, liveHost.port), type: "success"});
+              callback();
+              break;
+            case 500:
+              logger.info("<%s:%s> : Failed to build uploaded Dockerfile. Cause: Server error.", liveHost.ip, liveHost.port);
+              dockerfileBuiltReport.push( {text: util.format("<%s:%s> : Failed to build uploaded Dockerfile. Cause: Server error.", liveHost.ip, liveHost.port), type:'error'});
+              callback( util.format("<%s:%s> : Failed to build uploaded Dockerfile. Cause: Server error.", liveHost.ip, liveHost.port), null );
+              break;
+            default:
+              logger.info("<%s:%s> : Failed to build uploaded Dockerfile. Host is unreachable.", liveHost.ip, liveHost.port);
+              dockerfileBuiltReport.push({ text : util.format("<%s:%s> : Failed to build uploaded Dockerfile.  Host is unreachable.", liveHost.ip, liveHost.port), type:'error'});
+              callback( util.format("<%s:%s> : Failed to build uploaded Dockerfile.  Host is unreachable.", liveHost.ip, liveHost.port), null );
+              break;
+          }
+      });    
+    },
+    function(callback){
+      //Send pull request to rest of the hosts
+      async.each( liveHostsList, function(host, cb){
+          appUtil.sendImagePullRequestToHost(host, imageName, repository, function(result, statusCode, err){
+            switch(statusCode){
+              case 200:
+                logger.info("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.ip, liveHost.port, imageName, repository);
+                dockerfileBuiltReport.push( {text: util.format("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.ip, liveHost.port, imageName, repository), type:"success"});
+                break;
+              case 500:
+                logger.info("<%s:%s> : '<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.ip, liveHost.port, imageName, repository);
+                dockerfileBuiltReport.push({text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.ip, liveHost.port, imageName, repository), type:"error"});
+                break;
+              default:
+                logger.info( util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.ip, liveHost.port, imageName, repository));
+                dockerfileBuiltReport.push({ text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.ip, liveHost.port, imageName, repository), type:"error"});
+                break;
+            }
+            cb();
+          });
+
+      }, function(err){
+        if (err)
+          callback(err,null);
+        else
+          req.session.messages = { errorList: dockerfileBuiltReport };
+        logger.info('Dockerfile built process finished.');
+        callback();
+      });
+
     }
+    ], function(err, results){
+      if (err) {
+        req.session.messages = {
+          text: JSON.stringify(err),
+          type: 'error',
+        };
+        res.redirect('/');
+      } else
+        res.redirect('/');
+      res.end();
+      return;
+  });
 
+
+  function getDockerHosts(callback) {
+    var jHostList = [];
+    rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
+      if (err) {
+        callback(err, null);
+        return;
+      }
+      jHostList = hostsList.map(function (host) {
+        return JSON.parse(host);
+      });
+      async.filter(jHostList, function (host, cb) {
+        if (typeof host.ip !== 'undefined')
+          cb(true);
+        else
+          cb(false);
+      }, function (results) {
+        logger.info('Finish filtering hosts...' + results.length);
+        callback(null, results);
+      });
+    });
+  }
+
+
+  function buildProcess(liveHost, callback) {
 
     //hostslist complete and live host has list of all live hosts
-    logger.info('Starting dsipatching built request to %d docker servers out of %d', liveHostsList.length, totalHosts.length);
-    //Get Server load
-    liveHostsList = liveHostsList.map(function (host) {
-      host.load = parseInt(Math.random(2) * 10);
-      return host;
-    });
+    logger.info('Starting dsipatching built request to <%s:%s>', liveHost.ip, liveHost.port);
 
-    liveHost =  liveHostsList[0]; //leastLoadedServer( liveHostsList);
 
     //Build dockerfile on least loaded server
     appUtil.makeFileUploadRequestToHost(liveHost, tarFileUploadedPath, '/build?t=' + require("querystring").escape(buildTagName), function (result, status, error) {
@@ -228,13 +332,11 @@ exports.uploadToAll = function (req, res) {
         };
         break;
       }
-      res.redirect("/");
-      res.end();
 
-    });
-    // end 'makeFileUploadRequestToHost'
+    });  // end 'makeFileUploadRequestToHost'
 
   }
+
   req.on('error', function (e) {
     req.session.messages = {
       text: 'Failed to upload file. Reason: ' + e.message + '',
@@ -252,9 +354,30 @@ function buildDockerfile(filePath, buildName, onResult) {
   //	onResult("29dfb634e42d75734a2411a16d5b16cbc5b53758ddc221cce954cafac49069d8", "success", null);
   console.log('Building file( ' + buildName + '): ' + filePath);
   appUtil.makeFileUploadRequest(filePath, '/build?t=' + buildName, function (buildResult, statusCode, error) {
+
     onResult(buildResult, statusCode, error);
   });
 }
+/*
+||  buildDockerfileOnHost(host, filepath, buildname) 
+||  Description:  build dockerfile (filePath) and built it with tag 'buildName'
+*/
+function buildDockerfileOnHost(host, filePath, buildName, onResult) {
+  //  onResult("29dfb634e42d75734a2411a16d5b16cbc5b53758ddc221cce954cafac49069d8", "success", null);
+  console.log('Building file( ' + buildName + '): ' + filePath);
+  appUtil.makeFileUploadRequestToHost(host, filePath, '/build?t=' + buildName, function (buildResult, statusCode, error) {
+
+    onResult(buildResult, statusCode, error);
+  });
+}
+
+
+
+
+
+
+
+
 /*
 ||	progressStatus() 
 || 	Description:  function to track file uploading progress status 

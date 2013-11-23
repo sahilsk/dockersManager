@@ -448,17 +448,16 @@ exports.createInAll = function (req, res) {
           }
           doneWithHost();
         });
-      }, function (err, result) {
+      }, function (err, results) {
         if (err)
-          req.session.messages = err;
+          callback(err,null);
         else
           req.session.messages = { errorList: hostResponseResultArr };
         logger.info('Completed.');
-        callback(null, '/containers/list');
+        callback();
       });
     }
   ], function (err, results) {
-    //if(err) return next(err);
     if (err) {
       req.session.messages = {
         text: JSON.stringify(err),

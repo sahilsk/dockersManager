@@ -1,6 +1,20 @@
 <% include ../layouts/dashboard_layout_top %>
 
+<% if( messages && typeof messages.errorList !== "undefined" && messages.errorList ){ %>
 
+   	<ul class="flash" >
+   		<% messages.errorList.forEach( function(item, index){ %> 
+   				
+   			<li class="<%= item.type %>" >
+   				<%= item.text %>
+				<span> &cross; </span>
+			</li>
+
+   		<%  }); %>
+		
+	</ul>
+
+<% } %>
 
 <h3> Upload docfile </h3>
 
