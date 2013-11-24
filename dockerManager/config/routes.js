@@ -24,8 +24,6 @@ exports.makeRoutes= function(app){
 	*/
 	app.post("/upload", dockerfile.uploadToAll);
 
-	app.get("/progressStatus", dockerfile.progressStatus);
-
 	app.get("/dashboard/:docfileName", function(req, res){
 		res.redirect("/dockers/" + req.params.docfileName );
 

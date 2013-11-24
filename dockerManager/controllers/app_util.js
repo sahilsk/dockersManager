@@ -109,7 +109,7 @@ exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onR
       method: 'POST'
     };
 
-  logger.info("Dispatching dockerfile to : " + JSON.stringify(options) );
+  logger.info("Building dockerfile on " + JSON.stringify(options) );
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
@@ -326,6 +326,5 @@ exports.sendImagePullRequestToHost = function(host, imageName, repository, callb
     callback(null, null, e.message);
   });
 
-  if( requestBody) req.write(requestBody);
   req.end(); 
 }

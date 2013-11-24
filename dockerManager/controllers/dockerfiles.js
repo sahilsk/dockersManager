@@ -119,7 +119,7 @@ exports.uploadToAll = function (req, res) {
   var newFilePath = path.join(__dirname, '../uploads');
   var newFileName = 'dockerfile_copy';
   var uploadedBytes = '';
-  var buildTagName = req.body.build_name;
+  var buildTagName =  require("querystring").escape( req.body.build_name );
   var tarFileUploadedPath = req.files.dockerfile.path;
   var uploadedFileName = req.files.dockerfile.name;
   console.log('file name', uploadedFileName);
@@ -149,10 +149,11 @@ exports.uploadToAll = function (req, res) {
   var dockerHostList =[];
   var dockerfileBuiltReport = [];
 
-  async.series([
+  async.series(
+  [
    function (callback) {
       getDockerHosts(function (err, hostList) {
-        if (err)
+        if (err) 
           callback(err, null);
         else {
           dockerHostList = hostList;
@@ -191,7 +192,7 @@ exports.uploadToAll = function (req, res) {
 
       //Building Image on dockerhost
 
-      buildDockerfileOnHost(liveHost, tarFileUploadedPath, '/build?t=' + require("querystring").escape(buildTagName), function (result, statusCode, error){
+      buildDockerfileOnHost(liveHost, tarFileUploadedPath, '/build?t=' + buildTagName, function (result, statusCode, error){
           switch(statusCode){
             case 200:
               logger.info("<%s:%s> : Dockerfile Built successfully.", liveHost.ip, liveHost.port);
@@ -213,48 +214,60 @@ exports.uploadToAll = function (req, res) {
     },
     function(callback){
       //Send pull request to rest of the hosts
-      async.each( liveHostsList, function(host, cb){
-          appUtil.sendImagePullRequestToHost(host, imageName, repository, function(result, statusCode, err){
+       if (liveHostsList.length === 0) {
+        if(dockerHostList > liveHostsList){
+         dockerfileBuiltReport.push({text : 'No other Docker Server is up. Please try again later. ', type:"error"});
+        }
+        req.session.messages = { errorList: dockerfileBuiltReport };
+
+        callback();
+        return;
+      }
+      var repository = config.repository.development;
+      async.each( liveHostsList, function(liveHost, cb){
+          appUtil.sendImagePullRequestToHost(liveHost, buildTagName, repository, function(result, statusCode, err){
             switch(statusCode){
               case 200:
-                logger.info("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.ip, liveHost.port, imageName, repository);
-                dockerfileBuiltReport.push( {text: util.format("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.ip, liveHost.port, imageName, repository), type:"success"});
+                logger.info("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.ip, liveHost.port, buildTagName, repository);
+                dockerfileBuiltReport.push( {text: util.format("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.ip, liveHost.port, buildTagName, repository), type:"success"});
                 break;
               case 500:
-                logger.info("<%s:%s> : '<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.ip, liveHost.port, imageName, repository);
-                dockerfileBuiltReport.push({text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.ip, liveHost.port, imageName, repository), type:"error"});
+                logger.info("<%s:%s> : '<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.ip, liveHost.port, buildTagName, repository);
+                dockerfileBuiltReport.push({text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.ip, liveHost.port, buildTagName, repository), type:"error"});
                 break;
               default:
-                logger.info( util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.ip, liveHost.port, imageName, repository));
-                dockerfileBuiltReport.push({ text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.ip, liveHost.port, imageName, repository), type:"error"});
+                logger.info( util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.ip, liveHost.port, buildTagName, repository));
+                dockerfileBuiltReport.push({ text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.ip, liveHost.port, buildTagName, repository), type:"error"});
                 break;
             }
             cb();
           });
 
       }, function(err){
-        if (err)
+        if (err) 
           callback(err,null);
-        else
-          req.session.messages = { errorList: dockerfileBuiltReport };
-        logger.info('Dockerfile built process finished.');
+        else 
+         req.session.messages = { errorList: dockerfileBuiltReport };
+        logger.info("Dockerfiles built process on multiple hosts finished.");
         callback();
-      });
-
+     });
     }
-    ], function(err, results){
+	 
+	 ],
+	 function(err, results){
       if (err) {
         req.session.messages = {
           text: JSON.stringify(err),
-          type: 'error',
+          type: 'error'
         };
         res.redirect('/');
       } else
-        res.redirect('/');
+       res.redirect('/');
       res.end();
       return;
-  });
-
+	 }
+  );
+}
 
   function getDockerHosts(callback) {
     var jHostList = [];
@@ -278,86 +291,6 @@ exports.uploadToAll = function (req, res) {
     });
   }
 
-
-  function buildProcess(liveHost, callback) {
-
-    //hostslist complete and live host has list of all live hosts
-    logger.info('Starting dsipatching built request to <%s:%s>', liveHost.ip, liveHost.port);
-
-
-    //Build dockerfile on least loaded server
-    appUtil.makeFileUploadRequestToHost(liveHost, tarFileUploadedPath, '/build?t=' + require("querystring").escape(buildTagName), function (result, status, error) {
-      switch (status) {
-      case 200:
-        logger.info('Dockerfile Built successfully');
-         req.session.messages = {
-          ip: liveHost.ip,
-          port: liveHost.port,
-          status: 'success',
-          text: 'Image Built Successfully.!!',
-          type:'alert'
-        };
-        break;
-      case 500:
-        //jResult = JSON.parse(result);
-        console.log(result.message);
-        if (result.message.indexOf('exit status 2') !== -1) {
-          logger.info('Uploaded file is not a valid tar format.!!');
-           req.session.messages = {
-            ip: liveHost.ip,
-            port: liveHost.port,
-            status: 'fail',
-            text: 'Uploaded file is not a valid tar format.!!',
-            type:'error'
-
-          };
-        } else {
-           req.session.messages = {
-            ip: liveHost.ip,
-            port: liveHost.port,
-            status: 'fail',
-            text: 'Dockerfile not found inside tar. !!',
-            type:'error'
-          };
-        }
-        break;
-      default:
-        logger.info('Please check your network connection. Cause: ' + error);
-         req.session.messages = {
-          ip: liveHost.ip,
-          port: liveHost.port,
-          status: 'fail',
-          text: 'Unable to query docker image. Please check your internet connection. <' + error + '>',
-          type:'error'
-        };
-        break;
-      }
-
-    });  // end 'makeFileUploadRequestToHost'
-
-  }
-
-  req.on('error', function (e) {
-    req.session.messages = {
-      text: 'Failed to upload file. Reason: ' + e.message + '',
-      type: 'error'
-    };
-    res.redirect('/' + req.params.id);
-    res.end();
-  });
-};
-/*
-||	buildDockerfile(filepath, buildname) 
-|| 	Description:  build dockerfile (filePath) and built it with tag 'buildName'
-*/
-function buildDockerfile(filePath, buildName, onResult) {
-  //	onResult("29dfb634e42d75734a2411a16d5b16cbc5b53758ddc221cce954cafac49069d8", "success", null);
-  console.log('Building file( ' + buildName + '): ' + filePath);
-  appUtil.makeFileUploadRequest(filePath, '/build?t=' + buildName, function (buildResult, statusCode, error) {
-
-    onResult(buildResult, statusCode, error);
-  });
-}
 /*
 ||  buildDockerfileOnHost(host, filepath, buildname) 
 ||  Description:  build dockerfile (filePath) and built it with tag 'buildName'
@@ -366,23 +299,6 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
   //  onResult("29dfb634e42d75734a2411a16d5b16cbc5b53758ddc221cce954cafac49069d8", "success", null);
   console.log('Building file( ' + buildName + '): ' + filePath);
   appUtil.makeFileUploadRequestToHost(host, filePath, '/build?t=' + buildName, function (buildResult, statusCode, error) {
-
     onResult(buildResult, statusCode, error);
   });
 }
-
-
-
-
-
-
-
-
-/*
-||	progressStatus() 
-|| 	Description:  function to track file uploading progress status 
-	ToDo
-*/
-exports.progressStatus = function (req, res) {
-  res.send('progress: ' + parseInt(progress, 10) + '%\n');
-};
