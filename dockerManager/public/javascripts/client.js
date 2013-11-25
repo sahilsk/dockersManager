@@ -21,7 +21,7 @@ function UI_init() {
 
 	if( $(".flash").length > 0  ){
 		setTimeout( function(){
-			$(".flash").fadeOut('slow');
+		//	$(".flash").fadeOut('slow');
 		}, "5000");
 	}
 

@@ -9,7 +9,16 @@ var config = {
     	port: 6379
     },
     repository :{
-    	development: "192.168.0.231"
+    	development:{
+        ip: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com",
+        port: 5000
+      } ,
+      production:{
+        ip: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com",
+        port: 5000
+      } 
+
+
     }
 
   };

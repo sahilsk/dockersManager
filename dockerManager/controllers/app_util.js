@@ -295,14 +295,48 @@ exports.isServerFullyLoaded = function(server, callback){
   });
   req.end();
 }
-exports.sendImagePullRequestToHost = function(host, imageName, repository, callback){
+exports.sendImagePullRequestToHost = function(host, tag, repository, callback){
 
   var resposeBody = '';
   
   var options = {
       hostname: host.ip,
       port: 3005,
-      path: "/pullImage/image="+imageName+"&repository="+repository,
+      path: "/pullImage/tag="+tag+"&repository="+ JSON.stringify(repository),
+      method: 'POST'
+  };
+  
+
+  logger.info(options);
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        resposeBody += chunk;
+      });
+      res.on('end', function () {
+        console.log('BODY', resposeBody);
+        callback(resposeBody, res.statusCode, null);
+      });
+    });
+  req.on('error', function (e) {
+    resposeBody = '';
+    console.log('problem with request: ' + e.message);
+    callback(null, null, e.message);
+  });
+
+  req.end(); 
+}
+
+exports.sendImagePushRequestToHost = function(host, tag, repository, callback){
+
+  var resposeBody = '';
+  
+  var options = {
+      hostname: host.ip,
+      port: 3005,
+      path: "/pushImage/tag="+tag+"&repository="+ JSON.stringify(repository),
       method: 'POST'
   };
   
