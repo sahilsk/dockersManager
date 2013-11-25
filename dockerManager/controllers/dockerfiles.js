@@ -149,7 +149,7 @@ exports.uploadToAll = function (req, res) {
   var dockerHostList =[];
   var dockerfileBuiltReport = [];
   var buildServer ;
-  var repository = config.repository.development;
+  var repository = config.repository.development; //util.format("%s:%s", config.repository.development.ip, config.repository.development.port);
 
   async.series(
   [
@@ -195,7 +195,7 @@ exports.uploadToAll = function (req, res) {
 
       //Building Image on dockerhost
 
-      buildDockerfileOnHost(buildServer, tarFileUploadedPath, '/build?t=' + buildTagName, function (result, statusCode, error){
+      buildDockerfileOnHost(buildServer, tarFileUploadedPath, buildTagName, function (result, statusCode, error){
           switch(statusCode){
             case 200:
               logger.info("<%s:%s> : Dockerfile Built successfully.", buildServer.ip, buildServer.port);

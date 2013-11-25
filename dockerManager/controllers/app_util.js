@@ -302,7 +302,7 @@ exports.sendImagePullRequestToHost = function(host, tag, repository, callback){
   var options = {
       hostname: host.ip,
       port: 3005,
-      path: "/pullImage/tag="+tag+"&repository="+ JSON.stringify(repository),
+      path: "/docker/pullImage/tag="+tag+"&repository="+ JSON.stringify(repository),
       method: 'POST'
   };
   
@@ -336,12 +336,15 @@ exports.sendImagePushRequestToHost = function(host, tag, repository, callback){
   var options = {
       hostname: host.ip,
       port: 3005,
-      path: "/pushImage/tag="+tag+"&repository="+ JSON.stringify(repository),
+      path: util.format("/docker/pushImage?tag=%s&repository=%s", tag,  encodeURIComponent(JSON.stringify(repository)) ),
+      //path: util.format("/docker/pushImage?tag=%s&repository=%s", tag, repository ),
       method: 'POST'
   };
   
 
   logger.info(options);
+  logger.info("Sending request :" + util.format("/pushImage?tag=%s&repository=%s", tag, JSON.stringify(repository)  ) );
+      
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
@@ -353,7 +356,7 @@ exports.sendImagePushRequestToHost = function(host, tag, repository, callback){
         console.log('BODY', resposeBody);
         callback(resposeBody, res.statusCode, null);
       });
-    });
+  });
   req.on('error', function (e) {
     resposeBody = '';
     console.log('problem with request: ' + e.message);
