@@ -120,6 +120,7 @@ exports.uploadToAll = function (req, res) {
   var newFileName = 'dockerfile_copy';
   var uploadedBytes = '';
   var buildTagName =  require("querystring").escape( req.body.build_name );
+  var remoteBuildTagName = config.repository.development.ip+":"+config.repository.development.port+"/"+buildTagName;
   var tarFileUploadedPath = req.files.dockerfile.path;
   var uploadedFileName = req.files.dockerfile.name;
   console.log('file name', uploadedFileName);
@@ -195,7 +196,8 @@ exports.uploadToAll = function (req, res) {
 
       //Building Image on dockerhost
 
-      buildDockerfileOnHost(buildServer, tarFileUploadedPath, buildTagName, function (result, statusCode, error){
+      buildDockerfileOnHost(buildServer, tarFileUploadedPath, remoteBuildTagName, 
+        function (result, statusCode, error){
           switch(statusCode){
             case 200:
               logger.info("<%s:%s> : Dockerfile Built successfully.", buildServer.ip, buildServer.port);
@@ -217,7 +219,7 @@ exports.uploadToAll = function (req, res) {
     },
      //PUSHing the built image on the registry
     function( callback){  
-        appUtil.sendImagePushRequestToHost( buildServer, buildTagName, repository , function( result, statusCode){
+        appUtil.sendImagePushRequestToHost( buildServer, remoteBuildTagName, repository , function( result, statusCode){
             switch(statusCode){
               case 200:
                 logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", buildServer.ip, buildServer.port, buildTagName, JSON.stringify(repository) );
