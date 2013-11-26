@@ -28,6 +28,11 @@ exports.makeRoutes= function(app){
 		res.redirect("/dockers/" + req.params.docfileName );
 
 	});
+	app.get("/dockerfiles", dockerfile.list);
+	app.get("/dockerfiles/list", dockerfile.list);
+	app.get("/dockerfiles/:buildTag", dockerfile.show);
+
+
 
 
 	
@@ -40,11 +45,8 @@ exports.makeRoutes= function(app){
 	app.get("/dockers", function(req, res){
 		req.session.messages = {text: "Please upload dockerfile first", type: "warn"};
 	    res.redirect("/"); 
-
 	})
-
 	app.get("/dockers/list", docker.list);
-
 	app.get("/dockers/:id", docker.index);
 	app.get("/dockers/:id/inspect", docker.inspect);
 	app.get("/dockers/:id/delete", docker.delete);
@@ -58,21 +60,14 @@ exports.makeRoutes= function(app){
 	||
 	*/
 	app.get("/containers/:id/inspect", container.inspect);
-	
 	app.get("/containers", container.index);
 	app.get("/containers/list", container.list);
-
 	app.get("/containers/:id/toggle", container.toggleStatus);
-
 	app.get("/containers/new", container.new);
 //	app.post("/containers/create", container.create);
 	app.post("/containers/create", container.createInAll);
-
 	app.get("/containers/:id/kill", container.kill)
 	app.get("/containers/:id/delete", container.delete);
-
-
-
 
 
 

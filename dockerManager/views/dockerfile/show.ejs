@@ -1,0 +1,19 @@
+<% include ../../layouts/dashboard_layout_top %>
+
+<% if( statusCode === 200) { %>
+
+	<% include ../common/dockerImagePanel %>
+
+<% } else{ %>
+	
+	<div class="somethingWentWrong">
+		<span ><%= data %> </span>
+		<a href="/"> Create New Image </a>
+	</div>	
+
+<% } %>
+			
+
+
+<% include ../../layouts/dashboard_layout_bottom %>
+

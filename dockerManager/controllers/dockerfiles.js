@@ -150,6 +150,7 @@ exports.uploadToAll = function (req, res) {
   var dockerHostList =[];
   var dockerfileBuiltReport = [];
   var buildServer ;
+  var builtImageID  = null;
   var repository = config.repository.development; //util.format("%s:%s", config.repository.development.ip, config.repository.development.port);
 
   async.series(
@@ -202,7 +203,11 @@ exports.uploadToAll = function (req, res) {
             case 200:
               logger.info("<%s:%s> : Dockerfile Built successfully.", buildServer.ip, buildServer.port);
               dockerfileBuiltReport.push( {text: util.format("<%s:%s> : Dockerfile Built successfully.", buildServer.ip, buildServer.port), type: "success"});
-              callback();
+              builtImageID = result.id;
+              if( builtImageID === null)
+                callback("Failed to get built image id");
+              else
+                callback();
               break;
             case 500:
               logger.info("<%s:%s> : Failed to build uploaded Dockerfile. Cause: Server error.", buildServer.ip, buildServer.port);
@@ -217,6 +222,40 @@ exports.uploadToAll = function (req, res) {
           }
       });    
     },
+    // Store build information in database 
+    function(callback){
+      
+      logger.info("Built Image Id: <%s>", builtImageID);
+      var newSetEntryKey = util.format("Image_%d", Date.now() );
+      rdsClient.hmset( newSetEntryKey,
+               "id" , newSetEntryKey,
+               "image_id", builtImageID ,
+               "build_tag", buildTagName, 
+               "build_server", JSON.stringify(buildServer),
+               "isReplicated", false,
+               "createdAt", Date.now(),
+            function(err, result){
+              if(err)
+                callback("Failed to insert record in the database");
+              else{
+                rdsClient.lpush("SubmittedImages", newSetEntryKey , function(err, result){
+                    if(!err){
+                      logger.info( "Image information stored successfully");
+                      callback(err);
+                    }else{
+                      logger.info("Failed to push set key into images list");
+                      callback();
+                    }
+                });
+              }
+
+            } );
+    }
+
+
+
+
+    /*
      //PUSHing the built image on the registry
     function( callback){  
         appUtil.sendImagePushRequestToHost( buildServer, remoteBuildTagName, repository , function( result, statusCode){
@@ -282,6 +321,7 @@ exports.uploadToAll = function (req, res) {
         callback();
       });  // end 'async.each'
     }
+    */
 	 
 	 ],
 	 function(err, results){
@@ -294,34 +334,100 @@ exports.uploadToAll = function (req, res) {
            req.session.messages.errorList = dockerfileBuiltReport;
         res.redirect('/');
       } else
-       res.redirect('/');
+        res.redirect("/dockerfiles" );
+//        res.redirect('/dockerfiles/'+ encodeURIComponent(buildTagName) );
       res.end();
       return;
 	 }
   );
 }
 
-  function getDockerHosts(callback) {
-    var jHostList = [];
-    rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
-      if (err) {
-        callback(err, null);
-        return;
+
+
+exports.list= function(req,res){
+  var submittedImageList = [];
+
+
+  rdsClient.lrange("SubmittedImages", 0, -1, function(err, keys){
+    if(err){
+      req.session.messages ={ text:"Failed to query redis. Cause: " + err, type:"error"};
+      res.redirect("/");
+      res.end();
+      return;
+    }
+
+    logger.info("Keys : "+ keys);
+
+    async.each( keys, function(key, cb){
+
+      logger.info("Key : "+ key);
+      //verify if is valid id
+      if( key.indexOf("Image_") != -1){
+
+        //query set to retrieve the list
+        rdsClient.hgetall( key, function(e, obj){
+            if(!e){
+                submittedImageList.push(obj);
+                cb();
+            }else{
+              logger.info(e);
+              cb(e);
+            }
+
+        });
       }
-      jHostList = hostsList.map(function (host) {
-        return JSON.parse(host);
-      });
-      async.filter(jHostList, function (host, cb) {
-        if (typeof host.ip !== 'undefined')
-          cb(true);
-        else
-          cb(false);
-      }, function (results) {
-        logger.info('Finish filtering hosts...' + results.length);
-        callback(null, results);
-      });
+
+    }, function(err, result){
+      if(!err){
+        logger.info( submittedImageList);
+        res.render("dockerfile/list", {
+          title : "Submitted Images",
+          imageList:submittedImageList
+        });
+        res.end();
+      }else{
+        req.session.messages ={ text:"Failed to query redis. Cause: " + err, type:"error"};
+        res.redirect("/");
+        res.end();
+      }
+
+    });// end async.each
+
+  });
+
+}
+
+
+exports.show = function(req, res){
+
+    var buildTagName =  req.params.buildTag;
+
+
+
+}
+
+
+function getDockerHosts(callback) {
+  var jHostList = [];
+  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
+    if (err) {
+      callback(err, null);
+      return;
+    }
+    jHostList = hostsList.map(function (host) {
+      return JSON.parse(host);
     });
-  }
+    async.filter(jHostList, function (host, cb) {
+      if (typeof host.ip !== 'undefined')
+        cb(true);
+      else
+        cb(false);
+    }, function (results) {
+      logger.info('Finish filtering hosts...' + results.length);
+      callback(null, results);
+    });
+  });
+}
 
 /*
 ||  buildDockerfileOnHost(host, filepath, buildname) 
@@ -330,7 +436,16 @@ exports.uploadToAll = function (req, res) {
 function buildDockerfileOnHost(host, filePath, buildName, onResult) {
   //  onResult("29dfb634e42d75734a2411a16d5b16cbc5b53758ddc221cce954cafac49069d8", "success", null);
   console.log('Building file( ' + buildName + '): ' + filePath);
+
+  var imageId = null;
   appUtil.makeFileUploadRequestToHost(host, filePath, '/build?t=' + buildName, function (buildResult, statusCode, error) {
-    onResult(buildResult, statusCode, error);
+    if(statusCode === 200){
+        if( buildResult.toString().indexOf("Successfully built") != -1){
+          logger.info(  buildResult.split("Successfully built") );
+           imageId = buildResult.split("Successfully built")[1].trim();
+        }
+    }
+    onResult( {id:imageId, serverResponse : buildResult }, statusCode, error);
+    
   });
 }

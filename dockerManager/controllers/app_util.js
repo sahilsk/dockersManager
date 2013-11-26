@@ -101,7 +101,7 @@ exports.makeFileUploadRequest = function (filePath, queryString, onResult) {
 };
 exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onResult) {
 
-  var dockerResponse = {};
+  var resBody = "";
   var options = {
       hostname: host.ip,
       port: host.port,
@@ -115,10 +115,12 @@ exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onR
       console.log('HEADERS: ' + JSON.stringify(res.headers));
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
-        dockerResponse.message += chunk;
+       resBody += chunk;
+        logger.info(chunk);
       });
+
       res.on('end', function () {
-        onResult(dockerResponse, res.statusCode, null);
+        onResult(resBody, res.statusCode, null);
       });
   });
   req.setHeader('Content-Type', 'application/tar');
@@ -126,6 +128,8 @@ exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onR
     console.log('problem with request: ' + e.message);
     onResult(null, null, e.message);
   });
+
+
   fs.createReadStream(filePath).on('data', function (data) {
     req.write(data);
   }).on('end', function () {
