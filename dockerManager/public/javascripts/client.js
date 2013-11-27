@@ -12,9 +12,9 @@ function UI_init() {
 
 //Make Dropdown navigation
 $(".top_nav li").hover( function(){
-	$(this).find(".subNav").slideDown();
+	$(this).find(".subNav").stop().slideDown(200);
 }, function(){
-	$(this).find(".subNav").slideUp();
+	$(this).find(".subNav").stop().slideUp(550);
 });
 
 
