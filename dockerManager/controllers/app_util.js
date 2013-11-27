@@ -2,15 +2,8 @@ var http = require('http');
 var fs = require('fs');
 var ping = require('ping');
 var util = require('util');
-
 var config = require('../config/config');
-var logger = require("../config/logger");
-
-
-
-
-
-
+var logger = require('../config/logger');
 exports.makeGetRequest = function (queryString, callback) {
   var inspectData = '';
   var options = {
@@ -37,7 +30,6 @@ exports.makeGetRequest = function (queryString, callback) {
     callback(null, null, e.message);
   });
   req.end();
-
 };
 exports.makeDELETERequest = function (queryString, callback) {
   console.log('called delete');
@@ -87,7 +79,7 @@ exports.makeFileUploadRequest = function (filePath, queryString, onResult) {
       res.on('end', function () {
         onResult(dockerResponse, res.statusCode, null);
       });
-  });
+    });
   req.setHeader('Content-Type', 'application/tar');
   req.on('error', function (e) {
     console.log('problem with request: ' + e.message);
@@ -100,56 +92,47 @@ exports.makeFileUploadRequest = function (filePath, queryString, onResult) {
   });
 };
 exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onResult) {
-
-  var resBody = "";
+  var resBody = '';
   var options = {
-      hostname: host.ip,
-      port: host.port,
+      hostname: host.hostname,
+      port: host.dockerPort,
       path: queryString,
       method: 'POST'
     };
-
-  logger.info("Building dockerfile on " + JSON.stringify(options) );
+  logger.info('Building dockerfile on ' + JSON.stringify(options));
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
-       resBody += chunk;
+        resBody += chunk;
         logger.info(chunk);
       });
-
       res.on('end', function () {
         onResult(resBody, res.statusCode, null);
       });
-  });
+    });
   req.setHeader('Content-Type', 'application/tar');
   req.on('error', function (e) {
     console.log('problem with request: ' + e.message);
     onResult(null, null, e.message);
   });
-
-
   fs.createReadStream(filePath).on('data', function (data) {
     req.write(data);
   }).on('end', function () {
     req.end();
   });
-
 };
-exports.makePostRequestToHost = function (host, queryString, headers, requestBody,  callback) {
+exports.makePostRequestToHost = function (host, queryString, headers, requestBody, callback) {
   var inspectData = '';
-  
   var options = {
-      hostname: host.ip,
-      port: host.port,
+      hostname: host.hostname,
+      port: host.dockerPort,
       path: queryString,
       method: 'POST'
-  };
-  
-
-  if(headers) options.headers = headers;
-
+    };
+  if (headers)
+    options.headers = headers;
   console.log(options);
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
@@ -168,23 +151,20 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
     console.log('problem with request: ' + e.message);
     callback(null, null, e.message);
   });
-
-  if( requestBody) req.write(requestBody);
+  if (requestBody)
+    req.write(requestBody);
   req.end();
 };
-exports.makePostRequest = function (queryString, headers, body,  callback) {
+exports.makePostRequest = function (queryString, headers, body, callback) {
   var inspectData = '';
-  
   var options = {
       hostname: config.docker.hostname,
       port: config.docker.port,
       path: queryString,
       method: 'POST'
-  };
-  
-
-  if(headers) options.headers = headers;
-
+    };
+  if (headers)
+    options.headers = headers;
   console.log(options);
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
@@ -203,75 +183,64 @@ exports.makePostRequest = function (queryString, headers, body,  callback) {
     console.log('problem with request: ' + e.message);
     callback(null, null, e.message);
   });
-
-  if( body) req.write(body);
+  if (body)
+    req.write(body);
   req.end();
 };
-exports.isHostAlive =  function(hostAddress, callback){
-
-    ping.sys.probe(hostAddress, function(isAlive){ 
-      callback(isAlive);     
-    });  
-}
-exports.isDockerServerAlive = function( dockerHost, dockerPort, callback){
-
+exports.isHostAlive = function (hostAddress, callback) {
+  ping.sys.probe(hostAddress, function (isAlive) {
+    callback(isAlive);
+  });
+};
+exports.isDockerServerAlive = function (dockerHost, dockerPort, callback) {
   var options = {
       hostname: dockerHost,
       port: dockerPort,
-      path: "/version",
+      path: '/version',
       method: 'GET'
     };
-
   var isAlive = false;
-  console.log( "Checking Docker host - <" + dockerHost + ">:<" + dockerPort +">");
-  
+  console.log('Checking Docker host - <' + dockerHost + '>:<' + dockerPort + '>');
   var req = http.request(options, function (res) {
       var statusCode = res.statusCode;
       var error = null;
-      var resposeBody = "";
+      var resposeBody = '';
       logger.info('STATUS: ' + statusCode);
       logger.info('HEADERS: ' + JSON.stringify(res.headers));
       res.setEncoding('utf8');
-      if( statusCode === 200){
-        logger.info("Docker Server %s:%s is alive. [StatusCode: %d]",  dockerHost, dockerPort, statusCode);
-        isAlive =true;
-      }else if(statusCode === 500){
-        logger.info("Docker Server %s:%s has an issue. [StatusCode: %d]",  dockerHost, dockerPort, statusCode);
-        error = "Docker Server(" + dockerHost+ ":" + dockerPort+  ") error";
+      if (statusCode === 200) {
+        logger.info('Docker Server %s:%s is alive. [StatusCode: %d]', dockerHost, dockerPort, statusCode);
+        isAlive = true;
+      } else if (statusCode === 500) {
+        logger.info('Docker Server %s:%s has an issue. [StatusCode: %d]', dockerHost, dockerPort, statusCode);
+        error = 'Docker Server(' + dockerHost + ':' + dockerPort + ') error';
         isAlive = null;
-      }else{
-         logger.info("Unable to reach Server %s:%s. [StatusCode: %d]",  dockerHost, dockerPort, statusCode);
-         isAlive = false;
-         error = "Unable to reach Docker Server(" + dockerHost + ":" + dockerPort+  ") ";
+      } else {
+        logger.info('Unable to reach Server %s:%s. [StatusCode: %d]', dockerHost, dockerPort, statusCode);
+        isAlive = false;
+        error = 'Unable to reach Docker Server(' + dockerHost + ':' + dockerPort + ') ';
       }
-
       res.on('data', function (chunk) {
         resposeBody += chunk;
       });
-
-
-      res.on('end', function(){
-        logger.info("===========Ending response : %s:%s" , isAlive, error? error:"SUCCESS");
-        callback(isAlive, error );
+      res.on('end', function () {
+        logger.info('===========Ending response : %s:%s', isAlive, error ? error : 'SUCCESS');
+        callback(isAlive, error);
       });
-
-  });
-
+    });
   req.on('error', function (e) {
-    logger.error('Problem with request to %s:%s. Verify server address is valid: %s', dockerHost, dockerPort , e.message);
+    logger.error('Problem with request to %s:%s. Verify server address is valid: %s', dockerHost, dockerPort, e.message);
     callback(isAlive, e.message);
   });
-
   req.end();
-}
-exports.isServerFullyLoaded = function(server, callback){
-
-  logger.info("Checking Load on server <%s:%s>", server.ip, server.port);
+};
+exports.isServerFullyLoaded = function (server, callback) {
+  logger.info('Checking Load on server <%s:%s>', server.hostname, server.port);
   var resBody = '';
   var options = {
-      hostname: server.ip,
-      port: 3005, //server.port,
-      path: "/host/avgLoad?minutes=15",
+      hostname: server.hostname,
+      port: 3005,
+      path: '/host/avgLoad?minutes=15',
       method: 'GET'
     };
   var req = http.request(options, function (res) {
@@ -282,15 +251,15 @@ exports.isServerFullyLoaded = function(server, callback){
         resBody += chunk;
       });
       res.on('end', function () {
-
         jResBody = JSON.parse(resBody);
-        if( typeof jResBody.AverageLoad !== "undefined" && jResBody.AverageLoad ){
-            logger.info("Load on server <%s:%s>: %s", server.ip, server.port,parseFloat(jResBody.AverageLoad));
-            if( parseFloat(jResBody.AverageLoad) >= 2.7) callback(false);
-            else callback(true);
-        }else 
+        if (typeof jResBody.AverageLoad !== 'undefined' && jResBody.AverageLoad) {
+          logger.info('Load on server <%s:%s>: %s', server.hostname, server.port, parseFloat(jResBody.AverageLoad));
+          if (parseFloat(jResBody.AverageLoad) >= 2.7)
+            callback(false);
+          else
+            callback(true);
+        } else
           callback(false);
-
       });
     });
   req.on('error', function (e) {
@@ -298,19 +267,15 @@ exports.isServerFullyLoaded = function(server, callback){
     callback(false);
   });
   req.end();
-}
-exports.sendImagePullRequestToHost = function(host, tag, repository, callback){
-
+};
+exports.sendImagePullRequestToHost = function (host, tag, repository, callback) {
   var resposeBody = '';
-  
   var options = {
-      hostname: host.ip,
-      port: 3005,
-      path: "/docker/pullImage/tag="+tag+"&repository="+ JSON.stringify(repository),
+      hostname: host.hostname,
+      port: host.managerPort,
+      path: '/docker/pullImage/tag=' + tag + '&repository=' + JSON.stringify(repository),
       method: 'POST'
-  };
-  
-
+    };
   logger.info(options);
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
@@ -329,26 +294,18 @@ exports.sendImagePullRequestToHost = function(host, tag, repository, callback){
     console.log('problem with request: ' + e.message);
     callback(null, null, e.message);
   });
-
-  req.end(); 
-}
-
-exports.sendImagePushRequestToHost = function(host, tag, repository, callback){
-
+  req.end();
+};
+exports.sendImagePushRequestToHost = function (host, tag, repository, callback) {
   var resposeBody = '';
-  
   var options = {
-      hostname: host.ip,
+      hostname: host.hostname,
       port: 3005,
-      path: util.format("/docker/pushImage?tag=%s&repository=%s", tag,  encodeURIComponent(JSON.stringify(repository)) ),
-      //path: util.format("/docker/pushImage?tag=%s&repository=%s", tag, repository ),
+      path: util.format('/docker/pushImage?tag=%s&repository=%s', tag, encodeURIComponent(JSON.stringify(repository))),
       method: 'POST'
-  };
-  
-
+    };
   logger.info(options);
-  logger.info("Sending request :" + util.format("/pushImage?tag=%s&repository=%s", tag, JSON.stringify(repository)  ) );
-      
+  logger.info('Sending request :' + util.format('/pushImage?tag=%s&repository=%s', tag, JSON.stringify(repository)));
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
@@ -360,12 +317,11 @@ exports.sendImagePushRequestToHost = function(host, tag, repository, callback){
         console.log('BODY', resposeBody);
         callback(resposeBody, res.statusCode, null);
       });
-  });
+    });
   req.on('error', function (e) {
     resposeBody = '';
     console.log('problem with request: ' + e.message);
     callback(null, null, e.message);
   });
-
-  req.end(); 
-}
+  req.end();
+};

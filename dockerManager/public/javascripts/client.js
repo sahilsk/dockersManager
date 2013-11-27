@@ -10,6 +10,15 @@ function skCallback(data){
 
 function UI_init() {
 
+//Make Dropdown navigation
+$(".top_nav li").hover( function(){
+	$(this).find(".subNav").slideDown();
+}, function(){
+	$(this).find(".subNav").slideUp();
+});
+
+
+
 
 //Alive Flash Messages Control
 	$(".flash span").bind("click", function(){
@@ -24,6 +33,9 @@ function UI_init() {
 		//	$(".flash").fadeOut('slow');
 		}, "5000");
 	}
+
+
+
 }
 
 $(document).ready( function(){

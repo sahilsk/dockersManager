@@ -10,50 +10,34 @@
 */
 var config = require('../config/config');
 var appUtil = require('./app_util');
-var logger = require("../config/logger");
-var util = require("util");
-
+var logger = require('../config/logger');
+var util = require('util');
 var redis = require('redis');
-
 var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
-
 exports.index = function (req, res) {
   res.redirect('/hosts/list');
 };
-
-
 exports.list = function (req, res) {
   var jHostList = [];
   var i = 0, pendingPingCount = 0;
-  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) 
-  {
-
-    hostsList.forEach( function(host)
-    {
-      var jHost =  JSON.parse(host);
-      if( typeof jHost.hostname !== "undefined" )
-      {
+  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
+    hostsList.forEach(function (host) {
+      var jHost = JSON.parse(host);
+      if (typeof jHost.hostname !== 'undefined') {
         jHostList.push(jHost);
       }
-
-
-
-   });  
-
+    });
     res.render('host/index', {
-        title: 'Host List',
-        hostList: jHostList,
-        page: 'hosts_list'
-      });
-
-
-  /*   
-      if( typeof jHost.ip !== "undefined" ){
+      title: 'Host List',
+      hostList: jHostList,
+      page: 'hosts_list'
+    });  /*   
+      if( typeof jHost.hostname !== "undefined" ){
         pendingPingCount++;
 
-        ping.sys.probe(jHost.ip, function(isAlive){
+        ping.sys.probe(jHost.hostname, function(isAlive){
             pendingPingCount--;
-            var msg = isAlive ? 'host ' + jHost.ip + ' is alive' : 'host ' + jHost.ip + ' is dead'; 
+            var msg = isAlive ? 'host ' + jHost.hostname + ' is alive' : 'host ' + jHost.hostname + ' is dead'; 
             console.log(msg); 
             jHost.status = isAlive?"Up":"Down";
             console.log(jHost);
@@ -77,63 +61,51 @@ exports.list = function (req, res) {
     }
 
   */
-     
- 
   });
 };
-
-
-exports.serverStatus =function (req, res) {
- if( req.xhr){
+exports.serverStatus = function (req, res) {
+  if (req.xhr) {
     var address = req.query.address;
-    appUtil.isHostAlive(address, function(isAlive){
-      var msg = isAlive ? 'host ' + address + ' is alive' : 'host ' +address + ' is dead'; 
+    appUtil.isHostAlive(address, function (isAlive) {
+      var msg = isAlive ? 'host ' + address + ' is alive' : 'host ' + address + ' is dead';
       console.log(msg);
-      res.end( isAlive ? 'Alive':'Dead');   
+      res.end(isAlive ? 'Alive' : 'Dead');
     });
-
-  }else{
-    res.end("Unauthorized Access");
+  } else {
+    res.end('Unauthorized Access');
   }
-
 };
-
-
 exports.new = function (req, res) {
   res.render('host/new', { title: 'Add new host' });
 };
-
 exports.add = function (req, res) {
-
-   var name =  req.body.name;
-   var hostname =  encodeURIComponent( req.body.hostname );
-   var dockerPort =  parseInt( req.body.dockerPort);
-   var managerPort = parseInt(req.body.managerPort);
-
-  if (dockerPort.length === 0 || dockerPort.length===0) {
+  var name = req.body.name;
+  var hostname = encodeURIComponent(req.body.hostname);
+  var dockerPort = parseInt(req.body.dockerPort);
+  var managerPort = parseInt(req.body.managerPort);
+  if (dockerPort.length === 0 || dockerPort.length === 0) {
     req.session.messages = {
-      text: 'Please provide IP and Port to point to docker host',
+      text: 'Please provide hostname and Port to point to docker host',
       type: 'error'
     };
     res.redirect('/hosts/new');
     res.end();
     return true;
   }
-
   var host = {
       name: name,
       hostname: hostname,
       dockerPort: dockerPort,
       managerPort: managerPort
-  };
+    };
   rdsClient.incr('global:nextHostId', function (err, incrId) {
     if (!err) {
-      var newHost =host;
+      var newHost = host;
       newHost.id = incrId;
       rdsClient.lpush('hosts', JSON.stringify(newHost), 0, -1, function (err, reply) {
         if (!err) {
           req.session.messages = {
-            text:  util.format("'%s' Added successfully", newHost.name),
+            text: util.format('\'%s\' Added successfully', newHost.name),
             type: 'alert'
           };
         } else {
@@ -146,10 +118,7 @@ exports.add = function (req, res) {
       });
     }
   });
-
 };
-
-
 exports.delete = function (req, res) {
   console.log('Id to delete: ', req.params.id);
   var id = req.params.id;
@@ -192,7 +161,6 @@ exports.delete = function (req, res) {
     }
   });
 };
-
 exports.edit = function (req, res) {
   var id = parseInt(req.params.id);
   var recValue = '';
@@ -232,7 +200,6 @@ exports.edit = function (req, res) {
     });
   });
 };
-
 exports.update = function (req, res) {
   var id = parseInt(req.body.id);
   rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
@@ -273,7 +240,7 @@ exports.update = function (req, res) {
             id: id,
             name: req.body.name,
             hostname: req.body.hostname,
-            dockerPort: parseInt( req.body.dockerPort),
+            dockerPort: parseInt(req.body.dockerPort),
             managerPort: parseInt(req.body.managerPort)
           };
         rdsClient.lpush('hosts', JSON.stringify(newHost), 0, -1, function (err, reply) {

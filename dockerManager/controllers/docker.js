@@ -6,10 +6,8 @@
 ||				->progressStatus() : function to track file uploading progress status 
 */
 var appUtil = require('./app_util');
-var logger = require("../config/logger");
-
+var logger = require('../config/logger');
 exports.index = function (req, res) {
-
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
     var viewData = '';
     switch (statusCode) {
@@ -38,11 +36,10 @@ exports.index = function (req, res) {
         name: req.params.id,
         created: viewData.created
       },
-      page: "image_page"
+      page: 'image_page'
     });
   });
 };
-
 exports.inspect = function (req, res) {
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
     var viewData = '';
@@ -173,8 +170,7 @@ exports.containers = function (req, res) {
       };
       viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
-    logger.info(req.query.repository.length === 0 ?'-': req.query.repository );
-
+    logger.info(req.query.repository.length === 0 ? '-' : req.query.repository);
     res.render('docker/containers', {
       title: 'List of Containers',
       id: req.params.id,
@@ -183,7 +179,7 @@ exports.containers = function (req, res) {
       page: 'containers_list',
       imgInfo: imgInfo = {
         id: dockerID,
-        name: req.query.repository.length == 0 ? '---': req.query.repository,
+        name: req.query.repository.length == 0 ? '---' : req.query.repository,
         created: req.query.created
       },
       containerList: containerList

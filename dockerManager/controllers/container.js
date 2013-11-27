@@ -373,7 +373,7 @@ exports.createInAll = function (req, res) {
         return;
       }
       async.filter(dockerHostList, function (host, cb) {
-        appUtil.isDockerServerAlive(host.ip, host.port, function (isAlive, errorMessage) {
+        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
           logger.info('Alive : ' + isAlive);
           cb(isAlive);
         });
@@ -387,7 +387,7 @@ exports.createInAll = function (req, res) {
         callback('No Docker Server is up. Please try later. ', null);
         return;
       }
-      logger.info("Checking server load ...");
+      logger.info('Checking server load ...');
       async.filter(liveHostsList, appUtil.isServerFullyLoaded, function (results) {
         partialLoadedHosts = results;
         callback();
@@ -397,7 +397,7 @@ exports.createInAll = function (req, res) {
       if (partialLoadedHosts.length === 0) {
         callback('All Docker Servers are heavily loaded. Please try later', null);
         return;
-      }       
+      }
       logger.info('Total requests to dispatch ' + partialLoadedHosts.length);
       async.each(partialLoadedHosts, function (host, doneWithHost) {
         //Dispatching requests
@@ -405,17 +405,17 @@ exports.createInAll = function (req, res) {
         appUtil.makePostRequestToHost(host, '/containers/create?name=' + containerName, headers, str_ContainerData, function (result, statusCode, errorMessage) {
           switch (statusCode) {
           case 404:
-            logger.info(util.format('Host:<%s:%s> : No such image : \'%s\' ', host.ip, host.port, Image));
+            logger.info(util.format('Host:<%s:%s> : No such image : \'%s\' ', host.hostname, host.dockerPort, Image));
             hostResponseResultArr.push({
-              text: util.format('Host:<%s:%s> : No such image : \'%s\' ', host.ip, host.port, Image),
+              text: util.format('Host:<%s:%s> : No such image : \'%s\' ', host.hostname, host.dockerPort, Image),
               type: 'error',
               oData: jsonContainerData
             });
             break;
           case 409:
-            logger.log('info', 'Container \'%s\' already exist on <%s:%s>', require('querystring').unescape(containerName), host.ip, host.port);
+            logger.log('info', 'Container \'%s\' already exist on <%s:%s>', require('querystring').unescape(containerName), host.hostname, host.dockerPort);
             hostResponseResultArr.push({
-              text: util.format('Host:<%s:%s> : Container \'%s\' already exist.', host.ip, host.port, require('querystring').unescape(containerName)),
+              text: util.format('Host:<%s:%s> : Container \'%s\' already exist.', host.hostname, host.dockerPort, require('querystring').unescape(containerName)),
               type: 'error',
               oData: jsonContainerData
             });
@@ -424,7 +424,7 @@ exports.createInAll = function (req, res) {
             var jResult = JSON.parse(result);
             console.log(jResult);
             hostResponseResultArr.push({
-              text: util.format('Host:<%s:%s> : Container \'%s\' created successfully.' + (typeof jResult.Warnings !== 'undefined' ? ' Warnings: ' + JSON.stringify(jResult.Warnings) : ''), host.ip, host.port, containerName),
+              text: util.format('Host:<%s:%s> : Container \'%s\' created successfully.' + (typeof jResult.Warnings !== 'undefined' ? ' Warnings: ' + JSON.stringify(jResult.Warnings) : ''), host.hostname, host.dockerPort, containerName),
               type: 'success'
             });
             logger.info('Container[' + jResult.Id + '] created successfully.' + (typeof jResult.Warnings !== 'undefined' ? ' Warnings: ' + JSON.stringify(jResult.Warnings) : ''));
@@ -433,7 +433,7 @@ exports.createInAll = function (req, res) {
             logger.info('Server Error. Cause: ' + result);
             hostResponseResultArr.push({
               host: host,
-              text: util.format('Host:<%s:%s> : Error. Cause: %s', host.ip, host.port, result),
+              text: util.format('Host:<%s:%s> : Error. Cause: %s', host.hostname, host.dockerPort, result),
               type: 'error',
               oData: jsonContainerData
             });
@@ -450,7 +450,7 @@ exports.createInAll = function (req, res) {
         });
       }, function (err, results) {
         if (err)
-          callback(err,null);
+          callback(err, null);
         else
           req.session.messages = { errorList: hostResponseResultArr };
         logger.info('Completed.');
@@ -482,7 +482,7 @@ exports.createInAll = function (req, res) {
         return JSON.parse(host);
       });
       async.filter(jHostList, function (host, cb) {
-        if (typeof host.ip !== 'undefined')
+        if (typeof host.hostname !== 'undefined')
           cb(true);
         else
           cb(false);

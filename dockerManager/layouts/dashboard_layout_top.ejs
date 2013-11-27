@@ -31,7 +31,21 @@
 						<li <% if( typeof page !== 'undefined' && page ) { %>
 								<%= page === "images_list" ? "class='active' " : " "  %>
 							<% } %>
-						 > <a href="/dockers/list" > Images </a> </li>
+						> 	<a href="javascript:void(0);"> Images </a>
+							<ul class="subNav">
+								<li <% if( typeof page !== 'undefined' && page ) { %>
+										<%= page === "SubmittedImages_list" ? "class='active' " : " "  %>
+									<% } %>	
+								>  <a href="/dockerfiles" > Submitted Images </a> 
+								</li>
+								<li <% if( typeof page !== 'undefined' && page ) { %>
+										<%= page === "images_list" ? "class='active' " : " "  %>
+									<% } %>	
+								>  <a href="/dockers/list" > Running Images </a> 
+								</li>								
+							</ul>
+
+						</li>
 
 						<li <% if( typeof page !== 'undefined' && page ) { %>
 								<%= page === "containers_list" ? "class='active' " : " " %>

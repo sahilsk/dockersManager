@@ -8,9 +8,52 @@
 
 	<span >All User Created Images </span> 
 
-<%= JSON.stringify( imageList ) %>
+<% if( typeof imageList === "object" && imageList.length == 0 ){ %>
+	
+	<div class="somethingWentWrong">
+		<span > No Image Built Yet. </span>
+		<a href="/"> Submit New Dockerfile </a>
+	</div>	
+<% } %>
+
+<% if( typeof imageList === "object" && imageList.length > 0 ){ %>
+		<table border='1' cellspacing='0'>
+			<thead>
+				<tr>
+					<th> </th> 
+					<th> ID </th>
+					<th>IMAGE ID </th> 
+					<th> BUILD TAG </th> 
+					<th> BUILD SERVER </th> 
+					<th> IS REPLICATED?</th> 
+					<th> CREATED AT</th> 
 
 
+
+				</tr>
+				<tbody>
+
+				<% imageList.forEach( function(image, index){ %>
+						<tr>	
+							<td> <%= index + 1 %> </td>
+							<td> <%= image.id %> </td>
+							<td> <%= image.image_id %> </td>
+							<td> <%= image.build_tag %> </td>
+							<td> 
+								<% var server =  JSON.parse(image.build_server); %>
+								<span class="success" ><%= server.name %> &nbsp;</span><span class="alert" > <%= server.hostname+":"+ server.dockerPort %> </span>
+
+							</td>
+							<td> <%= image.isReplicated %> </td>
+							<td> <%= image.createdAt %> </td>
+							<td>
+
+							</td>
+						</tr>
+				<% }) %>
+			</tbody>
+		</table>
+ <%  }%>
 
 
 

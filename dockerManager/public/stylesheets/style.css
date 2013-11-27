@@ -114,6 +114,8 @@ ul.flash li {
 .header .top_nav li {
   border: 1px dashed #333;
   text-align: center;
+  position: relative;
+  white-space: nowrap;
 }
 .header .top_nav li a {
   text-decoration: none;
@@ -128,6 +130,14 @@ ul.flash li {
 }
 .header .top_nav .active a {
   color: #FFF;
+}
+.header .top_nav .subNav {
+  position: absolute;
+  left: -60px;
+  display: none;
+}
+.header .top_nav .subNav:hover {
+  display: block;
 }
 .footer {
   border-top: 1px dashed #333;
