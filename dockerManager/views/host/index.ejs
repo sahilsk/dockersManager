@@ -10,10 +10,11 @@
 		<thead>
 			<tr>
 				<th></th>
-				<th> ID </th>
-				<th> IP </th>
-				<th> PORT </th>
+				<th> HOST ID </th>
 				<th> NAME </th>
+				<th> HOSTNAME </th>
+				<th> DOCKER PORT </th>
+				<th> MANAGER PORT </th>
 				<th> Status </th>
 			</tr>
 		</thead>
@@ -24,15 +25,17 @@
 						<tr>
 							<td>  <%= index + 1 %> </td>
 
-							<td> <div style="width:150px; overflow:hidden; text-overflow:ellipsis;" title=" <%= item.Id %>" > <%= item.id %> </div> </td>
-							<td> <% if( !item.ip) { %> --  <% }else { %><%= item.ip %><% } %> </td>
-							<td> <% if( !item.port) { %> --  <% }else { %> <%= item.port %>  <% } %>  </td>
-							<td> <% if( !item.name) { %> --  <% }else { %> <%= item.name %>  <% } %> </td>
+							<td> <div style="width:150px; overflow:hidden; text-overflow:ellipsis;" title=" <%= item.id %>" > <%= item.id %> </div> </td>
+							<td> <% if( !item.name) { %> --  <% }else { %><%= item.name %><% } %> </td>
+
+							<td> <% if( !item.hostname) { %> --  <% }else { %><%= item.hostname %><% } %> </td>
+							<td> <% if( !item.dockerPort) { %> --  <% }else { %> <%= item.dockerPort %>  <% } %>  </td>
+							<td> <% if( !item.managerPort) { %> --  <% }else { %> <%= item.managerPort %>  <% } %>  </td>
 							<td style="text-align:center;"> <% if( !item.status) { %>Checking...<% }else {  %>  <%= item.status %>  <% } %> </td>
 
 							<td>
 
-								<Div class="operation_menu"> 	
+								<Div class="operation_menu" style="width:70px;"> 	
 								
 									<span class="inspect"> 
 										<a href="/hosts/<%=item.id %>/edit" title="edit"> &hellip;  </a>

@@ -24,12 +24,7 @@ function UI_init() {
 		//	$(".flash").fadeOut('slow');
 		}, "5000");
 	}
-
 }
-
-
-
-
 
 $(document).ready( function(){
 
@@ -44,8 +39,8 @@ $(document).ready( function(){
 		var $rowArray = $hostTable.find("tbody tr");
 		$.each($rowArray, function(index, row){
 			if( $(row).find("td").length){
-				var address =  $(row).find("td").eq(2).text();
-				var $statusPlaceholder = $(row).find("td").eq(5);
+				var address =  $(row).find("td").eq(3).text();
+				var $statusPlaceholder = $(row).find("td").eq(6);
 
 				$.ajax( {
 					url: "getServerStatus",
@@ -56,11 +51,8 @@ $(document).ready( function(){
 						$statusPlaceholder.text( response);
 					}
 				});
-
 			}
-
 		});
-
 	}// end '#hostList'
 
 

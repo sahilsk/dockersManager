@@ -11,6 +11,7 @@
 var config = require('../config/config');
 var appUtil = require('./app_util');
 var logger = require("../config/logger");
+var util = require("util");
 
 var redis = require('redis');
 
@@ -30,7 +31,7 @@ exports.list = function (req, res) {
     hostsList.forEach( function(host)
     {
       var jHost =  JSON.parse(host);
-      if( typeof jHost.ip !== "undefined" )
+      if( typeof jHost.hostname !== "undefined" )
       {
         jHostList.push(jHost);
       }
@@ -40,7 +41,7 @@ exports.list = function (req, res) {
    });  
 
     res.render('host/index', {
-        title: 'Hosts List',
+        title: 'Host List',
         hostList: jHostList,
         page: 'hosts_list'
       });
@@ -98,19 +99,18 @@ exports.serverStatus =function (req, res) {
 };
 
 
-
-
-
 exports.new = function (req, res) {
   res.render('host/new', { title: 'Add new host' });
 };
+
 exports.add = function (req, res) {
 
-   var hostname =  req.body.hostname;
-   var port =  req.body.port;
-   var ip =  req.body.ip;
+   var name =  req.body.name;
+   var hostname =  encodeURIComponent( req.body.hostname );
+   var dockerPort =  parseInt( req.body.dockerPort);
+   var managerPort = parseInt(req.body.managerPort);
 
-    if (port.length === 0 || port.length===0) {
+  if (dockerPort.length === 0 || dockerPort.length===0) {
     req.session.messages = {
       text: 'Please provide IP and Port to point to docker host',
       type: 'error'
@@ -121,22 +121,19 @@ exports.add = function (req, res) {
   }
 
   var host = {
-      name: req.body.hostname,
-      ip: req.body.ip,
-      port: req.body.port
-    };
+      name: name,
+      hostname: hostname,
+      dockerPort: dockerPort,
+      managerPort: managerPort
+  };
   rdsClient.incr('global:nextHostId', function (err, incrId) {
     if (!err) {
-      var newHost = {
-          id: incrId,
-          ip: host.ip,
-          port: host.port,
-          name: host.name
-        };
+      var newHost =host;
+      newHost.id = incrId;
       rdsClient.lpush('hosts', JSON.stringify(newHost), 0, -1, function (err, reply) {
         if (!err) {
           req.session.messages = {
-            text: 'New Host Added successfully',
+            text:  util.format("'%s' Added successfully", newHost.name),
             type: 'alert'
           };
         } else {
@@ -149,6 +146,7 @@ exports.add = function (req, res) {
       });
     }
   });
+
 };
 
 
@@ -199,7 +197,7 @@ exports.edit = function (req, res) {
   var id = parseInt(req.params.id);
   var recValue = '';
   var jRecValue;
-  console.log('Id to edit: ', id);
+  logger.info('Host to edit: ', id);
   rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
     if (err) {
       req.session.messages = {
@@ -259,7 +257,7 @@ exports.update = function (req, res) {
       console.log('Value found. Deleting...');
       rdsClient.lrem('hosts', 1, recValue, function (err, reply) {
         if (!err) {
-          console.log('record deleted successfully!! : Records Deleted: ' + reply);
+          console.log('Record deleted successfully!! Records Deleted: ' + reply);
           req.session.messages = {
             text: 'record deleted successfully!!',
             type: 'alert'
@@ -273,9 +271,10 @@ exports.update = function (req, res) {
         }
         var newHost = {
             id: id,
-            ip: req.body.ip,
-            port: req.body.port,
-            name: req.body.hostname
+            name: req.body.name,
+            hostname: req.body.hostname,
+            dockerPort: parseInt( req.body.dockerPort),
+            managerPort: parseInt(req.body.managerPort)
           };
         rdsClient.lpush('hosts', JSON.stringify(newHost), 0, -1, function (err, reply) {
           if (!err) {

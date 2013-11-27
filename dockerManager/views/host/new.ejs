@@ -7,13 +7,16 @@
 	<form method="post" action="/hosts/create" >
 
 		<label> Name </label>
-		<input type="text" name="hostname"  id="hostname"  placeholder="name" />
+		<input type="text" name="name"  id="name"  placeholder="Name" />
 		<br/> <br/>
 
-		<label> IP </label>
-		<input type="text" name="ip"  id="ip" placeholder="ip address eg. 127.0.0.1" />
-		<input type="text" name="port"  id="port" placeholder="port eg.8080" size="10" />
-		<br/> <br/>
+		<label> Hostname </label>
+		<input type="text" name="hostname"  id="hostname" placeholder="hostname/IP eg. 127.0.0.1" />
+		<br/> 
+
+
+		<label> Docker Port </label> <input type="text" name="dockerPort"  id="dockerPort" placeholder="port eg.4273" size="10" /><br/>
+		<label> Daemon Port </label> <input type="text" name="managerPort"  id="managerPort" placeholder="eg.3005" size="10" />
 
 
 		<input type="submit" value="Add Host" class="btn lrg" />
