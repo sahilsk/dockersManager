@@ -425,11 +425,33 @@ exports.push = function (req, res) {
             };
             break;
           case 201:
-            logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause:  %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message );
-            req.session.messages = {
-                text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message  ),
-              type:"error"
-            };
+
+            var jResponse = JSON.parse(result);
+            if( !jResponse.success){
+              logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause:  %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message );
+              req.session.messages = {
+                  text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message  ),
+                type:"error"
+              };
+            }else{
+
+              if( jResponse.isAlreadyPushed ){
+                logger.info("<%s:%s> : '<%s>' is pushed already on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
+                req.session.messages = {
+                  text: util.format("<%s:%s> : '<%s>' is pushed already on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
+                  type:"success"
+                };         
+              }else{
+                logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
+                req.session.messages = {
+                  text: util.format("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
+                  type:"success"
+                };                  
+              }
+
+
+
+            }
             break;
 
           case 500:
