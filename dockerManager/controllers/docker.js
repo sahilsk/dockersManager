@@ -73,7 +73,13 @@ exports.inspect = function (req, res) {
   });
 };
 exports.list = function (req, res) {
-  appUtil.makeGetRequest('/images/json?all=1', function (data, statusCode, errorMessage) {
+
+    var areAll = 1;
+    if( req.query.all) 
+      areAll = parseInt(req.query.all) ;
+
+
+  appUtil.makeGetRequest('/images/json?all=' + areAll, function (data, statusCode, errorMessage) {
     switch (statusCode) {
     case 200:
       viewData = JSON.parse(data);
@@ -94,8 +100,8 @@ exports.list = function (req, res) {
     logger.info(viewData);
     res.render('docker/list', {
       title: 'List of images',
-      id: req.params.id,
       'data': viewData,
+      'areAll': areAll,
       statusCode: statusCode,
       page: 'images_list'
     });

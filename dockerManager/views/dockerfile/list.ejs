@@ -50,7 +50,7 @@
 							<td> <%= image.isReplicated %> </td>
 							<td> <%= image.createdAt %> </td>
 							<td>
-								<Div class="operation_menu"> 	
+								<Div class="operation_menu" style="width:100px;"> 	
 									<span class="inspect"> <a href="/dockers/<%=image.image_id %>/containers?repository=<% if( !image.repository) { %>--<% }else { %><%= image.repository %><% }%>&created=<%=image.createdAt%>" title="Inspect">  &equiv;	 </a> </span>
 									<!--					
 									<span class="delete"> <a href="/dockers/<% if( !image.repository) { %><%= image.image_id %><% }else { %><%= encodeURIComponent(image.repository) %><% } %>/delete" title="remove"> &cross;  </a></span>

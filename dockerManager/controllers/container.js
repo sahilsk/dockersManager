@@ -50,7 +50,11 @@ exports.inspect = function (req, res) {
   });
 };
 exports.list = function (req, res) {
-  appUtil.makeGetRequest('/containers/json?all=1&size=1', function (data, statusCode, errorMessage) {
+    var areAll = 1;
+    if( req.query.all) 
+      areAll = parseInt(req.query.all) ;
+
+  appUtil.makeGetRequest('/containers/json?size=1&all='+areAll, function (data, statusCode, errorMessage) {
     switch (statusCode) {
     case 200:
       viewData = JSON.parse(data);
@@ -71,7 +75,7 @@ exports.list = function (req, res) {
     console.log(viewData);
     res.render('container/list', {
       title: 'List of Containers',
-      id: req.params.id,
+      'areAll': areAll,
       'data': viewData,
       statusCode: statusCode,
       page: 'containers_list'
