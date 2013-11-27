@@ -235,7 +235,10 @@ exports.uploadToAll = function (req, res) {
               'build_tag', buildTagName,
               'repository', remoteBuildTagName,
               'build_server', JSON.stringify(buildServer), 
-              'isReplicated', false, 'createdAt', Date.now(), function (err, result) {
+              'isReplicated', false, 
+              'isPushedOnRegistry', false,
+              'createdAt', Date.now(),
+       function (err, result) {
         if (err)
           callback('Failed to insert record in the database');
         else {
@@ -435,6 +438,8 @@ exports.push = function (req, res) {
               };
             }else{
 
+              record.isPushedOnRegistry = isAlreadyPushed;
+
               if( jResponse.isAlreadyPushed ){
                 logger.info("<%s:%s> : '<%s>' is already pushed on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
                 req.session.messages = {
@@ -448,6 +453,8 @@ exports.push = function (req, res) {
                   type:"success"
                 };                  
               }
+
+              updateRecord( record);
 
             }
             break;
@@ -476,6 +483,12 @@ exports.push = function (req, res) {
   }); // end 'rdsClient.hgetall'
 
 
+
+}
+
+
+function updateSubmittedImageRecord( record){
+  //TO DO
 
 }
 
