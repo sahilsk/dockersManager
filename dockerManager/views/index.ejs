@@ -24,7 +24,7 @@
 	<form method="post" enctype="multipart/form-data" action="/upload" >
 
 		<label> Image Name </label>
-		<input type="text" name="build_name"  id="build_name" />
+		<input type="text" name="build_name"  id="build_name" pattern="[a-z0-9-_.]{3,30}" required title="Invalid repository name, only [a-z0-9-_.] are allowed and should have atmost 30 characters" />
 		<br/> <br/>
 
 		<input type="file" name="dockerfile" id="dockerfile" /> 
