@@ -229,7 +229,13 @@ exports.uploadToAll = function (req, res) {
     function (callback) {
       logger.info('Built Image Id: <%s>', builtImageID);
       var newSetEntryKey = util.format('Image_%d', Date.now());
-      rdsClient.hmset(newSetEntryKey, 'id', newSetEntryKey, 'image_id', builtImageID, 'build_tag', buildTagName, 'build_server', JSON.stringify(buildServer), 'isReplicated', false, 'createdAt', Date.now(), function (err, result) {
+      rdsClient.hmset(newSetEntryKey, 
+              'id', newSetEntryKey, 
+              'image_id', builtImageID,
+              'build_tag', buildTagName,
+              'repository', remoteBuildTagName,
+              'build_server', JSON.stringify(buildServer), 
+              'isReplicated', false, 'createdAt', Date.now(), function (err, result) {
         if (err)
           callback('Failed to insert record in the database');
         else {
@@ -388,6 +394,73 @@ exports.list = function (req, res) {
 exports.show = function (req, res) {
   var buildTagName = req.params.buildTag;
 };
+
+exports.push = function (req, res) {
+  var recordID = decodeURIComponent(req.params.recordID);
+  logger.info("reocrdID: " + recordID);
+  var record = null;
+
+
+
+  rdsClient.hgetall( recordID, function(err, result){
+    if(err || !result){
+        req.session.messages = {
+          text:"Invalid Submitted Image Record Id. Cause: " + err,
+          type:"error"
+        };
+        res.redirect("/dockerfiles");
+        return;
+    }
+
+    record = result;
+    record.build_server = JSON.parse(result.build_server);
+
+    appUtil.sendImagePushRequestToHost( record.build_server, record.repository, function( result, statusCode){
+        switch(statusCode){
+          case 200:
+            logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
+            req.session.messages = {
+              text: util.format("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
+              type:"success"
+            };
+            break;
+          case 201:
+            logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause:  %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message );
+            req.session.messages = {
+                text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message  ),
+              type:"error"
+            };
+            break;
+
+          case 500:
+            logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
+             req.session.messages = {
+                text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ),
+                type:"error"
+              };
+            break;
+          default:
+            logger.info( util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository)) );
+            req.session.messages = {
+             text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
+             type:"error"
+            };
+            break;
+        }
+        res.redirect("/dockerfiles");
+    });  
+
+
+
+
+  }); // end 'rdsClient.hgetall'
+
+
+
+}
+
+
+
 function getDockerHosts(callback) {
   var jHostList = [];
   rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {

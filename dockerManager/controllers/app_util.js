@@ -296,16 +296,16 @@ exports.sendImagePullRequestToHost = function (host, tag, repository, callback) 
   });
   req.end();
 };
-exports.sendImagePushRequestToHost = function (host, tag, repository, callback) {
+exports.sendImagePushRequestToHost = function (host, tagWithRepository,  callback) {
   var resposeBody = '';
   var options = {
       hostname: host.hostname,
       port: 3005,
-      path: util.format('/docker/pushImage?tag=%s&repository=%s', tag, encodeURIComponent(JSON.stringify(repository))),
+      path: util.format('/docker/pushImage?tag=%s', tagWithRepository),
       method: 'POST'
     };
   logger.info(options);
-  logger.info('Sending request :' + util.format('/pushImage?tag=%s&repository=%s', tag, JSON.stringify(repository)));
+  logger.info('Sending request :' + util.format('/pushImage?tag=%s', tagWithRepository));
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
