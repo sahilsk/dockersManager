@@ -418,7 +418,47 @@ exports.push = function (req, res) {
     record = result;
     record.build_server = JSON.parse(result.build_server);
 
-    appUtil.sendImagePushRequestToHost( record.build_server, record.repository, function( result, statusCode, err){
+    pushImageOnRegistry(record.build_server, record.repository, function(data, statusCode, errorMessage){
+        switch(statusCode){
+
+          case 200:
+            logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
+            req.session.messages = {
+              text: util.format("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
+              type:"success"
+            };
+            break;
+          case 404:
+              logger.info("<%s:%s> : '<%s>' does not exist.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag );
+              req.session.messages = {
+                text: util.format("<%s:%s> : '<%s>' does not exist.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag ), 
+                type:"warn"
+              };    
+            break;
+          case 500:
+            logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
+             req.session.messages = {
+                text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ),
+                type:"error"
+             };
+            break;
+          default:
+            logger.info( util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err) );
+            req.session.messages = {
+             text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err ), 
+             type:"error"
+            };
+            break;
+
+
+        }// end 'switch'
+      res.redirect("/dockerfiles");
+
+    }); // end 'pushImageOnRegistry'
+
+
+  /*
+    app_util.sendImagePushRequestToHost( record.build_server, record.repository, function( result, statusCode, err){
         switch(statusCode){
           case 200:
             logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
@@ -454,7 +494,7 @@ exports.push = function (req, res) {
                 };                  
               }
 
-              updateRecord( record);
+              updateSubmittedImageRecord( record);
 
             }
             break;
@@ -476,7 +516,7 @@ exports.push = function (req, res) {
         }
         res.redirect("/dockerfiles");
     });  
-
+  */
 
 
 
@@ -536,3 +576,13 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
     }, statusCode, error);
   });
 }
+
+function pushImageOnRegistry(host, tagWithRepository, callback) {
+
+  var queryString =   util.format("/v1.6/images/%s/push",  "ubuntu");// , "ec2-54-219-118-62.us-west-1.compute.amazonaws.com:5000");// ( decodeURIComponent(tagWithRepository)) );
+
+    appUtil.makePostRequestToHost( host, queryString, null, null, function( data, statusCode, error){
+        callback( data, statusCode, error );
+    });
+
+};

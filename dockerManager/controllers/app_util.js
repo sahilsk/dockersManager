@@ -148,7 +148,7 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
     });
   req.on('error', function (e) {
     inspectData = '';
-    console.log('problem with request: ' + e.message);
+    console.log('ERROR: Problem with request: ' + e.message);
     callback(null, null, e.message);
   });
   if (requestBody)
@@ -300,7 +300,7 @@ exports.sendImagePushRequestToHost = function (host, tagWithRepository,  callbac
   var resposeBody = '';
   var options = {
       hostname: host.hostname,
-      port: 3005,
+      port: host.managerPort,
       path: util.format('/docker/pushImage?tag=%s', tagWithRepository),
       method: 'POST'
     };
