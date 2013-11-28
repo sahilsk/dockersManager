@@ -142,7 +142,6 @@ exports.uploadToAll = function (req, res) {
     res.end();
     return;
   }
-  var totalHosts = 0;
   var liveHostsList = [];
   var dockerHostList = [];
   var dockerfileBuiltReport = [];
@@ -547,10 +546,111 @@ exports.push = function (req, res) {
 
 
   }); // end 'rdsClient.hgetall'
+}
 
 
+/*
+  || Get list of live servers
+    ==>toEach POST create image ?formImage(ip:port/tag) 
+    ==>store outpput from all
+*/
+exports.broadcastPull = function (req, res) {
+
+  var recordID = req.params.recordID;
+
+  var liveHostsList = [];
+  var dockerHostList = [];
+  var dockerfileBuiltReport = [];
+  var imageToPush = null;
+  var repository = config.repository.development;
+
+  async.series([
+
+    //Get Image Information from submitted Job
+    function(callback){
+        rdsClient.hgetall( recordID, function(err, result){
+          if( err){
+             callback(err);
+             return;
+          }
+          imageToPush = result;
+          imageToPush.build_server = JSON.parse(result.build_server);
+          callback();
+        });
+
+    },
+    //Get all docker hosts leaving buildServer
+    function (callback) {
+      getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList.filter(function(host){
+              return (
+                  host.hostname !==  imageToPush.build_server && 
+                  host.dockerPort !== imageToPush.build_server.dockerPort &&
+                  host.managerPort !== imageToPush.build_server.managerPort );
+
+          });
+          util.inspect(dockerHostList);
+          
+          callback();
+        }
+      });
+    },
+    //Filter live docker hosts
+    function (callback) {
+      if (dockerHostList.length === 0) {
+        callback('No Docker host available yet.', null);
+        return;
+      }
+      async.filter(dockerHostList, function (host, cb) {
+        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
+          logger.info('Alive : ' + isAlive);
+          cb(isAlive);
+        });
+      }, function (results) {
+        liveHostsList = results;
+        callback();
+      });
+    },
+    //Dispatch Pull request to all live servers filtered
+    function (callback) {
+      if (liveHostsList.length === 0) {
+        callback('No Docker Server is up. Please try again later. ', null);
+        return;
+      }
+
+      async.each(liveHostsList,function( liveHost, cb){
+          //TO DO Dispatch post CREATE IMAGE REQUEST
+      }, function(err){
+        //handling error
+
+      }); 
+
+      // Make it don't work
+      callback("Work in Progres");
+
+    }
+  ], function(err, result){
+      if (err) {
+        req.session.messages = {
+          text: JSON.stringify(err),
+          type: 'error'
+        };
+       if (dockerfileBuiltReport.length > 0)
+          req.session.messages.errorList = dockerfileBuiltReport;
+        res.redirect('/');
+      } else{
+        res.redirect('/dockerfiles');
+      }
+      //        res.redirect('/dockerfiles/'+ encodeURIComponent(buildTagName) );
+      res.end();
+      return;
+    });
 
 }
+
 
 
 exports.delete = function(req, res){
@@ -602,10 +702,7 @@ exports.delete = function(req, res){
         res.redirect("/dockerfiles");
 
     });
-
-
-    
-}
+};
 
 
 

@@ -63,8 +63,11 @@
 									<span class="status"> 
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="remove"> PUSH  </a></span>
 									<span class="kill"> 
-										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/delete" title="remove"> 
+										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/delete" title="NOTE: It won't delete the image but only take off this entry from the database."> 
 										&cross;  </a></span>
+									<span class="delete"> 
+										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/broadcast" title=" Dispatch pull request to all docker server.Note: Only if image is pushed on the registry." disabled=disabled> 
+										Broadcast  </a></span>										
 
 									
 								</Div>

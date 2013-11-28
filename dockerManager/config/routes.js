@@ -19,7 +19,7 @@ exports.makeRoutes= function(app){
 
 
 	/*
-	||Dockerfile Upload Operations
+	||Dockerfile Operations
 	||
 	*/
 	app.post("/upload", dockerfile.uploadToAll);
@@ -31,6 +31,7 @@ exports.makeRoutes= function(app){
 	app.get("/dockerfiles", dockerfile.list);
 	app.get("/dockerfiles/list", dockerfile.list);
 	app.get("/dockerfiles/:recordID/push", dockerfile.push);
+	app.get("/dockerfiles/:recordID/broadcastPull", dockerfile.broadcastPull );
 	app.get("/dockerfiles/:recordID/delete", dockerfile.delete);
 
 	app.get("/dockerfiles/:buildTag", dockerfile.show);
