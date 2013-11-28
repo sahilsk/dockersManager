@@ -14,7 +14,7 @@ var util = require('util');
 var config = require('../config/config');
 var logger = require('../config/logger');
 var redis = require('redis');
-var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
+var rdsClient = require("../config/database");
 var progress = 0;
 /*
 ||	upload(req, res) 
@@ -402,9 +402,6 @@ exports.push = function (req, res) {
   var recordID = decodeURIComponent(req.params.recordID);
   logger.info("reocrdID: " + recordID);
   var record = null;
-
-
-
   rdsClient.hgetall( recordID, function(err, result){
     if(err || !result){
         req.session.messages = {
@@ -416,6 +413,27 @@ exports.push = function (req, res) {
     }
 
     record = result;
+    record.save = function(){
+
+      logger.info()
+      var isSaved = false;
+      rdsClient.hmset( this.id,
+              'image_id', this.image_id,
+              'build_tag', this.build_tag,
+              'repository', this.repository,
+              'build_server', JSON.stringify(this.build_server), 
+              'isReplicated', this.isReplicated, 
+              "isPushedOnRegistry", this.isPushedOnRegistry, 
+              'updatedAt', Date.now(),
+      function(err, result){
+          if(err)
+            isSaved = false;
+          else
+            isSaved = true;
+          logger.log("::::::::::::::::::: Saved: " + this.id + ": " + this.isPushedOnRegistry);
+      });
+   }
+
     record.build_server = JSON.parse(result.build_server);
 
     pushImageOnRegistry(record.build_server, record.repository, function(data, statusCode, errorMessage){
@@ -427,6 +445,9 @@ exports.push = function (req, res) {
               text: util.format("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
               type:"success"
             };
+            record.isPushedOnRegistry =true; 
+            record.save();
+
             break;
           case 404:
               logger.info("<%s:%s> : '<%s>' does not exist.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag );
@@ -441,6 +462,8 @@ exports.push = function (req, res) {
                 text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ),
                 type:"error"
              };
+            record.isPushedOnRegistry =false; 
+            record.save();
             break;
           default:
             logger.info( util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err) );
@@ -448,10 +471,13 @@ exports.push = function (req, res) {
              text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err ), 
              type:"error"
             };
+
             break;
 
 
         }// end 'switch'
+
+
       res.redirect("/dockerfiles");
 
     }); // end 'pushImageOnRegistry'
@@ -525,6 +551,63 @@ exports.push = function (req, res) {
 
 
 }
+
+
+exports.delete = function(req, res){
+    var recordID = req.params.recordID;
+    if( typeof recordID === undefined && !recordID && recordID.indexOf("Image_") === -1) {
+        req.session.messages = {
+          text: "Invalid or no job id provided.",
+          type: 'error'
+        };
+
+        res.redirect('/dockerfiles');
+        return;
+    }
+
+    rdsClient.del( recordID, function(err, result){
+        if(err){
+           req.session.messages = {
+            text: "Error deleting record. " + err,
+            type: 'error'
+          };         
+        }else{
+          logger.log( "Record Deleted: " + result);
+
+          rdsClient.lrem( config.redis.schema.submittedImagesList, 0, recordID, function(err, result){
+            if(err){
+                logger.error("Failed to delete %s from %s.Error : %s", recordID, config.redis.schema.submittedImagesList, err.toString());
+            }else
+              logger.info("%s deleted from %s successfully", recordID, config.redis.schema.submittedImageList);
+
+          });
+
+
+          if(result){
+             req.session.messages = {
+              text: util.format("Record Deleted Successfully. [%d]", result),
+              type: 'success'
+            };    
+            logger.info( "Record Deleted Successfully. [%d]", result);
+
+          }else{
+             req.session.messages = {
+              text: util.format("No such record found :'%s'.[%d]", recordID, result),
+              type: 'alert'
+            };    
+            logger.info("No such record found :'%s'.[%d]", recordID, result);
+          }
+        }
+
+        res.redirect("/dockerfiles");
+
+    });
+
+
+    
+}
+
+
 
 
 function updateSubmittedImageRecord( record){

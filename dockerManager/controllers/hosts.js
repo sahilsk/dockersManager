@@ -13,7 +13,7 @@ var appUtil = require('./app_util');
 var logger = require('../config/logger');
 var util = require('util');
 var redis = require('redis');
-var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
+var rdsClient = require('../config/database');
 exports.index = function (req, res) {
   res.redirect('/hosts/list');
 };

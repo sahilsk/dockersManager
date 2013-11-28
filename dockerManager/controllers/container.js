@@ -9,9 +9,9 @@ var appUtil = require('./app_util');
 var config = require('../config/config');
 var logger = require('../config/logger');
 var async = require('async');
-var redis = require('redis');
 var util = require('util');
-var rdsClient = redis.createClient(config.redis.port, config.redis.hostname);
+var rdsClient = require("../config/database");
+
 exports.index = function (req, res) {
   res.render('docker/index', {
     title: 'Dashboard',

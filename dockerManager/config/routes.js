@@ -31,6 +31,8 @@ exports.makeRoutes= function(app){
 	app.get("/dockerfiles", dockerfile.list);
 	app.get("/dockerfiles/list", dockerfile.list);
 	app.get("/dockerfiles/:recordID/push", dockerfile.push);
+	app.get("/dockerfiles/:recordID/delete", dockerfile.delete);
+
 	app.get("/dockerfiles/:buildTag", dockerfile.show);
 
 

@@ -5,8 +5,14 @@ var config = {
     },
 
     redis: {
-    	hostname:  "ec2-54-219-118-62.us-west-1.compute.amazonaws.com" ,
-    	port: 6379
+      development:{
+      	hostname:  "ec2-54-219-118-62.us-west-1.compute.amazonaws.com" ,
+      	port: 6379
+      },
+      schema:{
+        submittedImagesList : "SubmittedImages"
+      }
+
     },
     repository :{
     	development:{

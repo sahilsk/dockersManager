@@ -50,7 +50,10 @@
 							</td>
 							<td> <%= image.isReplicated %> </td>
 							<td> <%= image.isPushedOnRegistry %> </td>
-							<td> <%= image.createdAt %> </td>
+							<td>
+								 <% var time =   new Date( parseInt( image.createdAt) ); %>
+								 <%=  time.toLocaleDateString()	 %> , <%=  time.toLocaleTimeString()	 %> 
+							</td>
 							<td>
 								<Div class="operation_menu" style="width:100px;"> 	
 									<span class="inspect"> <a href="/dockers/<%=image.image_id %>/containers?repository=<% if( !image.repository) { %>--<% }else { %><%= image.repository %><% }%>&created=<%=image.createdAt%>" title="Inspect">  &equiv;	 </a> </span>
@@ -59,6 +62,9 @@
 									-->
 									<span class="status"> 
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="remove"> PUSH  </a></span>
+									<span class="kill"> 
+										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/delete" title="remove"> 
+										&cross;  </a></span>
 
 									
 								</Div>
