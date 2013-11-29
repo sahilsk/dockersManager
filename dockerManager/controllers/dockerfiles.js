@@ -574,6 +574,25 @@ exports.broadcastPull = function (req, res) {
           }
           imageToBroadcast = result;
           imageToBroadcast.build_server = JSON.parse(result.build_server);
+          imageToBroadcast.save = function(){
+            var isSaved = false;
+            rdsClient.hmset( this.id,
+                    'image_id', this.image_id,
+                    'build_tag', this.build_tag,
+                    'repository', this.repository,
+                    'build_server', JSON.stringify(this.build_server), 
+                    'isReplicated', this.isReplicated, 
+                    "isPushedOnRegistry", this.isPushedOnRegistry, 
+                    'updatedAt', Date.now(),
+            function(err, result){
+                if(err)
+                  isSaved = false;
+                else
+                  isSaved = true;
+                logger.log("::::::::::::::::::: Saved: " + this.id + ": " + this.isPushedOnRegistry);
+            });
+           }// end 'save'
+
           callback();
         });
 
@@ -581,8 +600,8 @@ exports.broadcastPull = function (req, res) {
     //Broad only if image is pushed
     function(callback){
         logger.info(":::::::::::::::::::: isPushedOnRegistry : " + imageToBroadcast.isPushedOnRegistry);
-      if(!imageToBroadcast.isPushedOnRegistry)
-          callback("Image is not pushed on the regitry. Please push it first!!", null);
+      if(!(imageToBroadcast.isPushedOnRegistry))
+          callback("Image is not pushed on the registry. Please push it first!!", null);
       else
           callback();
     },
@@ -658,14 +677,9 @@ exports.broadcastPull = function (req, res) {
                 }else{
                   cliResponse = util.format("<%s:%s :> Image[%s] pulled successfully.", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
                   hostImagePullReport.push( { text: cliResponse, type: 'success' } );
+                  imageToBroadcast.isReplicated = true;
+                  imageToBroadcast.save();
                 }
-
-
-                  /*
-                    cliResponse = util.format("<%s:%s :> Pull result of repository '%s' is invalid. ", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
-                    logger.info(cliResponse + result); //error in the above string(in this case,yes)!
-                    hostImagePullReport.push({ text: cliResponse, type: 'error' });
-                */
               break;
             case 500:
                 cliResponse = util.format("<%s:%s :> Failed to pull image[%s]. Cause: Server Error", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
