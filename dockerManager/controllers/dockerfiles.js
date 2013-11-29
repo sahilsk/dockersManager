@@ -569,7 +569,7 @@ exports.broadcastPull = function (req, res) {
     function(callback){
         rdsClient.hgetall( recordID, function(err, result){
           if( err){
-             callback(err);
+             callback(err, null);
              return;
           }
           imageToBroadcast = result;
@@ -580,8 +580,9 @@ exports.broadcastPull = function (req, res) {
     },
     //Broad only if image is pushed
     function(callback){
+        logger.info(":::::::::::::::::::: isPushedOnRegistry : " + imageToBroadcast.isPushedOnRegistry);
       if(!imageToBroadcast.isPushedOnRegistry)
-          callback("Image is not pushed on the regitry. Please push it first");
+          callback("Image is not pushed on the regitry. Please push it first!!", null);
       else
           callback();
     },
@@ -814,7 +815,7 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
 function pushImageOnRegistry(host, tagWithRepository, callback) {
 
 //  var queryString =   util.format("/v1.6/images/%s/push",  "ubuntu");//"ec2-54-219-118-62.us-west-1.compute.amazonaws.com:5000"); 
-    var queryString =    util.format("/v1.6/images/%s/push", decodeURIComponent(tagWithRepository) ) ;
+    var queryString =    util.format("/v1.6/images/%s/push", tagWithRepository ) ;
 
     appUtil.makePostRequestToHost( host, queryString, null, null, function( data, statusCode, error){
         callback( data, statusCode, error );
