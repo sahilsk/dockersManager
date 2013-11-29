@@ -543,7 +543,7 @@ exports.broadcastPull = function (req, res) {
     },
     function (callback) {
       logger.info(':::::::::::::::::::: isPushedOnRegistry : ' + imageToBroadcast.isPushedOnRegistry);
-      if (!imageToBroadcast.isPushedOnRegistry)
+      if (imageToBroadcast.isPushedOnRegistry === false)
         callback('Image is not pushed on the registry. Please push it first!!', null);
       else
         callback();

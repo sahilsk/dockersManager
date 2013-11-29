@@ -195,7 +195,7 @@ exports.isHostAlive = function (hostAddress, callback) {
     callback(isAlive);
   });
 };
-exports.isDockerServerAlive = function (dockerHost, dockerPort, callback) {
+exports.isDockerServerAlive = function (dockerHost, dockerPort, oResult) {
   var options = {
       hostname: dockerHost,
       port: dockerPort,
@@ -228,22 +228,22 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, callback) {
       });
       res.on('end', function () {
         logger.info('Ending response : %s:%s', isAlive, error ? error : 'SUCCESS');
-        callback(isAlive, error);
+        oResult(isAlive, error);
       });
 
     });
   
   req.on('socket', function (socket) {
-      socket.setTimeout(3000);  
+      socket.setTimeout(1000);  
       socket.on('timeout', function() {
         logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
-        callback(false, "Request Timeout");
+//        oResult(false, "Request Timeout");
       });
   });
 
   req.on('error', function (e) {
     logger.error('Problem with request to %s:%s. Verify server address is valid: %s', dockerHost, dockerPort, e.message);
-    callback(false, e.message);
+    oResult(false, e.message);
   });
 
   req.end();
