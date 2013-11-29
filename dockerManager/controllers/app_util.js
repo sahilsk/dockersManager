@@ -232,15 +232,20 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, callback) {
       });
 
     });
-  req.setTimeout(3000);
-  req.on("timeout", function(){
-      logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
-      callback(isAlive, "Request Timeout");
+  
+  req.on('socket', function (socket) {
+      socket.setTimeout(2000);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        callback(false, "Request Timeout");
+      });
   });
+
   req.on('error', function (e) {
     logger.error('Problem with request to %s:%s. Verify server address is valid: %s', dockerHost, dockerPort, e.message);
-    callback(isAlive, e.message);
+    callback(false, e.message);
   });
+
   req.end();
 };
 exports.isServerFullyLoaded = function (server, callback) {
