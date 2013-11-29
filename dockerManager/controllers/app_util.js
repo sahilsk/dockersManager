@@ -1,11 +1,10 @@
 //var http = require('http');
-var http = require('follow-redirects').http
+var http = require('follow-redirects').http;
 var fs = require('fs');
 var ping = require('ping');
 var util = require('util');
 var config = require('../config/config');
 var logger = require('../config/logger');
-
 exports.makeGetRequest = function (queryString, callback) {
   var inspectData = '';
   var options = {
@@ -277,7 +276,7 @@ exports.sendImagePullRequestToHost = function (host, tagWithRepository, callback
   var options = {
       hostname: host.hostname,
       port: host.managerPort,
-      path:  util.format('/docker/pullImage?tag=%s', tagWithRepository),
+      path: util.format('/docker/pullImage?tag=%s', tagWithRepository),
       method: 'POST'
     };
   logger.info(options);
@@ -297,11 +296,11 @@ exports.sendImagePullRequestToHost = function (host, tagWithRepository, callback
   req.on('error', function (e) {
     resposeBody = '';
     console.log('problem with request: ' + e.message);
-    callback(e.message, null, null );
+    callback(e.message, null, null);
   });
   req.end();
 };
-exports.sendImagePushRequestToHost = function (host, tagWithRepository,  callback) {
+exports.sendImagePushRequestToHost = function (host, tagWithRepository, callback) {
   var resposeBody = '';
   var options = {
       hostname: host.hostname,
@@ -330,5 +329,3 @@ exports.sendImagePushRequestToHost = function (host, tagWithRepository,  callbac
   });
   req.end();
 };
-
-

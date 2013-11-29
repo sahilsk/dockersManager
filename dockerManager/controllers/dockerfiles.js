@@ -14,7 +14,7 @@ var util = require('util');
 var config = require('../config/config');
 var logger = require('../config/logger');
 var redis = require('redis');
-var rdsClient = require("../config/database");
+var rdsClient = require('../config/database');
 var progress = 0;
 /*
 ||	upload(req, res) 
@@ -228,16 +228,7 @@ exports.uploadToAll = function (req, res) {
     function (callback) {
       logger.info('Built Image Id: <%s>', builtImageID);
       var newSetEntryKey = util.format('Image_%d', Date.now());
-      rdsClient.hmset(newSetEntryKey, 
-              'id', newSetEntryKey, 
-              'image_id', builtImageID,
-              'build_tag', buildTagName,
-              'repository', remoteBuildTagName,
-              'build_server', JSON.stringify(buildServer), 
-              'isReplicated', false, 
-              'isPushedOnRegistry', false,
-              'createdAt', Date.now(),
-       function (err, result) {
+      rdsClient.hmset(newSetEntryKey, 'id', newSetEntryKey, 'image_id', builtImageID, 'build_tag', buildTagName, 'repository', remoteBuildTagName, 'build_server', JSON.stringify(buildServer), 'isReplicated', false, 'isPushedOnRegistry', false, 'createdAt', Date.now(), function (err, result) {
         if (err)
           callback('Failed to insert record in the database');
         else {
@@ -322,13 +313,13 @@ exports.uploadToAll = function (req, res) {
   ], function (err, results) {
     if (err) {
       req.session.messages = {
-        text: err? JSON.stringify(err):"",
+        text: err ? JSON.stringify(err) : '',
         type: 'error'
       };
-     if (dockerfileBuiltReport.length > 0)
+      if (dockerfileBuiltReport.length > 0)
         req.session.messages.errorList = dockerfileBuiltReport;
       res.redirect('/');
-    } else{
+    } else {
       res.redirect('/dockerfiles');
     }
     //        res.redirect('/dockerfiles/'+ encodeURIComponent(buildTagName) );
@@ -348,17 +339,14 @@ exports.list = function (req, res) {
       res.end();
       return;
     }
-
-    if( result.length === 0 ){
-        logger.info("No image uploaded yet.");
-        res.render('dockerfile/list', {
-          title: 'Submitted Images',
-          imageList: submittedImageList
-        });
-      return;      
+    if (result.length === 0) {
+      logger.info('No image uploaded yet.');
+      res.render('dockerfile/list', {
+        title: 'Submitted Images',
+        imageList: submittedImageList
+      });
+      return;
     }
-
-
     async.each(result, function (key, cb) {
       //verify if is valid id
       if (key.indexOf('Image_') != -1) {
@@ -378,7 +366,7 @@ exports.list = function (req, res) {
         logger.info(submittedImageList);
         res.render('dockerfile/list', {
           title: 'Submitted Images',
-          page:"SubmittedImages_list",
+          page: 'SubmittedImages_list',
           imageList: submittedImageList
         });
       } else {
@@ -394,92 +382,69 @@ exports.list = function (req, res) {
 exports.show = function (req, res) {
   var buildTagName = req.params.buildTag;
 };
-
 exports.push = function (req, res) {
   var recordID = decodeURIComponent(req.params.recordID);
-  logger.info("reocrdID: " + recordID);
+  logger.info('reocrdID: ' + recordID);
   var record = null;
-  rdsClient.hgetall( recordID, function(err, result){
-    if(err || !result){
-        req.session.messages = {
-          text:"Invalid Submitted Image Record Id. Cause: " + err,
-          type:"error"
-        };
-        res.redirect("/dockerfiles");
-        return;
+  rdsClient.hgetall(recordID, function (err, result) {
+    if (err || !result) {
+      req.session.messages = {
+        text: 'Invalid Submitted Image Record Id. Cause: ' + err,
+        type: 'error'
+      };
+      res.redirect('/dockerfiles');
+      return;
     }
-
     record = result;
-    record.save = function(){
-
-      logger.info()
+    record.save = function () {
+      logger.info();
       var isSaved = false;
-      rdsClient.hmset( this.id,
-              'image_id', this.image_id,
-              'build_tag', this.build_tag,
-              'repository', this.repository,
-              'build_server', JSON.stringify(this.build_server), 
-              'isReplicated', this.isReplicated, 
-              "isPushedOnRegistry", this.isPushedOnRegistry, 
-              'updatedAt', Date.now(),
-      function(err, result){
-          if(err)
-            isSaved = false;
-          else
-            isSaved = true;
-          logger.log("::::::::::::::::::: Saved: " + this.id + ": " + this.isPushedOnRegistry);
+      rdsClient.hmset(this.id, 'image_id', this.image_id, 'build_tag', this.build_tag, 'repository', this.repository, 'build_server', JSON.stringify(this.build_server), 'isReplicated', this.isReplicated, 'isPushedOnRegistry', this.isPushedOnRegistry, 'updatedAt', Date.now(), function (err, result) {
+        if (err)
+          isSaved = false;
+        else
+          isSaved = true;
+        logger.log('::::::::::::::::::: Saved: ' + this.id + ': ' + this.isPushedOnRegistry);
       });
-   }
-
+    };
     record.build_server = JSON.parse(result.build_server);
-
-    pushImageOnRegistry(record.build_server, record.repository, function(data, statusCode, errorMessage){
-        switch(statusCode){
-
-          case 200:
-            logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
-            req.session.messages = {
-              text: util.format("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
-              type:"success"
-            };
-            record.isPushedOnRegistry =true; 
-            record.save();
-
-            break;
-          case 404:
-              logger.info("<%s:%s> : '<%s>' does not exist.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag );
-              req.session.messages = {
-                text: util.format("<%s:%s> : '<%s>' does not exist.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag ), 
-                type:"warn"
-              };    
-            break;
-          case 500:
-            logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
-             req.session.messages = {
-                text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ),
-                type:"error"
-             };
-
-            break;
-          default:
-            logger.info( util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err) );
-            req.session.messages = {
-             text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err ), 
-             type:"error"
-            };
-
-            break;
-
-
-        }// end 'switch'
-
-
-      res.redirect("/dockerfiles");
-
-    }); // end 'pushImageOnRegistry'
-
-
-  /*
+    pushImageOnRegistry(record.build_server, record.repository, function (data, statusCode, errorMessage) {
+      switch (statusCode) {
+      case 200:
+        logger.info('<%s:%s> : \'<%s>\' pushed successfully on registry[%s].', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository));
+        req.session.messages = {
+          text: util.format('<%s:%s> : \'<%s>\' pushed successfully on registry[%s].', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository)),
+          type: 'success'
+        };
+        record.isPushedOnRegistry = true;
+        record.save();
+        break;
+      case 404:
+        logger.info('<%s:%s> : \'<%s>\' does not exist.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag);
+        req.session.messages = {
+          text: util.format('<%s:%s> : \'<%s>\' does not exist.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag),
+          type: 'warn'
+        };
+        break;
+      case 500:
+        logger.info('<%s:%s> : \'<%s>\' image failed to be pushed on the registry[\'%s\']. Cause: Server error.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository));
+        req.session.messages = {
+          text: util.format('<%s:%s> :\'<%s>\' image failed to be pushed on the registry[\'%s\']. Cause: Server error.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository)),
+          type: 'error'
+        };
+        break;
+      default:
+        logger.info(util.format('<%s:%s> :\'<%s>\' image failed to be pushed on the registry[\'%s\']. Please verify if host is reachable. Cause: %s', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err));
+        req.session.messages = {
+          text: util.format('<%s:%s> :\'<%s>\' image failed to be pushed on the registry[\'%s\']. Please verify if host is reachable. Cause: %s', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err),
+          type: 'error'
+        };
+        break;
+      }
+      // end 'switch'
+      res.redirect('/dockerfiles');
+    });  // end 'pushImageOnRegistry'
+         /*
     app_util.sendImagePushRequestToHost( record.build_server, record.repository, function( result, statusCode, err){
         switch(statusCode){
           case 200:
@@ -539,91 +504,63 @@ exports.push = function (req, res) {
         res.redirect("/dockerfiles");
     });  
   */
-
-
-
-  }); // end 'rdsClient.hgetall'
-}
-
-
+  });  // end 'rdsClient.hgetall'
+};
 /*
   || Get list of live servers
     ==>toEach POST create image ?formImage(ip:port/tag) 
     ==>store outpput from all
 */
 exports.broadcastPull = function (req, res) {
-
-
-
   var recordID = req.params.recordID;
-
   var liveHostsList = [];
   var dockerHostList = [];
   var hostImagePullReport = [];
   var imageToBroadcast = null;
   var repository = config.repository.development;
-
   async.series([
-
-    //Get Image Information from submitted Job
-    function(callback){
-        rdsClient.hgetall( recordID, function(err, result){
-          if( err){
-             callback(err, null);
-             return;
-          }
-          imageToBroadcast = result;
-          imageToBroadcast.build_server = JSON.parse(result.build_server);
-          imageToBroadcast.save = function(){
-            var isSaved = false;
-            rdsClient.hmset( this.id,
-                    'image_id', this.image_id,
-                    'build_tag', this.build_tag,
-                    'repository', this.repository,
-                    'build_server', JSON.stringify(this.build_server), 
-                    'isReplicated', this.isReplicated, 
-                    "isPushedOnRegistry", this.isPushedOnRegistry, 
-                    'updatedAt', Date.now(),
-            function(err, result){
-                if(err)
-                  isSaved = false;
-                else
-                  isSaved = true;
-                logger.log("::::::::::::::::::: Saved: " + this.id + ": " + this.isPushedOnRegistry);
-            });
-           }// end 'save'
-
-          callback();
-        });
-
+    function (callback) {
+      rdsClient.hgetall(recordID, function (err, result) {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+        imageToBroadcast = result;
+        imageToBroadcast.build_server = JSON.parse(result.build_server);
+        imageToBroadcast.save = function () {
+          var isSaved = false;
+          rdsClient.hmset(this.id, 'image_id', this.image_id, 'build_tag', this.build_tag, 'repository', this.repository, 'build_server', JSON.stringify(this.build_server), 'isReplicated', this.isReplicated, 'isPushedOnRegistry', this.isPushedOnRegistry, 'updatedAt', Date.now(), function (err, result) {
+            if (err)
+              isSaved = false;
+            else
+              isSaved = true;
+            logger.log('::::::::::::::::::: Saved: ' + this.id + ': ' + this.isPushedOnRegistry);
+          });
+        };
+        // end 'save'
+        callback();
+      });
     },
-    //Broad only if image is pushed
-    function(callback){
-        logger.info(":::::::::::::::::::: isPushedOnRegistry : " + imageToBroadcast.isPushedOnRegistry);
-      if(!(imageToBroadcast.isPushedOnRegistry))
-          callback("Image is not pushed on the registry. Please push it first!!", null);
+    function (callback) {
+      logger.info(':::::::::::::::::::: isPushedOnRegistry : ' + imageToBroadcast.isPushedOnRegistry);
+      if (!imageToBroadcast.isPushedOnRegistry)
+        callback('Image is not pushed on the registry. Please push it first!!', null);
       else
-          callback();
+        callback();
     },
-    //Get all docker hosts leaving buildServer
     function (callback) {
       getDockerHosts(function (err, hostList) {
         if (err)
           callback(err, null);
         else {
-          dockerHostList = hostList.filter(function(host){
-              return !(
-                  host.hostname.toString() ===  imageToBroadcast.build_server.hostname 
-                 &&  host.dockerPort === imageToBroadcast.build_server.dockerPort
-               );
-
+          dockerHostList = hostList.filter(function (host) {
+            return !(host.hostname.toString() === imageToBroadcast.build_server.hostname && host.dockerPort === imageToBroadcast.build_server.dockerPort);
           });
-          logger.info("Docker Host Count: %d/%d ", dockerHostList.length, hostList.length);
+          logger.info('Docker Host Count: %d/%d ', dockerHostList.length, hostList.length);
           callback();
         }
       });
     },
-    //Filter live docker hosts
     function (callback) {
       if (dockerHostList.length === 0) {
         callback('No Docker host available yet.', null);
@@ -639,150 +576,135 @@ exports.broadcastPull = function (req, res) {
         callback();
       });
     },
-    //Dispatch Pull request to all live servers filtered
     function (callback) {
       if (liveHostsList.length === 0) {
         callback('No Docker Server is up. Please try again later. ', null);
         return;
       }
-      logger.info("Live Docker Host Count: %d/%d ", liveHostsList.length, dockerHostList.length);
-      var querystring = "/images/create?fromImage="+imageToBroadcast.repository;
-      async.each(liveHostsList,function( liveHost, cb){
+      logger.info('Live Docker Host Count: %d/%d ', liveHostsList.length, dockerHostList.length);
+      var querystring = '/images/create?fromImage=' + imageToBroadcast.repository;
+      async.each(liveHostsList, function (liveHost, cb) {
         var pullResult = [];
-        var cliResponse= null;
-        appUtil.makePostRequestToHost(liveHost, querystring, null, null, function(result, statusCode, errorMessage){
-
-          switch(statusCode){
-            case 200:
-                result.trim().split("}").map( function(d){ return (d + "}");  } )
-                    .forEach( function(  value, index ){ 
-                      try{ 
-                          pullResult.push( JSON.parse(value) ) ;
-                        }
-                      catch(e){
-                        try{
-                          pullResult.push( JSON.parse(value+"}") ) ;
-                        }catch(e){
-                          console.log("fail to pull: ", value);
-                        }
-                      }    
-                });
-
-                logger.info( pullResult);
-                var errorResponse = pullResult.filter( function(item){ return item.error?true:false} );
-                if( errorResponse.length){
-                  cliResponse = util.format("<%s:%s :> Error pulling image[%s] : %s", liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository), JSON.stringify(errorResponse));
-                  hostImagePullReport.push( { text: cliResponse, type: 'error' } );
-
-                }else{
-                  cliResponse = util.format("<%s:%s :> Image[%s] pulled successfully.", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
-                  hostImagePullReport.push( { text: cliResponse, type: 'success' } );
-                  imageToBroadcast.isReplicated = true;
-                  imageToBroadcast.save();
+        var cliResponse = null;
+        appUtil.makePostRequestToHost(liveHost, querystring, null, null, function (result, statusCode, errorMessage) {
+          switch (statusCode) {
+          case 200:
+            result.trim().split('}').map(function (d) {
+              return d + '}';
+            }).forEach(function (value, index) {
+              try {
+                pullResult.push(JSON.parse(value));
+              } catch (e) {
+                try {
+                  pullResult.push(JSON.parse(value + '}'));
+                } catch (e) {
+                  console.log('fail to pull: ', value);
                 }
-              break;
-            case 500:
-                cliResponse = util.format("<%s:%s :> Failed to pull image[%s]. Cause: Server Error", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
-                logger.info( cliResponse);
-                hostImagePullReport.push({ text:cliResponse, type:'error'} );
-                break;
-            default:
-                cliResponse =util.format('<%s:%s> : Failed to build uploaded Dockerfile. Host is unreachable.', liveHost.hostname, liveHost.dockerPort);
-                logger.info( cliResponse);
-                hostImagePullReport.push({ text: cliResponse, type: 'error' });
-              break;
+              }
+            });
+            logger.info(pullResult);
+            var errorResponse = pullResult.filter(function (item) {
+                return item.error ? true : false;
+              });
+            if (errorResponse.length) {
+              cliResponse = util.format('<%s:%s :> Error pulling image[%s] : %s', liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository), JSON.stringify(errorResponse));
+              hostImagePullReport.push({
+                text: cliResponse,
+                type: 'error'
+              });
+            } else {
+              cliResponse = util.format('<%s:%s :> Image[%s] pulled successfully.', liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
+              hostImagePullReport.push({
+                text: cliResponse,
+                type: 'success'
+              });
+              imageToBroadcast.isReplicated = true;
+              imageToBroadcast.save();
+            }
+            break;
+          case 500:
+            cliResponse = util.format('<%s:%s :> Failed to pull image[%s]. Cause: Server Error', liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
+            logger.info(cliResponse);
+            hostImagePullReport.push({
+              text: cliResponse,
+              type: 'error'
+            });
+            break;
+          default:
+            cliResponse = util.format('<%s:%s> : Failed to build uploaded Dockerfile. Host is unreachable.', liveHost.hostname, liveHost.dockerPort);
+            logger.info(cliResponse);
+            hostImagePullReport.push({
+              text: cliResponse,
+              type: 'error'
+            });
+            break;
           }
           cb();
-
-        });//end 'makePostRequestToHost'
-
-      }, function(err){
+        });  //end 'makePostRequestToHost'
+      }, function (err) {
         callback();
-      }); // end 'async.each'
-
+      });  // end 'async.each'
     }
-  ], function(err, result){
-      if (err) {
-        req.session.messages = {
-          text: err? JSON.stringify(err):"",
-          type: 'error'
-        };
-      } 
-      if (hostImagePullReport.length > 0)
-          req.session.messages = { 
-            hostPullReport: hostImagePullReport,
-            text: err? JSON.stringify(err):"",
-            type: 'error'
-          };      
-      res.redirect('/dockerfiles');
-      return;
-    });
-
-}
-
-
-
-exports.delete = function(req, res){
-    var recordID = req.params.recordID;
-    if( typeof recordID === undefined && !recordID && recordID.indexOf("Image_") === -1) {
-        req.session.messages = {
-          text: "Invalid or no job id provided.",
-          type: 'error'
-        };
-
-        res.redirect('/dockerfiles');
-        return;
+  ], function (err, result) {
+    if (err) {
+      req.session.messages = {
+        text: err ? JSON.stringify(err) : '',
+        type: 'error'
+      };
     }
-
-    rdsClient.del( recordID, function(err, result){
-        if(err){
-           req.session.messages = {
-            text: "Error deleting record. " + err,
-            type: 'error'
-          };         
-        }else{
-          logger.log( "Record Deleted: " + result);
-
-          rdsClient.lrem( config.redis.schema.submittedImagesList, 0, recordID, function(err, result){
-            if(err){
-                logger.error("Failed to delete %s from %s.Error : %s", recordID, config.redis.schema.submittedImagesList, err.toString());
-            }else
-              logger.info("%s deleted from %s successfully", recordID, config.redis.schema.submittedImageList);
-
-          });
-
-
-          if(result){
-             req.session.messages = {
-              text: util.format("Record Deleted Successfully. [%d]", result),
-              type: 'success'
-            };    
-            logger.info( "Record Deleted Successfully. [%d]", result);
-
-          }else{
-             req.session.messages = {
-              text: util.format("No such record found :'%s'.[%d]", recordID, result),
-              type: 'alert'
-            };    
-            logger.info("No such record found :'%s'.[%d]", recordID, result);
-          }
-        }
-
-        res.redirect("/dockerfiles");
-
-    });
+    if (hostImagePullReport.length > 0)
+      req.session.messages = {
+        hostPullReport: hostImagePullReport,
+        text: err ? JSON.stringify(err) : '',
+        type: 'error'
+      };
+    res.redirect('/dockerfiles');
+    return;
+  });
 };
-
-
-
-
-function updateSubmittedImageRecord( record){
-  //TO DO
-
+exports.delete = function (req, res) {
+  var recordID = req.params.recordID;
+  if (typeof recordID === undefined && !recordID && recordID.indexOf('Image_') === -1) {
+    req.session.messages = {
+      text: 'Invalid or no job id provided.',
+      type: 'error'
+    };
+    res.redirect('/dockerfiles');
+    return;
+  }
+  rdsClient.del(recordID, function (err, result) {
+    if (err) {
+      req.session.messages = {
+        text: 'Error deleting record. ' + err,
+        type: 'error'
+      };
+    } else {
+      logger.log('Record Deleted: ' + result);
+      rdsClient.lrem(config.redis.schema.submittedImagesList, 0, recordID, function (err, result) {
+        if (err) {
+          logger.error('Failed to delete %s from %s.Error : %s', recordID, config.redis.schema.submittedImagesList, err.toString());
+        } else
+          logger.info('%s deleted from %s successfully', recordID, config.redis.schema.submittedImageList);
+      });
+      if (result) {
+        req.session.messages = {
+          text: util.format('Record Deleted Successfully. [%d]', result),
+          type: 'success'
+        };
+        logger.info('Record Deleted Successfully. [%d]', result);
+      } else {
+        req.session.messages = {
+          text: util.format('No such record found :\'%s\'.[%d]', recordID, result),
+          type: 'alert'
+        };
+        logger.info('No such record found :\'%s\'.[%d]', recordID, result);
+      }
+    }
+    res.redirect('/dockerfiles');
+  });
+};
+function updateSubmittedImageRecord(record) {
 }
-
-
-
 function getDockerHosts(callback) {
   var jHostList = [];
   rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
@@ -825,14 +747,10 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
     }, statusCode, error);
   });
 }
-
 function pushImageOnRegistry(host, tagWithRepository, callback) {
-
-//  var queryString =   util.format("/v1.6/images/%s/push",  "ubuntu");//"ec2-54-219-118-62.us-west-1.compute.amazonaws.com:5000"); 
-    var queryString =    util.format("/v1.6/images/%s/push", tagWithRepository ) ;
-
-    appUtil.makePostRequestToHost( host, queryString, null, null, function( data, statusCode, error){
-        callback( data, statusCode, error );
-    });
-
-};
+  //  var queryString =   util.format("/v1.6/images/%s/push",  "ubuntu");//"ec2-54-219-118-62.us-west-1.compute.amazonaws.com:5000"); 
+  var queryString = util.format('/v1.6/images/%s/push', tagWithRepository);
+  appUtil.makePostRequestToHost(host, queryString, null, null, function (data, statusCode, error) {
+    callback(data, statusCode, error);
+  });
+}

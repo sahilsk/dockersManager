@@ -73,12 +73,9 @@ exports.inspect = function (req, res) {
   });
 };
 exports.list = function (req, res) {
-
-    var areAll = 1;
-    if( req.query.all) 
-      areAll = parseInt(req.query.all) ;
-
-
+  var areAll = 1;
+  if (req.query.all)
+    areAll = parseInt(req.query.all);
   appUtil.makeGetRequest('/images/json?all=' + areAll, function (data, statusCode, errorMessage) {
     switch (statusCode) {
     case 200:

@@ -10,8 +10,7 @@ var config = require('../config/config');
 var logger = require('../config/logger');
 var async = require('async');
 var util = require('util');
-var rdsClient = require("../config/database");
-
+var rdsClient = require('../config/database');
 exports.index = function (req, res) {
   res.render('docker/index', {
     title: 'Dashboard',
@@ -50,11 +49,10 @@ exports.inspect = function (req, res) {
   });
 };
 exports.list = function (req, res) {
-    var areAll = 1;
-    if( req.query.all) 
-      areAll = parseInt(req.query.all) ;
-
-  appUtil.makeGetRequest('/containers/json?size=1&all='+areAll, function (data, statusCode, errorMessage) {
+  var areAll = 1;
+  if (req.query.all)
+    areAll = parseInt(req.query.all);
+  appUtil.makeGetRequest('/containers/json?size=1&all=' + areAll, function (data, statusCode, errorMessage) {
     switch (statusCode) {
     case 200:
       viewData = JSON.parse(data);
@@ -464,7 +462,7 @@ exports.createInAll = function (req, res) {
   ], function (err, results) {
     if (err) {
       req.session.messages = {
-        text: err? JSON.stringify(err):"",
+        text: err ? JSON.stringify(err) : '',
         type: 'error',
         oData: jsonContainerData
       };
