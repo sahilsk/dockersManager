@@ -613,7 +613,7 @@ exports.broadcastPull = function (req, res) {
                 type: 'error'
               });
             } else {
-              cliResponse = util.format('<%s:%s :> Image[%s] pulled successfully.', liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
+              cliResponse = util.format('<%s:%s :> Image[%s] pulled successfully.', liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository));
               hostImagePullReport.push({
                 text: cliResponse,
                 type: 'success'
@@ -623,7 +623,7 @@ exports.broadcastPull = function (req, res) {
             }
             break;
           case 500:
-            cliResponse = util.format('<%s:%s :> Failed to pull image[%s]. Cause: Server Error', liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
+            cliResponse = util.format('<%s:%s :> Failed to pull image[%s]. Cause: Server Error', liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository));
             logger.info(cliResponse);
             hostImagePullReport.push({
               text: cliResponse,
