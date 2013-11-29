@@ -230,11 +230,12 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, callback) {
         logger.info('Ending response : %s:%s', isAlive, error ? error : 'SUCCESS');
         callback(isAlive, error);
       });
+
     });
-  req.setTimeout(3000, function(e){
-      logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable."+ e);
-      callback(isAlive, e.message);
-      req.end();
+  req.setTimeout(3000);
+  req.on("timeout", function(){
+      logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+      callback(isAlive, "Request Timeout");
   });
   req.on('error', function (e) {
     logger.error('Problem with request to %s:%s. Verify server address is valid: %s', dockerHost, dockerPort, e.message);
