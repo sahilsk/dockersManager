@@ -631,7 +631,7 @@ exports.broadcastPull = function (req, res) {
       }
       async.filter(dockerHostList, function (host, cb) {
         appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
-          logger.info('Alive : ' + isAlive);
+          logger.info('=========================Alive : ' + isAlive);
           cb(isAlive);
         });
       }, function (results) {
@@ -645,11 +645,11 @@ exports.broadcastPull = function (req, res) {
         callback('No Docker Server is up. Please try again later. ', null);
         return;
       }
+      logger.info("Live Docker Host Count: %d/%d ", liveHostsList.length, dockerHostList.length);
       var querystring = "/images/create?fromImage="+imageToBroadcast.repository;
       async.each(liveHostsList,function( liveHost, cb){
         var pullResult = [];
         var cliResponse= null;
-          //TO DO Dispatch post CREATE IMAGE REQUEST
         appUtil.makePostRequestToHost(liveHost, querystring, null, null, function(result, statusCode, errorMessage){
 
           switch(statusCode){
@@ -663,7 +663,7 @@ exports.broadcastPull = function (req, res) {
                         try{
                           pullResult.push( JSON.parse(value+"}") ) ;
                         }catch(e){
-                          console.log("fail to push: ", value);
+                          console.log("fail to pull: ", value);
                         }
                       }    
                 });

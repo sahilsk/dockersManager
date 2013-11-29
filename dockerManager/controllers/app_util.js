@@ -142,6 +142,7 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
       console.log('HEADERS: ' + JSON.stringify(res.headers));
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
+        logger.info(chunk);
         inspectData += chunk;
       });
       res.on('end', function () {
@@ -227,7 +228,7 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, callback) {
         resposeBody += chunk;
       });
       res.on('end', function () {
-        logger.info('===========Ending response : %s:%s', isAlive, error ? error : 'SUCCESS');
+        logger.info('Ending response : %s:%s', isAlive, error ? error : 'SUCCESS');
         callback(isAlive, error);
       });
     });
