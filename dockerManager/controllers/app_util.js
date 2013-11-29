@@ -234,7 +234,7 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, callback) {
     });
   
   req.on('socket', function (socket) {
-      socket.setTimeout(2000);  
+      socket.setTimeout(3000);  
       socket.on('timeout', function() {
         logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
         callback(false, "Request Timeout");
