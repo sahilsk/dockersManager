@@ -322,7 +322,7 @@ exports.uploadToAll = function (req, res) {
   ], function (err, results) {
     if (err) {
       req.session.messages = {
-        text: JSON.stringify(err),
+        text: err? JSON.stringify(err):"",
         type: 'error'
       };
      if (dockerfileBuiltReport.length > 0)
@@ -348,7 +348,6 @@ exports.list = function (req, res) {
       res.end();
       return;
     }
-    logger.info('Keys :> ' + result.length);
 
     if( result.length === 0 ){
         logger.info("No image uploaded yet.");
@@ -361,7 +360,6 @@ exports.list = function (req, res) {
 
 
     async.each(result, function (key, cb) {
-      logger.info('Key :> ' + key);
       //verify if is valid id
       if (key.indexOf('Image_') != -1) {
         //query set to retrieve the list
@@ -461,8 +459,7 @@ exports.push = function (req, res) {
                 text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ),
                 type:"error"
              };
-            record.isPushedOnRegistry =false; 
-            record.save();
+
             break;
           default:
             logger.info( util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err) );
@@ -556,12 +553,14 @@ exports.push = function (req, res) {
 */
 exports.broadcastPull = function (req, res) {
 
+
+
   var recordID = req.params.recordID;
 
   var liveHostsList = [];
   var dockerHostList = [];
-  var dockerfileBuiltReport = [];
-  var imageToPush = null;
+  var hostImagePullReport = [];
+  var imageToBroadcast = null;
   var repository = config.repository.development;
 
   async.series([
@@ -573,11 +572,18 @@ exports.broadcastPull = function (req, res) {
              callback(err);
              return;
           }
-          imageToPush = result;
-          imageToPush.build_server = JSON.parse(result.build_server);
+          imageToBroadcast = result;
+          imageToBroadcast.build_server = JSON.parse(result.build_server);
           callback();
         });
 
+    },
+    //Broad only if image is pushed
+    function(callback){
+      if(!imageToBroadcast.isPushedOnRegistry)
+          callback("Image is not pushed on the regitry. Please push it first");
+      else
+          callback();
     },
     //Get all docker hosts leaving buildServer
     function (callback) {
@@ -586,14 +592,13 @@ exports.broadcastPull = function (req, res) {
           callback(err, null);
         else {
           dockerHostList = hostList.filter(function(host){
-              return (
-                  host.hostname !==  imageToPush.build_server && 
-                  host.dockerPort !== imageToPush.build_server.dockerPort &&
-                  host.managerPort !== imageToPush.build_server.managerPort );
+              return !(
+                  host.hostname.toString() ===  imageToBroadcast.build_server.hostname 
+                 &&  host.dockerPort === imageToBroadcast.build_server.dockerPort
+               );
 
           });
-          util.inspect(dockerHostList);
-          
+          logger.info("Docker Host Count: %d/%d ", dockerHostList.length, hostList.length);
           callback();
         }
       });
@@ -620,32 +625,81 @@ exports.broadcastPull = function (req, res) {
         callback('No Docker Server is up. Please try again later. ', null);
         return;
       }
-
+      var querystring = "/images/create?fromImage="+imageToBroadcast.repository;
       async.each(liveHostsList,function( liveHost, cb){
+        var pullResult = [];
+        var cliResponse= null;
           //TO DO Dispatch post CREATE IMAGE REQUEST
+        appUtil.makePostRequestToHost(liveHost, querystring, null, null, function(result, statusCode, errorMessage){
+
+          switch(statusCode){
+            case 200:
+                result.trim().split("}").map( function(d){ return (d + "}");  } )
+                    .forEach( function(  value, index ){ 
+                      try{ 
+                          pullResult.push( JSON.parse(value) ) ;
+                        }
+                      catch(e){
+                        try{
+                          pullResult.push( JSON.parse(value+"}") ) ;
+                        }catch(e){
+                          console.log("fail to push: ", value);
+                        }
+                      }    
+                });
+
+                logger.info( pullResult);
+                var errorResponse = pullResult.filter( function(item){ return item.error?true:false} );
+                if( errorResponse.length){
+                  cliResponse = util.format("<%s:%s :> Error pulling image[%s] : %s", liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository), JSON.stringify(errorResponse));
+                  hostImagePullReport.push( { text: cliResponse, type: 'error' } );
+
+                }else{
+                  cliResponse = util.format("<%s:%s :> Image[%s] pulled successfully.", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
+                  hostImagePullReport.push( { text: cliResponse, type: 'success' } );
+                }
+
+
+                  /*
+                    cliResponse = util.format("<%s:%s :> Pull result of repository '%s' is invalid. ", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
+                    logger.info(cliResponse + result); //error in the above string(in this case,yes)!
+                    hostImagePullReport.push({ text: cliResponse, type: 'error' });
+                */
+              break;
+            case 500:
+                cliResponse = util.format("<%s:%s :> Failed to pull image[%s]. Cause: Server Error", liveHost.hostname, liveHost.dockerPort, imageToBroadcast.repository);
+                logger.info( cliResponse);
+                hostImagePullReport.push({ text:cliResponse, type:'error'} );
+                break;
+            default:
+                cliResponse =util.format('<%s:%s> : Failed to build uploaded Dockerfile. Host is unreachable.', liveHost.hostname, liveHost.dockerPort);
+                logger.info( cliResponse);
+                hostImagePullReport.push({ text: cliResponse, type: 'error' });
+              break;
+          }
+          cb();
+
+        });//end 'makePostRequestToHost'
+
       }, function(err){
-        //handling error
-
-      }); 
-
-      // Make it don't work
-      callback("Work in Progres");
+        callback();
+      }); // end 'async.each'
 
     }
   ], function(err, result){
       if (err) {
         req.session.messages = {
-          text: JSON.stringify(err),
+          text: err? JSON.stringify(err):"",
           type: 'error'
         };
-       if (dockerfileBuiltReport.length > 0)
-          req.session.messages.errorList = dockerfileBuiltReport;
-        res.redirect('/');
-      } else{
-        res.redirect('/dockerfiles');
-      }
-      //        res.redirect('/dockerfiles/'+ encodeURIComponent(buildTagName) );
-      res.end();
+      } 
+      if (hostImagePullReport.length > 0)
+          req.session.messages = { 
+            hostPullReport: hostImagePullReport,
+            text: err? JSON.stringify(err):"",
+            type: 'error'
+          };      
+      res.redirect('/dockerfiles');
       return;
     });
 
@@ -759,7 +813,8 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
 
 function pushImageOnRegistry(host, tagWithRepository, callback) {
 
-  var queryString =   util.format("/v1.6/images/%s/push",  "ubuntu");// , "ec2-54-219-118-62.us-west-1.compute.amazonaws.com:5000");// ( decodeURIComponent(tagWithRepository)) );
+//  var queryString =   util.format("/v1.6/images/%s/push",  "ubuntu");//"ec2-54-219-118-62.us-west-1.compute.amazonaws.com:5000"); 
+    var queryString =    util.format("/v1.6/images/%s/push", decodeURIComponent(tagWithRepository) ) ;
 
     appUtil.makePostRequestToHost( host, queryString, null, null, function( data, statusCode, error){
         callback( data, statusCode, error );

@@ -1,9 +1,11 @@
-var http = require('http');
+//var http = require('http');
+var http = require('follow-redirects').http
 var fs = require('fs');
 var ping = require('ping');
 var util = require('util');
 var config = require('../config/config');
 var logger = require('../config/logger');
+
 exports.makeGetRequest = function (queryString, callback) {
   var inspectData = '';
   var options = {
@@ -49,6 +51,7 @@ exports.makeDELETERequest = function (queryString, callback) {
         inspectData += chunk;
       });
       res.on('end', function () {
+        console.log('BODY', inspectData);
         callback(inspectData, res.statusCode, null);
       });
     });
@@ -268,15 +271,16 @@ exports.isServerFullyLoaded = function (server, callback) {
   });
   req.end();
 };
-exports.sendImagePullRequestToHost = function (host, tag, repository, callback) {
+exports.sendImagePullRequestToHost = function (host, tagWithRepository, callback) {
   var resposeBody = '';
   var options = {
       hostname: host.hostname,
       port: host.managerPort,
-      path: '/docker/pullImage/tag=' + tag + '&repository=' + JSON.stringify(repository),
+      path:  util.format('/docker/pullImage?tag=%s', tagWithRepository),
       method: 'POST'
     };
   logger.info(options);
+  logger.info('Sending request :' + util.format('/pushImage?tag=%s', tagWithRepository));
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
@@ -286,13 +290,13 @@ exports.sendImagePullRequestToHost = function (host, tag, repository, callback) 
       });
       res.on('end', function () {
         console.log('BODY', resposeBody);
-        callback(resposeBody, res.statusCode, null);
+        callback(null, resposeBody, res.statusCode);
       });
     });
   req.on('error', function (e) {
     resposeBody = '';
     console.log('problem with request: ' + e.message);
-    callback(null, null, e.message);
+    callback(e.message, null, null );
   });
   req.end();
 };
@@ -320,8 +324,10 @@ exports.sendImagePushRequestToHost = function (host, tagWithRepository,  callbac
     });
   req.on('error', function (e) {
     resposeBody = '';
-    console.log('problem with request: ' + e.message);
+    console.log('Problem broadcasting pull request: ' + e.message);
     callback(null, null, e.message);
   });
   req.end();
 };
+
+

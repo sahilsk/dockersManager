@@ -464,7 +464,7 @@ exports.createInAll = function (req, res) {
   ], function (err, results) {
     if (err) {
       req.session.messages = {
-        text: JSON.stringify(err),
+        text: err? JSON.stringify(err):"",
         type: 'error',
         oData: jsonContainerData
       };
