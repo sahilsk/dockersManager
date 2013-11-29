@@ -167,7 +167,7 @@ exports.uploadToAll = function (req, res) {
       }
       async.filter(dockerHostList, function (host, cb) {
         appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
-          logger.info('Alive : ' + isAlive);
+          logger.info('===========================Alive : ' + isAlive);
           cb(isAlive);
         });
       }, function (results) {
