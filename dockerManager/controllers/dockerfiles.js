@@ -748,9 +748,14 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
   });
 }
 function pushImageOnRegistry(host, tagWithRepository, callback) {
-  //  var queryString =   util.format("/v1.6/images/%s/push",  "ubuntu");//"ec2-54-219-118-62.us-west-1.compute.amazonaws.com:5000"); 
-  var queryString = util.format('/v1.6/images/%s/push', tagWithRepository);
-  appUtil.makePostRequestToHost(host, queryString, null, null, function (data, statusCode, error) {
+  
+ var queryString = util.format('/v1.3/images/%s/push', tagWithRepository );
+  
+  var headers = {
+    'X-Registry-Auth':null
+  };
+
+  appUtil.makePostRequestToHost(host, queryString, headers, null, function (data, statusCode, error) {
     callback(data, statusCode, error);
   });
 }
