@@ -1,22 +1,15 @@
 <% include ../../layouts/dashboard_layout_top %>
 
 
-
-
-<% if( messages && typeof messages.errorList !== "undefined" && messages.errorList ){ %>
-
+<% if( messages && typeof messages.hostsReport !== "undefined" && messages.hostsReport ){ %>
    	<ul class="flash" >
-   		<% messages.errorList.forEach( function(item, index){ %> 
-   				
+   		<% messages.hostsReport.forEach( function(item, index){ %> 
    			<li class="<%= item.type %>" >
    				<%= item.text %>
 				<span> &cross; </span>
 			</li>
-
    		<%  }); %>
-		
 	</ul>
-
 <% } %>
 
 
@@ -31,14 +24,6 @@
 	<hr/>
 
 
-
-
-<% if( statusCode !== 200 ) { %>
-	<div class="somethingWentWrong">
-		<span ><%= data %> </span>
-	</div>	
-
-<% } %>
 
 <% if( typeof data === "object" && data.length == 0 ){ %>
 	
@@ -61,7 +46,8 @@
 				<th> Ports </th>
 				<th> SizeRW </th>
 				<th> SizeRootFs </th>	
-				<th> Names </th>						
+				<th> Names </th>
+				<th> Running On </th>
 			</tr>
 		</thead>
 		<tbody>
@@ -80,7 +66,7 @@
 		<% } %>
 			<td>
 
-				<Div class="operation_menu"> 	
+				<Div class="operation_menu" style="width:140px;"> 	
 					<span class="inspect"> <a href="/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
 					<span class="status" >  <a href="/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
 					<span class="kill"> <a href="/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>

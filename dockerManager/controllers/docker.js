@@ -5,6 +5,8 @@
 ||				->list() : lsit all containers 
 ||				->progressStatus() : function to track file uploading progress status 
 */
+
+var async = require('async');
 var appUtil = require('./app_util');
 var logger = require('../config/logger');
 exports.index = function (req, res) {
@@ -76,33 +78,82 @@ exports.list = function (req, res) {
   var areAll = 1;
   if (req.query.all)
     areAll = parseInt(req.query.all);
-  appUtil.makeGetRequest('/images/json?all=' + areAll, function (data, statusCode, errorMessage) {
-    switch (statusCode) {
-    case 200:
-      viewData = JSON.parse(data);
-      break;
-    case 400:
-      viewData = 'Bad Parameters ';
-      break;
-    case 500:
-      viewData = 'Server Error : ' + errorMessage;
-      break;
-    default:
-      req.session.messages = {
-        text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
-        type: 'error'
-      };
-      viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
-    }
-    logger.info(viewData);
-    res.render('docker/list', {
-      title: 'List of images',
-      'data': viewData,
-      'areAll': areAll,
-      statusCode: statusCode,
-      page: 'images_list'
+  var querystring = '/images/json?all=' + areAll;
+
+  var liveHostsList = [];
+  var dockerHostList = [];
+  var hostContainersList = [];
+  var hostStatusCode = [];
+  var  viewData = null;
+
+  async.series([
+    function (callback) {
+      appUtil.getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList;
+          callback();
+        }
+      });
+    },
+    function (callback) {
+      if (dockerHostList.length === 0) {
+        callback('No Docker host available yet.');
+        return;
+      }
+      async.filter(dockerHostList, function (host, cb) {
+        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
+          logger.info('=========================Alive : ' + isAlive);
+          cb(isAlive);
+        });
+      }, function (results) {
+        liveHostsList = results;
+        callback();
+      });
+    },
+    function (callback) {
+      if (liveHostsList.length === 0) {
+        callback('No Docker Server is up. Please try again later. ');
+        return;
+      }
+      var liveHost = liveHostsList[ parseInt(liveHostsList.length/2) ];
+      appUtil.makeGetRequestToHost(liveHost, querystring, function (errorMessage, data, statusCode) {
+        hostStatusCode = statusCode;
+        switch (statusCode) {
+          case 200:
+            viewData = JSON.parse(data);
+            viewData.presentedOn = liveHost.name + "("+ liveHost.hostname + ")";
+            break;
+          case 400:
+            viewData = 'Bad Parameters ';
+            break;
+          case 500:
+            viewData = 'Server Error : ' + errorMessage;
+            break;
+          default:
+            req.session.messages = {
+              text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+              type: 'error'
+            };
+            viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
+        }
+        logger.info(viewData);
+        callback();
+      });
+    }], function(err){
+
+        res.render('docker/list', {
+          title: 'List of images',
+          'data': viewData,
+          'areAll': areAll,
+          statusCode: hostStatusCode,
+          page: 'images_list'
+        });
+
     });
-  });
+
+
 };
 exports.delete = function (req, res) {
   appUtil.makeDELETERequest('/images/' + encodeURIComponent(req.params.id), function (result, statusCode, errorMessage) {

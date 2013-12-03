@@ -48,10 +48,18 @@ exports.inspect = function (req, res) {
     });
   });
 };
+/*
+|| Get list of all servers
+|| ->Filter all docker live servers
+||    -> forEach get container list and append to resultSet
+|| Show the resultSet
+*/
 exports.list = function (req, res) {
-  var areAll = 1;
+  var areAll = 1, viewData;
   if (req.query.all)
     areAll = parseInt(req.query.all);
+
+
   appUtil.makeGetRequest('/containers/json?size=1&all=' + areAll, function (data, statusCode, errorMessage) {
     switch (statusCode) {
     case 200:
@@ -78,6 +86,122 @@ exports.list = function (req, res) {
       statusCode: statusCode,
       page: 'containers_list'
     });
+  });
+};
+
+exports.listAll = function(req, res){
+  var areAll = 1;
+  if (req.query.all)
+    areAll = parseInt(req.query.all);
+
+  var querystring = '/containers/json?size=1&all=' + areAll;
+
+  var liveHostsList = [];
+  var dockerHostList = [];
+  var hostContainersList = [];
+  var hostContainerQueryReport = [];
+
+  async.series([
+    function (callback) {
+      appUtil.getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList;
+          callback();
+        }
+      });
+    },
+    function (callback) {
+      if (dockerHostList.length === 0) {
+        callback('No Docker host available yet.');
+        return;
+      }
+      async.filter(dockerHostList, function (host, cb) {
+        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
+          logger.info('=========================Alive : ' + isAlive);
+          cb(isAlive);
+        });
+      }, function (results) {
+        liveHostsList = results;
+        callback();
+      });
+    },
+    function (callback) {
+      if (liveHostsList.length === 0) {
+        callback('No Docker Server is up. Please try again later. ');
+        return;
+      }
+      logger.info('Live Docker Host Count: %d/%d ', liveHostsList.length, dockerHostList.length);
+
+      async.each(liveHostsList, function (liveHost, cb) {
+        var cliResponse = null;       
+        appUtil.makeGetRequestToHost(liveHost, querystring, function (errorMessage, data, statusCode) {
+          var cliContainerList = null;
+          switch (statusCode) {
+            case 200:
+              cliContainerList = JSON.parse(data);
+              cliResponse = util.format('<%s:%s> : Container list[%d] retrieved successfully.', liveHost.hostname, liveHost.dockerPort, cliContainerList.length);
+              
+              cliContainerList.map( function(container){
+                return container.runningOn = liveHost.name;
+              });
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'success'
+              });
+              logger.info(cliResponse);
+              break;
+            case 400:
+              cliResponse = util.format('<%s:%s> : Bad Parameters.', liveHost.hostname, liveHost.dockerPort);
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'error'
+              });
+              logger.info(cliResponse);            
+              break;
+            case 500:
+              cliResponse = util.format('<%s:%s> : Server error. %s', liveHost.hostname, liveHost.dockerPort, errorMessage);
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'error'
+              });
+              logger.info(cliResponse);               
+              break;
+            default:
+              cliResponse = util.format('<%s:%s> :Unable to query list of containers. Please check your network connection.<%s>', liveHost.hostname, liveHost.dockerPort, errorMessage);
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'error'
+              });
+              logger.info(cliResponse);             
+          }
+          if( cliContainerList)
+              hostContainersList = hostContainersList.concat( cliContainerList);
+          cb();
+        });
+ 
+      }, function (err) {
+        callback();
+      });  // end 'async.each'
+    }
+  ], function (err) {
+    if (err) {
+      req.session.messages = {
+        hostsReport: hostContainerQueryReport,
+        text: err ? JSON.stringify(err) : '',
+        type: 'error',
+      };
+    }
+    if (hostContainerQueryReport.length > 0)
+      res.render('container/list', {
+        title: 'List of Containers',
+        'areAll': areAll,
+        'data': hostContainersList,
+        page: 'containers_list',
+        messages:{ hostsReport:  hostContainerQueryReport}
+      });
+    return;
   });
 };
 exports.index = function (req, res) {
@@ -127,7 +251,7 @@ exports.create = function (req, res) {
       Env: Env,
       Cmd: Cmd,
       Dns: Dns,
-      Image: Image,
+      Image: Image.toString(),
       Volumes: Volumes,
       VolumesFrom: VolumesFrom,
       WorkingDir: WorkingDir
@@ -138,7 +262,7 @@ exports.create = function (req, res) {
       'Content-Type': 'application/json',
       'Content-Length': str_ContainerData.length
     };
-  appUtil.makePostRequest('/containers/create', headers, str_ContainerData, function (result, statusCode, errorMessage) {
+ appUtil.makePostRequest('/containers/create', headers, str_ContainerData, function (result, statusCode, errorMessage) {
     switch (statusCode) {
     case 404:
       req.session.messages = {
@@ -160,7 +284,7 @@ exports.create = function (req, res) {
       break;
     case 500:
       req.session.messages = {
-        text: 'Server Error. Cause: ' + result,
+        text: 'Server error.' + result,
         type: 'error',
         oData: jsonContainerData
       };
@@ -172,8 +296,6 @@ exports.create = function (req, res) {
         oData: jsonContainerData
       };
     }
-    res.redirect(req.headers.referer);
-    res.end();
   });
 };
 exports.toggleStatus = function (req, res) {
@@ -196,7 +318,7 @@ exports.toggleStatus = function (req, res) {
         break;
       case 500:
         req.session.messages = {
-          text: 'Server Error. Cause: ' + result,
+          text: 'Server error. ' + result,
           type: 'error'
         };
         break;
@@ -360,14 +482,7 @@ exports.createInAll = function (req, res) {
   var hostResponseResultArr = [];
   async.series([
     function (callback) {
-      getDockerHosts(function (err, hostList) {
-        if (err)
-          callback(err, null);
-        else {
-          dockerHostList = hostList;
-          callback();
-        }
-      });
+cc
     },
     function (callback) {
       if (dockerHostList.length === 0) {
@@ -389,6 +504,7 @@ exports.createInAll = function (req, res) {
         callback('No Docker Server is up. Please try later. ', null);
         return;
       }
+      logger.info('Live Docker Host Count: %d/%d ', liveHostsList.length, dockerHostList.length);
       logger.info('Checking server load ...');
       async.filter(liveHostsList, appUtil.isServerFullyLoaded, function (results) {
         partialLoadedHosts = results;
@@ -400,6 +516,8 @@ exports.createInAll = function (req, res) {
         callback('All Docker Servers are heavily loaded. Please try later', null);
         return;
       }
+      logger.info('Partially Loaded Docker Host Count: %d/%d ', partialLoadedHosts.length, liveHostsList.length);
+
       logger.info('Total requests to dispatch ' + partialLoadedHosts.length);
       async.each(partialLoadedHosts, function (host, doneWithHost) {
         //Dispatching requests
@@ -426,13 +544,13 @@ exports.createInAll = function (req, res) {
             var jResult = JSON.parse(result);
             console.log(jResult);
             hostResponseResultArr.push({
-              text: util.format('Host:<%s:%s> : Container \'%s\' created successfully.' + (typeof jResult.Warnings !== 'undefined' ? ' Warnings: ' + JSON.stringify(jResult.Warnings) : ''), host.hostname, host.dockerPort, containerName),
+              text: util.format('Host:<%s:%s> : Container \'%s\' created successfully.' + (typeof jResult.Warnings !== 'undefined' ? ' Warnings: ' + JSON.stringify(jResult.Warnings) : ''), host.hostname, host.dockerPort, require('querystring').unescape(containerName)),
               type: 'success'
             });
             logger.info('Container[' + jResult.Id + '] created successfully.' + (typeof jResult.Warnings !== 'undefined' ? ' Warnings: ' + JSON.stringify(jResult.Warnings) : ''));
             break;
           case 500:
-            logger.info('Server Error. Cause: ' + result);
+            logger.info('Server error. ' + result);
             hostResponseResultArr.push({
               host: host,
               text: util.format('Host:<%s:%s> : Error. Cause: %s', host.hostname, host.dockerPort, result),
@@ -454,7 +572,7 @@ exports.createInAll = function (req, res) {
         if (err)
           callback(err, null);
         else
-          req.session.messages = { errorList: hostResponseResultArr };
+          req.session.messages = { hostsReport: hostResponseResultArr };
         logger.info('Completed.');
         callback();
       });
@@ -472,6 +590,8 @@ exports.createInAll = function (req, res) {
     res.end();
     return;
   });
+
+/*
   function getDockerHosts(callback) {
     var finalHostList = [];
     var jHostList = [];
@@ -494,5 +614,6 @@ exports.createInAll = function (req, res) {
       });
     });
   }
+  */
   return;
 };

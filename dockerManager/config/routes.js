@@ -65,7 +65,7 @@ exports.makeRoutes= function(app){
 	*/
 	app.get("/containers/:id/inspect", container.inspect);
 	app.get("/containers", container.index);
-	app.get("/containers/list", container.list);
+	app.get("/containers/list", container.listAll);
 	app.get("/containers/:id/toggle", container.toggleStatus);
 	app.get("/containers/new", container.new);
 //	app.post("/containers/create", container.create);

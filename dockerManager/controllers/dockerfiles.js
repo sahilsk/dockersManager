@@ -151,7 +151,7 @@ exports.uploadToAll = function (req, res) {
   //util.format("%s:%s", config.repository.development.hostname, config.repository.development.port);
   async.series([
     function (callback) {
-      getDockerHosts(function (err, hostList) {
+      appUtil.getDockerHosts(function (err, hostList) {
         if (err)
           callback(err, null);
         else {
@@ -549,7 +549,7 @@ exports.broadcastPull = function (req, res) {
         callback();
     },
     function (callback) {
-      getDockerHosts(function (err, hostList) {
+      appUtil.getDockerHosts(function (err, hostList) {
         if (err)
           callback(err, null);
         else {
@@ -705,27 +705,7 @@ exports.delete = function (req, res) {
 };
 function updateSubmittedImageRecord(record) {
 }
-function getDockerHosts(callback) {
-  var jHostList = [];
-  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
-    if (err) {
-      callback(err, null);
-      return;
-    }
-    jHostList = hostsList.map(function (host) {
-      return JSON.parse(host);
-    });
-    async.filter(jHostList, function (host, cb) {
-      if (typeof host.hostname !== 'undefined')
-        cb(true);
-      else
-        cb(false);
-    }, function (results) {
-      logger.info('Finish filtering hosts...' + results.length);
-      callback(null, results);
-    });
-  });
-}
+
 /*
 ||  buildDockerfileOnHost(host, filepath, buildname) 
 ||  Description:  build dockerfile (filePath) and built it with tag 'buildName'

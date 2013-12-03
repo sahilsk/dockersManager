@@ -32,7 +32,7 @@ a {
 ul.flash {
   position: relative;
   list-style: none;
-  z-index: -1;
+  z-index: 1;
 }
 ul.flash li {
   border-bottom: 1px dashed #fff;
@@ -114,6 +114,8 @@ ul.flash li {
 }
 .header .top_nav ul {
   list-style: none;
+  position: relative;
+  z-index: 1000;
 }
 .header .top_nav ul li {
   float: left;

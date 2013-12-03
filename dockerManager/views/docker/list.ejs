@@ -8,8 +8,9 @@
 
 	<h3 >Image List </h3> 
 	<span> Include all results? <a href="/dockers/list?all=1"  class="<% if( areAll){%>highlight<%}%>" > Yes </a> |  <a href="/dockers/list?all=0" class="<% if( !areAll){%>highlight<%}%>" > No </a> </span>
-	<hr/>
 
+	<hr/>
+	<h3> Server : <%= data.presentedOn %> </h3>
 
 
 
@@ -58,7 +59,7 @@
 
 			<td>
 
-				<Div class="operation_menu"> 	
+				<Div class="operation_menu" style="width:100px;"> 	
 					<span class="inspect"> <a href="/dockers/<%=item.Id %>/containers?repository=<% if( !item.Repository) { %>--<% }else { %><%= item.Repository %><% }%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> </span>					
 					<span class="delete"> <a href="/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else { %><%= encodeURIComponent(item.Repository) %><% } %>/delete" title="remove"> &cross;  </a></span>
 

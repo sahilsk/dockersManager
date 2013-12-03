@@ -5,6 +5,8 @@ var ping = require('ping');
 var util = require('util');
 var config = require('../config/config');
 var logger = require('../config/logger');
+var async = require('async');
+
 exports.makeGetRequest = function (queryString, callback) {
   var inspectData = '';
   var options = {
@@ -32,6 +34,36 @@ exports.makeGetRequest = function (queryString, callback) {
   });
   req.end();
 };
+
+exports.makeGetRequestToHost = function (host, queryString, callback) {
+  var inspectData = '';
+  var options = {
+      hostname: host.hostname,
+      port: host.dockerPort,
+      path: queryString,
+      method: 'GET'
+    };
+  console.log(queryString);
+  logger.info( options);
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        inspectData += chunk;
+      });
+      res.on('end', function () {
+        callback(null, inspectData, res.statusCode);
+      });
+    });
+  req.on('error', function (e) {
+    inspectData = '';
+    console.log('Problem with request: ' + e.message);
+    callback(e.message, null, null);
+  });
+  req.end();
+};
+
 exports.makeDELETERequest = function (queryString, callback) {
   console.log('called delete');
   var inspectData = '';
@@ -250,7 +282,7 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, oResult) {
   req.end();
 };
 exports.isServerFullyLoaded = function (server, callback) {
-  logger.info('Checking Load on server <%s:%s>', server.hostname, server.port);
+  logger.info('Checking Load on server <%s:%s>', server.hostname, server.managerPort);
   var resBody = '';
   var options = {
       hostname: server.hostname,
@@ -278,7 +310,7 @@ exports.isServerFullyLoaded = function (server, callback) {
       });
     });
   req.on('error', function (e) {
-    logger.error('Error in requesting average load: ' + e.message);
+    logger.error('Error in requesting average load on '+ server.hostname + ". Cause: " + e.message);
     callback(false);
   });
   req.end();
@@ -341,3 +373,28 @@ exports.sendImagePushRequestToHost = function (host, tagWithRepository, callback
   });
   req.end();
 };
+
+
+
+exports.getDockerHosts = function(callback) {
+  var jHostList = [];
+  var rdsClient = require('../config/database');
+  rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
+    if (err) {
+      callback(err, null);
+      return;
+    }
+    jHostList = hostsList.map(function (host) {
+      return JSON.parse(host);
+    });
+    async.filter(jHostList, function (host, cb) {
+      if (typeof host.hostname !== 'undefined')
+        cb(true);
+      else
+        cb(false);
+    }, function (results) {
+      logger.info('Finish filtering hosts...' + results.length);
+      callback(null, results);
+    });
+  });
+}
