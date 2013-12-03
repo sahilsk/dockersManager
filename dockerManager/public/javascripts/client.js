@@ -11,14 +11,11 @@ function skCallback(data){
 function UI_init() {
 
 //Make Dropdown navigation
-$(".top_nav li").hover( function(){
-	$(this).find(".subNav").stop().slideDown(200);
-}, function(){
-	$(this).find(".subNav").stop().slideUp(550);
-});
-
-
-
+	$(".top_nav li").hover( function(){
+		$(this).find(".subNav").stop().slideDown(200);
+	}, function(){
+		$(this).find(".subNav").stop().slideUp(550);
+	});
 
 //Alive Flash Messages Control
 	$(".flash span").bind("click", function(){
@@ -33,6 +30,9 @@ $(".top_nav li").hover( function(){
 		//	$(".flash").fadeOut('slow');
 		}, "5000");
 	}
+//Adjust footer position
+	if( $(window).height() > $(".site_wrapper").height() )
+		$(".footer").css({ 'position': 'fixed', 'bottom' :'0'});
 
 
 

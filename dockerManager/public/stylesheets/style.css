@@ -150,13 +150,13 @@ ul.flash li {
   display: block;
 }
 .footer {
-  border-top: 1px dashed #333;
   background-color: #52274B;
   color: #FFF;
   border-top: 1px dashed #fff;
   margin-top: 10px;
   padding: 10px;
   text-align: center;
+  width: 100%;
 }
 /*
 || Page: Inspect
