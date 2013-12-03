@@ -263,21 +263,20 @@ exports.containers = function (req, res) {
         viewData = 'Server Error : ' + errorMessage;
         break;
       default:
-        req.session.messages = {
-          text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
-          type: 'error'
-        };
         viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
+        break;
     }
     logger.info( repository.length === 0 ? '-' :repository);
+    logger.info(" ContainersList.length " + containerList.length);
+
     res.render('docker/containers', {
       title: 'List of Containers',
+      page: 'containers_list',
       id: imageId,
       'data': viewData,
       'statusCode': hostStatusCode,
-      page: 'containers_list',
-      'containerList': containerList,
-      imgInfo: imgInfo = {
+      's': containerList,
+      imgInfo: {
         id: imageId,
         name: repository,
         created: req.query.created
