@@ -105,7 +105,7 @@ exports.list = function (req, res) {
   });
 };
 exports.delete = function (req, res) {
-  appUtil.makeDELETERequest('/images/' + req.params.id, function (result, statusCode, errorMessage) {
+  appUtil.makeDELETERequest('/images/' + encodeURIComponent(req.params.id), function (result, statusCode, errorMessage) {
     switch (statusCode) {
     case 409:
       req.session.messages = {
