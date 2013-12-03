@@ -3,8 +3,18 @@ body {
   margin: 0;
   padding: 0;
 }
+form {
+  margin: 0px;
+  display: inline;
+  padding: 0;
+}
 a {
   color: #00B7FF;
+}
+button {
+  background: none!important;
+  border: none;
+  padding: 0!important;
 }
 .site_wrapper {
   width: 90%;
@@ -173,9 +183,11 @@ ul.flash li {
   font-size: 12px;
   margin-left: 5px;
 }
-.operation_menu span a {
+.operation_menu span a,
+.operation_menu span button {
   text-decoration: none;
   color: #FFF;
+  cursor: pointer;
 }
 .operation_menu span a:hover {
   border-bottom: 1px dashed #FFF;

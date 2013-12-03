@@ -50,6 +50,7 @@ exports.makeGetRequestToHost = function (host, queryString, callback) {
       console.log('HEADERS: ' + JSON.stringify(res.headers));
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
+        console.log(chunk);
         inspectData += chunk;
       });
       res.on('end', function () {
@@ -93,6 +94,36 @@ exports.makeDELETERequest = function (queryString, callback) {
   });
   req.end();
 };
+exports.makeDELETERequestToHost = function (host, queryString, callback) {
+  console.log('Making Delete Request..');
+  var inspectData = '';
+  var options = {
+      hostname: host.hostname,
+      port: host.dockerPort,
+      path: queryString,
+      method: 'DELETE'
+    };
+  logger.info(options);
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        inspectData += chunk;
+      });
+      res.on('end', function () {
+        console.log('BODY', inspectData);
+        callback(null, inspectData, res.statusCode);
+      });
+    });
+  req.on('error', function (e) {
+    inspectData = '';
+    console.log('problem with request: ' + e.message);
+    callback(e.message, null, null);
+  });
+  req.end();
+};
+
 exports.makeFileUploadRequest = function (filePath, queryString, onResult) {
   console.log('called makeFileUploadRequest');
   var dockerResponse = {};

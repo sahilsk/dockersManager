@@ -10,7 +10,7 @@
 	<span> Include all results? <a href="/dockers/list?all=1"  class="<% if( areAll){%>highlight<%}%>" > Yes </a> |  <a href="/dockers/list?all=0" class="<% if( !areAll){%>highlight<%}%>" > No </a> </span>
 
 	<hr/>
-	<h3> Server : <%= data.presentedOn %> </h3>
+	<h3> Server : <%= data.runningOn.name %>(<%= data.runningOn.hostname %>) </h3>
 
 
 
@@ -60,8 +60,27 @@
 			<td>
 
 				<Div class="operation_menu" style="width:100px;"> 	
-					<span class="inspect"> <a href="/dockers/<%=item.Id %>/containers?repository=<% if( !item.Repository) { %>--<% }else { %><%= item.Repository %><% }%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> </span>					
-					<span class="delete"> <a href="/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else { %><%= encodeURIComponent(item.Repository) %><% } %>/delete" title="remove"> &cross;  </a></span>
+					<span class="inspect">
+						<form action="/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else{ %><%= encodeURIComponent(item.Repository) %><% } %>/containers" method="GET">
+							<input type="hidden" name='hostname' value='<%= data.runningOn.hostname %>' />
+							<input type="hidden" name='port' value='<%= data.runningOn.dockerPort %>' />	 
+							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
+							<input type="hidden" name='createdOn'  value="<%=item.Created %>" />
+							<button  title="Inspect">   &equiv;  </button>		
+						</form>
+							 <a href="/dockers/<%=item.Id %>/containers?repository=<% if( !item.Repository) { %>--<% }else { %><%= item.Repository %><% }%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> 
+					</span>					
+					<span class="delete"> 
+						<form action="/dockers/delete" method="POST">
+							<input type="hidden" name='hostname' value='<%= data.runningOn.hostname %>' />
+							<input type="hidden" name='port' value='<%= data.runningOn.dockerPort %>' />
+							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
+							<input type="hidden" name='id' value="<% if(item.Id) {%><%= item.Id%> %><%}%>"/>
+
+							<button  title="remove"> &cross;  </button>
+							
+						</form>
+					</span>
 
 					
 				</Div>

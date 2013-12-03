@@ -43,7 +43,9 @@ exports.index = function (req, res) {
   });
 };
 exports.inspect = function (req, res) {
-  appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
+
+  var querystring = '/images/' + req.params.id + '/json';
+  appUtil.makeGetRequest( querystring, function (data, statusCode, errorMessage) {
     var viewData = '';
     switch (statusCode) {
     case 200:
@@ -117,13 +119,13 @@ exports.list = function (req, res) {
         callback('No Docker Server is up. Please try again later. ');
         return;
       }
-      var liveHost = liveHostsList[ parseInt(liveHostsList.length/2) ];
+      var liveHost = liveHostsList[ parseInt(liveHostsList.length/3) ];
       appUtil.makeGetRequestToHost(liveHost, querystring, function (errorMessage, data, statusCode) {
         hostStatusCode = statusCode;
         switch (statusCode) {
           case 200:
             viewData = JSON.parse(data);
-            viewData.presentedOn = liveHost.name + "("+ liveHost.hostname + ")";
+            viewData.runningOn = liveHost;
             break;
           case 400:
             viewData = 'Bad Parameters ';
@@ -156,32 +158,55 @@ exports.list = function (req, res) {
 
 };
 exports.delete = function (req, res) {
-  appUtil.makeDELETERequest('/images/' + encodeURIComponent(req.params.id), function (result, statusCode, errorMessage) {
+
+  var repository,  querystring;
+  try{
+     repository = req.body.repository.trim();
+   }catch(err){
+      repository = "";
+   }
+
+
+
+  var imageId = req.body.id.trim();
+  var dockerHost  =  { 
+            hostname: req.body.hostname,
+            dockerPort : parseInt(req.body.port) 
+          };
+
+  if( repository.length > 0){
+     querystring = '/images/' + repository;
+  }else
+     querystring = '/images/' + imageId;
+
+  logger.info( "Deleting image from : " + dockerHost);
+
+  appUtil.makeDELETERequestToHost(dockerHost,  querystring, function (errorMessage, result, statusCode ) {
     switch (statusCode) {
     case 409:
       req.session.messages = {
-        text: 'Conflict in deleting image : \'' + req.params.id + '\' ',
+        text: 'Conflict in deleting image : \'' + repository + '\' ',
         type: 'error'
       };
-      res.redirect('/dockers/' + req.params.id);
+      res.redirect('/dockers/' + repository);
       break;
     case 404:
       req.session.messages = {
-        text: 'No such image : \'' + req.params.id + '\' ',
+        text: 'No such image : \'' + repository + '\' ',
         type: 'error'
       };
-      res.redirect('/dockers/' + req.params.id);
+      res.redirect('/dockers/' + repository);
       break;
     case 200:
       req.session.messages = {
-        text: '\'' + req.params.id + '\' image deleted successfully.',
+        text: '\'' + repository + '\' image deleted successfully.',
         type: 'alert'
       };
       res.redirect('/');
       break;
     case 500:
       req.session.messages = {
-        text: 'Server Error.',
+        text: 'Server error.',
         type: 'error'
       };
       res.redirect('/');
@@ -196,47 +221,68 @@ exports.delete = function (req, res) {
   });
 };
 exports.containers = function (req, res) {
-  var dockerID = req.params.id;
+
+  var repository,  querystring, hostStatusCode;
+  try{
+     repository = req.query.repository.trim();
+   }catch(err){
+      repository = "";
+   }
+  var imageId = req.params.id;
+  var dockerHost  =  { 
+            hostname: req.query.hostname,
+            dockerPort : parseInt(req.query.port) 
+          };
+
   var imgInfo = {};
-  appUtil.makeGetRequest('/containers/json?all=1&size=1', function (data, statusCode, errorMessage) {
+  var containerList = [];
+
+  
+  querystring = '/containers/json?all=1&size=1';
+
+  appUtil.makeGetRequestToHost(dockerHost, querystring, function (errorMessage, data, statusCode ) {
     var viewData = '';
-    var containerList = [];
+    
+    hostStatusCode = statusCode;
+    logger.info("statuscode:  " + hostStatusCode);
     switch (statusCode) {
-    case 200:
-      viewData = JSON.parse(data);
-      viewData.forEach(function (container, index) {
-        logger.info(container.Image);
-        if (container.Image === dockerID.substr(0, 12)) {
-          containerList.push(container);
-        }
-      });
-      break;
-    case 400:
-      viewData = 'Bad Parameters ';
-      break;
-    case 500:
-      viewData = 'Server Error : ' + errorMessage;
-      break;
-    default:
-      req.session.messages = {
-        text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
-        type: 'error'
-      };
-      viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
+      case 200:
+        viewData = JSON.parse(data);
+        viewData.forEach(function (container, index) {
+          logger.info(container.Image);
+          if (container.Image === imageId.substr(0, 12)) {
+            containerList.push(container);
+          }
+        });
+        logger.info(" ContainersList.length " + containerList.length);
+        break;
+      case 400:
+        viewData = 'Bad Parameters ';
+        break;
+      case 500:
+        viewData = 'Server Error : ' + errorMessage;
+        break;
+      default:
+        req.session.messages = {
+          text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+          type: 'error'
+        };
+        viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
     }
-    logger.info(req.query.repository.length === 0 ? '-' : req.query.repository);
+    logger.info( repository.length === 0 ? '-' :repository);
     res.render('docker/containers', {
       title: 'List of Containers',
-      id: req.params.id,
+      id: imageId,
       'data': viewData,
-      statusCode: statusCode,
+      'statusCode': hostStatusCode,
       page: 'containers_list',
+      'containerList': containerList,
       imgInfo: imgInfo = {
-        id: dockerID,
-        name: req.query.repository.length == 0 ? '---' : req.query.repository,
+        id: imageId,
+        name: repository,
         created: req.query.created
-      },
-      containerList: containerList
+      }
     });
   });
+
 };

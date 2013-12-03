@@ -15,9 +15,9 @@
 			
 
 
-<% if( statusCode === 404 ) { %>
-	<h3> Containesr not found  </h3>
-<% } else if( containerList.length == 0 ) { %>
+<% if( statusCode == 404 ) { %>
+	<h3> Containers not found  </h3>
+<% } else if( containerList.length === 0 ) { %>
 		
 	<div class="somethingWentWrong">
 		<span > No Container found </span>

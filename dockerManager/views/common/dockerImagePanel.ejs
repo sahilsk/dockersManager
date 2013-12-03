@@ -11,8 +11,14 @@
 
 	<div class="dockerImageInfo key_val">
 		<br/>
-		<label> Name : </label>
-		<span> <%= imgInfo.name %> </span> <br/>
+		<label> Repository : </label>
+		<span>
+			<% if( imgInfo.repository.length === 0 ){ %>
+				 '---' 
+			<%} else {%>
+				<%= imgInfo.repository %>
+			<%} %>
+		 </span> <br/>
 		
 		<label> ID : </label>
 		<span> <%= imgInfo.id %> </span> <br/>
