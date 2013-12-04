@@ -103,7 +103,7 @@ exports.list = function (req, res) {
   var hostContainersList = [];
   var hostStatusCode = [];
   var  viewData = null;
-  var errMessages = null;
+  var errMessages = [];
 
   async.series([
     function (callback) {
@@ -152,7 +152,7 @@ exports.list = function (req, res) {
               return item.id === parseInt( req.query.hostId);
           }))[0];
         if( typeof hostToQuery.id === 'undefined' &&  !hostToQuery.id )
-            errMessages =  { text: "Host with id :'"+ req.query.hostId + "' not found.", type:'error'} ;
+            errMessages.push( { text: "Host with id :'"+ req.query.hostId + "' not found.", type:'error'} );
       }
 
       if( typeof hostToQuery.id === 'undefined' &&  !hostToQuery.id )
@@ -175,10 +175,10 @@ exports.list = function (req, res) {
             viewData = 'Server Error : ' + errorMessage;
             break;
           default:
-            req.session.messages = {
+            errMessages.push({
               text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
               type: 'error'
-            };
+            } );
             viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
         }
         logger.info(viewData);
@@ -193,8 +193,9 @@ exports.list = function (req, res) {
           statusCode: hostStatusCode,
           page: 'images_list',
           hostList : c_DockerHostList,
-          messages: errMessages
+          errorMessages: errMessages
         });
+        res.end();
 
     });
 };
