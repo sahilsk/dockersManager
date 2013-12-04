@@ -10,7 +10,19 @@
 	<span> Include all results? <a href="/dockers/list?all=1"  class="<% if( areAll){%>highlight<%}%>" > Yes </a> |  <a href="/dockers/list?all=0" class="<% if( !areAll){%>highlight<%}%>" > No </a> </span>
 
 	<hr/>
-	<h3> Server : <%= data.runningOn.name %>(<%= data.runningOn.hostname %>) </h3>
+	<h3> Server : 
+
+	<% if( typeof hostList != "undefined" && hostList ){ %>
+		<select id="hostList">
+			<option value="" > Select Server </option>
+			<% hostList.forEach(function(server, index){ %>
+				<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %>  > <%= server.name %> (<%= server.hostname %>) <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> </option>
+			<% }) %>
+		</select>
+
+	<% }%>
+
+	 </h3>
 
 
 

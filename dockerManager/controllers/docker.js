@@ -99,6 +99,7 @@ exports.list = function (req, res) {
 
   var liveHostsList = [];
   var dockerHostList = [];
+  var c_DockerHostList = [];
   var hostContainersList = [];
   var hostStatusCode = [];
   var  viewData = null;
@@ -119,28 +120,51 @@ exports.list = function (req, res) {
         callback('No Docker host available yet.');
         return;
       }
-      async.filter(dockerHostList, function (host, cb) {
+
+
+      async.map( dockerHostList, function(host,cb){
+
         appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
           logger.info('=========================Alive : ' + isAlive);
-          cb(isAlive);
+          host.isAlive = isAlive;
+          cb(null, host);
         });
-      }, function (results) {
-        liveHostsList = results;
-        callback();
+
+      }, function(err, results){
+          c_DockerHostList = results;
+          callback();
       });
+
     },
     function (callback) {
-      if (liveHostsList.length === 0) {
-        callback('No Docker Server is up. Please try again later. ');
+      if (c_DockerHostList.length === 0) {
+        callback('No Docker Server is available yet. Please try again later. ');
         return;
       }
-      var liveHost = liveHostsList[ parseInt(liveHostsList.length/2) ];
-      appUtil.makeGetRequestToHost(liveHost, querystring, function (errorMessage, data, statusCode) {
+
+      logger.info(" c_DockerHostList length: %d/%d", dockerHostList.length, c_DockerHostList.length);
+
+      var hostToQuery = {};
+      
+      if( typeof req.query.hostId !== 'undefined' && req.query.hostId  ){
+
+       hostToQuery= (c_DockerHostList.filter( function(item){
+            return item.id === parseInt( req.query.hostId);
+        }))[0];
+      }
+
+      if( hostToQuery === 'undefined')
+         hostToQuery = c_DockerHostList[0];
+
+      logger.info("++++++++++++" + hostToQuery);
+
+
+      appUtil.makeGetRequestToHost( hostToQuery, querystring, function (errorMessage, data, statusCode) {
         hostStatusCode = statusCode;
         switch (statusCode) {
           case 200:
             viewData = JSON.parse(data);
-            viewData.runningOn = liveHost;
+            viewData.runningOn = hostToQuery;
             break;
           case 400:
             viewData = 'Bad Parameters ';
@@ -165,7 +189,8 @@ exports.list = function (req, res) {
           'data': viewData,
           'areAll': areAll,
           statusCode: hostStatusCode,
-          page: 'images_list'
+          page: 'images_list',
+          hostList : c_DockerHostList
         });
 
     });

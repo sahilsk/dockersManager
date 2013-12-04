@@ -3,6 +3,12 @@ function skCallback(data){
 
 }
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
 
 /****
 	User Experienced Coating
@@ -35,8 +41,27 @@ function UI_init() {
 		$(".footer").css({ 'position': 'fixed', 'bottom' :'0'});
 
 
+// Docker:list.ejs
+	if( $("#hostList").length >0 ){
+
+		$("#hostList").find("option[value='"+ getParameterByName("hostId") +"']").attr("selected", "selected");
+
+		$("#hostList").bind("change", onServerChange);
+
+	}
+
 
 }
+
+
+//docker:list.ejs
+ // callback on serverlist change
+function onServerChange(){
+	window.location.href = window.location.origin + window.location.pathname + "?hostId=" + $(this).find("option:selected").val();
+
+}
+
+
 
 $(document).ready( function(){
 
