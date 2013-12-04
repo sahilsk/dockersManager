@@ -64,7 +64,13 @@ exports.makeRoutes= function(app){
 	||Docker Routes with hosts namespace
 	||
 	*/
-	app.get("/hosts/:host_id/dockers/list", docker.hlist)
+	app.get("/hosts/:host_id/dockers/list", docker.hlist);
+
+	/*	
+		|| NOTE: imgIdentifier : could be image repotag or image id
+	*/
+	app.post("/hosts/:host_id/dockers/:imgIdentifier/delete", docker.hdelete);
+
 
 
 

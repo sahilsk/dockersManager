@@ -43,10 +43,12 @@ function UI_init() {
 
 // Docker:list.ejs
 	if( $("#hostList").length >0 ){
-
 		$("#hostList").find("option[value='"+ getParameterByName("hostId") +"']").attr("selected", "selected");
-
 		$("#hostList").bind("change", onServerChange);
+	}
+
+	if(  $("#includeAllResults").length > 0){
+			$("#includeAllResults").bind("change", onServerChange);
 
 	}
 
@@ -57,7 +59,10 @@ function UI_init() {
 //docker:list.ejs
  // callback on serverlist change
 function onServerChange(){
-	window.location.href = window.location.origin + window.location.pathname + "?hostId=" + $(this).find("option:selected").val();
+
+	var queryString = "?all=" + ( $("#includeAllResults").is(":checked")?"1":"0" );
+
+	window.location.href = window.location.origin + "/hosts/" + $("#hostList").find("option:selected").val() + "/dockers/list" + queryString;
 
 }
 

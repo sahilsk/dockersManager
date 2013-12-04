@@ -7,7 +7,10 @@
 
 
 	<h3 >Image List </h3> 
-	<span> Include all results? <a href="/dockers/list?all=1"  class="<% if( areAll){%>highlight<%}%>" > Yes </a> |  <a href="/dockers/list?all=0" class="<% if( !areAll){%>highlight<%}%>" > No </a> </span>
+	<span> Include all results? 
+		<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
+		<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
+	</span>
 
 	<hr/>
 	<h3> Server : 
@@ -87,12 +90,10 @@
 						</form>
 							 
 					</span>					
-					<span class="delete"> 
-						<form action="/dockers/delete" method="POST">
-							<input type="hidden" name='host_id' value='<%= data.runningOn.id %>' /> 
+					<span class="delete">
+						<form action="/hosts/<%= data.runningOn.id %>/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else{ %><%= encodeURIComponent(item.Repository) %><% } %>/delete" method="POST">
 
-							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
-							<input type="hidden" name='id' value="<% if(item.Id) {%><%= item.Id %><%}%>"/>
+							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />
 
 							<button  title="remove"> &cross;  </button>
 							
