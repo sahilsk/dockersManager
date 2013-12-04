@@ -38,6 +38,7 @@
 				<th> ID </th>
 				<th> Tag </th>
 				<th> Repository </th>
+				<th> RepoTags </th>
 				<th> Created </th>
 				<th> Size </th>
 				<th> virtual Size </th>
@@ -52,6 +53,7 @@
 
 			<td> <% if( !item.Tag) { %>-- <% }else { %> <%= item.Tag %>  <% } %> </td>
 			<td> <% if( !item.Repository) { %> --  <% }else { %><%= item.Repository %><% } %> </td>
+			<td> <% if( !item.RepoTags) { %> --  <% }else { %><%= item.RepoTags %><% } %> </td>
 			<td> <% if( !item.Created) { %> --  <% }else { %> <%= item.Created %>  <% } %>  </td>
 			<td> <% if( !item.Size) { %> --  <% }else { %> <%= item.Size %>  <% } %> </td>
 			<td><% if( !item.VirtualSize) { %> --  <% }else { %> <%= item.VirtualSize %>  <% } %> </td>
@@ -75,7 +77,7 @@
 							<input type="hidden" name='hostname' value='<%= data.runningOn.hostname %>' />
 							<input type="hidden" name='port' value='<%= data.runningOn.dockerPort %>' />
 							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
-							<input type="hidden" name='id' value="<% if(item.Id) {%><%= item.Id%> %><%}%>"/>
+							<input type="hidden" name='id' value="<% if(item.Id) {%><%= item.Id %><%}%>"/>
 
 							<button  title="remove"> &cross;  </button>
 							

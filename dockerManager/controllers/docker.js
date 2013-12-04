@@ -203,14 +203,12 @@ exports.delete = function (req, res) {
         text: 'Conflict in deleting image : \'' + imgIdentifier + '\' ',
         type: 'error'
       };
-      res.redirect('/dockers/' + imgIdentifier);
       break;
     case 404:
       req.session.messages = {
         text: 'No such image : \'' + imgIdentifier + '\' ',
         type: 'error'
       };
-      res.redirect('/dockers/' + imgIdentifier);
       break;
     case 200:
       req.session.messages = {
@@ -224,7 +222,6 @@ exports.delete = function (req, res) {
         text: 'Server error.',
         type: 'error'
       };
-      res.redirect('/');
       break;
     default:
       req.session.messages = {
