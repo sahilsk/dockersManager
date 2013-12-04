@@ -60,6 +60,14 @@ exports.makeRoutes= function(app){
 //	app.delete("/dockers/:id/delete", docker.delete)
 
 
+	/*
+	||Docker Routes with hosts namespace
+	||
+	*/
+	app.get("/hosts/:host_id/dockers/list", docker.hlist)
+
+
+
 
 	/*
 	||Containers Operations

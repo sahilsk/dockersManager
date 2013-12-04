@@ -14,9 +14,13 @@
 
 	<% if( typeof hostList != "undefined" && hostList ){ %>
 		<select id="hostList">
-			<option value="" > Select Server </option>
+			<option value="0" > Select Server </option>
 			<% hostList.forEach(function(server, index){ %>
-				<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %>  > <%= server.name %> (<%= server.hostname %>) <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> </option>
+				<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %> 
+				 class="<%= server.isAlive?"success":"error" %>" >
+				 		 <%= server.name %> (<%= server.hostname %>) 
+				 		 <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> 
+				 </option>
 			<% }) %>
 		</select>
 
@@ -76,8 +80,7 @@
 				<Div class="operation_menu" style="width:100px;"> 	
 					<span class="inspect">
 						<form action="/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else{ %><%= encodeURIComponent(item.Repository) %><% } %>/containers" method="GET">
-							<input type="hidden" name='hostname' value='<%= data.runningOn.hostname %>' />
-							<input type="hidden" name='port' value='<%= data.runningOn.dockerPort %>' />	 
+							<input type="hidden" name='host_id' value='<%= data.runningOn.id %>' /> 
 							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
 							<input type="hidden" name='created'  value="<%=item.Created %>" />
 							<button  title="Inspect">   &equiv;  </button>		
@@ -86,8 +89,8 @@
 					</span>					
 					<span class="delete"> 
 						<form action="/dockers/delete" method="POST">
-							<input type="hidden" name='hostname' value='<%= data.runningOn.hostname %>' />
-							<input type="hidden" name='port' value='<%= data.runningOn.dockerPort %>' />
+							<input type="hidden" name='host_id' value='<%= data.runningOn.id %>' /> 
+
 							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
 							<input type="hidden" name='id' value="<% if(item.Id) {%><%= item.Id %><%}%>"/>
 

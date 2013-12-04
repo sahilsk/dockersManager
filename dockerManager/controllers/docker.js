@@ -103,6 +103,7 @@ exports.list = function (req, res) {
   var hostContainersList = [];
   var hostStatusCode = [];
   var  viewData = null;
+  var errMessages = null;
 
   async.series([
     function (callback) {
@@ -148,15 +149,17 @@ exports.list = function (req, res) {
       
       if( typeof req.query.hostId !== 'undefined' && req.query.hostId  ){
 
-       hostToQuery= (c_DockerHostList.filter( function(item){
-            return item.id === parseInt( req.query.hostId);
-        }))[0];
+         hostToQuery= (c_DockerHostList.filter( function(item){
+              return item.id === parseInt( req.query.hostId);
+          }))[0];
+        if( typeof hostToQuery.id === 'undefined' &&  !hostToQuery.id )
+            errMessages =  { text: "Host with id :'"+ req.query.hostId + "' not found.", type:'error'} ;
       }
 
-      if( hostToQuery === 'undefined')
+      if( typeof hostToQuery.id === 'undefined' &&  !hostToQuery.id )
          hostToQuery = c_DockerHostList[0];
 
-      logger.info("++++++++++++" + hostToQuery);
+      logger.info("++++++++++++ " + JSON.stringify(hostToQuery));
 
 
       appUtil.makeGetRequestToHost( hostToQuery, querystring, function (errorMessage, data, statusCode) {
@@ -190,11 +193,124 @@ exports.list = function (req, res) {
           'areAll': areAll,
           statusCode: hostStatusCode,
           page: 'images_list',
-          hostList : c_DockerHostList
+          hostList : c_DockerHostList,
+          messages: errMessages
         });
 
     });
 };
+
+exports.hlist = function(req, res){
+  var areAll = 1;
+  if (req.query.all)
+    areAll = parseInt(req.query.all);
+  var querystring = '/images/json?all=' + areAll;
+
+  var selectedHostId = parseInt( req.params.host_id.trim());
+
+
+  var dockerHostList = [];
+  var c_DockerHostList = [];
+  var hostStatusCode = [];
+  var  viewData = null;
+  var errMessages = null;
+
+  async.series([
+    function (callback) {
+      appUtil.getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList;
+          callback();
+        }
+      });
+    },
+    function (callback) {
+      if (dockerHostList.length === 0) {
+        callback('No Docker host available yet.');
+        return;
+      }
+
+
+      async.map( dockerHostList, function(host,cb){
+
+        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
+          logger.info('=========================Alive : ' + isAlive);
+          host.isAlive = isAlive;
+          cb(null, host);
+        });
+
+      }, function(err, results){
+          c_DockerHostList = results;
+          callback();
+      });
+
+    },
+    function (callback) {
+      if (c_DockerHostList.length === 0) {
+        callback('No Docker Server is available yet. Please try again later. ');
+        return;
+      }
+
+      logger.info(" c_DockerHostList length: %d/%d", dockerHostList.length, c_DockerHostList.length);
+
+      var hostToQuery = {};
+      
+
+       hostToQuery= (c_DockerHostList.filter( function(item){
+            return item.id === selectedHostId;
+        }))[0];
+      if( typeof hostToQuery.id === 'undefined' &&  !hostToQuery.id )
+          errMessages =  { text: "Host with id :'"+selectedHostId + "' not found.", type:'error'} ;
+
+
+      if( typeof hostToQuery.id === 'undefined' &&  !hostToQuery.id )
+         hostToQuery = c_DockerHostList[0];
+
+      logger.info("++++++++++++ " + JSON.stringify(hostToQuery));
+
+
+      appUtil.makeGetRequestToHost( hostToQuery, querystring, function (errorMessage, data, statusCode) {
+        hostStatusCode = statusCode;
+        switch (statusCode) {
+          case 200:
+            viewData = JSON.parse(data);
+            viewData.runningOn = hostToQuery;
+            break;
+          case 400:
+            viewData = 'Bad Parameters ';
+            break;
+          case 500:
+            viewData = 'Server Error : ' + errorMessage;
+            break;
+          default:
+            req.session.messages = {
+              text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+              type: 'error'
+            };
+            viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
+        }
+        logger.info(viewData);
+        callback();
+      });
+    }], function(err){
+
+        res.render('docker/list', {
+          title: 'List of images',
+          'data': viewData,
+          'areAll': areAll,
+          statusCode: hostStatusCode,
+          page: 'images_list',
+          hostList : c_DockerHostList,
+          messages: errMessages
+        });
+
+    });
+};
+
+
+
 exports.delete = function (req, res) {
 
   var repository,  querystring, imgIdentifier;
