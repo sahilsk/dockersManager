@@ -17,6 +17,7 @@ button {
     background:none!important;
     border:none; 
     padding:0!important;
+    cursor:pointer;
 }
 
 .site_wrapper{
@@ -233,6 +234,7 @@ ul.flash{
 			text-decoration:none;
 			color:#FFF;
 			cursor: pointer;
+			text-shadow: 1px 1px 1px #000;
 		}
 
 		a:hover{
@@ -440,11 +442,11 @@ tr:odd{
 		list-style:none;
 		text-align:center;
 
-		a{
+		a, button{
 			text-decoration:none;
 			color: #FFF;
 		}
-		a:hover{
+		a:hover, button:hover{
 			color: #eee;
 			border-bottom:1px dashed #FFF;
 		}
@@ -454,17 +456,19 @@ tr:odd{
 	}
 
 	li.delete{
-			color: #ffffff;
+			color: #FFFFFF;
 			text-shadow: 1px 1px 1px #000;
 			background: rgb(197, 10, 47);
 			padding: 2px 10px 2px 10px;
 			border-radius: 5px;
 			font-size: 12px;
 
-			a{
+			a, button{
 				text-decoration:none;
 				color: #FFF;
+				outline:none;
 			}
+
 
 
 	}	

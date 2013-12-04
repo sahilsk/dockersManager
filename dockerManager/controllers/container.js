@@ -482,7 +482,14 @@ exports.createInAll = function (req, res) {
   var hostResponseResultArr = [];
   async.series([
     function (callback) {
-cc
+      appUtil.getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList;
+          callback();
+        }
+      });
     },
     function (callback) {
       if (dockerHostList.length === 0) {

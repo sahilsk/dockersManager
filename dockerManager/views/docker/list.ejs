@@ -65,10 +65,10 @@
 							<input type="hidden" name='hostname' value='<%= data.runningOn.hostname %>' />
 							<input type="hidden" name='port' value='<%= data.runningOn.dockerPort %>' />	 
 							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
-							<input type="hidden" name='createdOn'  value="<%=item.Created %>" />
+							<input type="hidden" name='created'  value="<%=item.Created %>" />
 							<button  title="Inspect">   &equiv;  </button>		
 						</form>
-							 <a href="/dockers/<%=item.Id %>/containers?repository=<% if( !item.Repository) { %>--<% }else { %><%= item.Repository %><% }%>&created=<%=item.Created%>" title="Inspect">  &equiv;	 </a> 
+							 
 					</span>					
 					<span class="delete"> 
 						<form action="/dockers/delete" method="POST">

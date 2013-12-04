@@ -15,6 +15,7 @@ button {
   background: none!important;
   border: none;
   padding: 0!important;
+  cursor: pointer;
 }
 .site_wrapper {
   width: 90%;
@@ -188,6 +189,7 @@ ul.flash li {
   text-decoration: none;
   color: #FFF;
   cursor: pointer;
+  text-shadow: 1px 1px 1px #000;
 }
 .operation_menu span a:hover {
   border-bottom: 1px dashed #FFF;
@@ -340,23 +342,27 @@ tr:odd {
   text-align: center;
   margin-top: 5px;
 }
-.dockerImageAction ul li a {
+.dockerImageAction ul li a,
+.dockerImageAction ul li button {
   text-decoration: none;
   color: #FFF;
 }
-.dockerImageAction ul li a:hover {
+.dockerImageAction ul li a:hover,
+.dockerImageAction ul li button:hover {
   color: #eee;
   border-bottom: 1px dashed #FFF;
 }
 .dockerImageAction li.delete {
-  color: #ffffff;
+  color: #FFFFFF;
   text-shadow: 1px 1px 1px #000;
   background: #c50a2f;
   padding: 2px 10px 2px 10px;
   border-radius: 5px;
   font-size: 12px;
 }
-.dockerImageAction li.delete a {
+.dockerImageAction li.delete a,
+.dockerImageAction li.delete button {
   text-decoration: none;
   color: #FFF;
+  outline: none;
 }
