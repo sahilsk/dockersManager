@@ -48,6 +48,110 @@ exports.inspect = function (req, res) {
     });
   });
 };
+exports.hinspect = function (req, res) {
+
+  var containerId = req.params.container_id;
+  var selectedHostId = parseInt(req.params.host_id);
+
+  var repository,  hostStatusCode = null;
+  try{
+     repository = req.query.repository.trim();
+   }catch(err){
+      repository = "";
+   }
+
+  var imgInfo = {};
+  var containerList = [];
+  var dockerHostList  = [];
+  var hostToQuery = {};
+  var errMessages = [];
+  var viewData = '';
+
+
+  async.series([
+    //Get dockerhost
+      function (callback) {
+        appUtil.getDockerHosts(function (err, hostList) {
+          if (err)
+            callback(err, null);
+          else {
+            dockerHostList = hostList;
+            callback();
+          }
+        });
+      },
+      function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+
+        hostToQuery= (dockerHostList.filter( function(item){
+              return item.id === selectedHostId;
+          }))[0];
+        if( typeof hostToQuery === 'undefined' ){
+             callback( "Invalid Host Id :'"+ selectedHostId + "' ") ;
+             return;
+        }
+        callback();
+
+      },
+      function(callback){
+        var cliMessage = null;
+        logger.info( "Retrieving image data from : " + hostToQuery);  
+
+          var querystring  = '/containers/' + containerId + '/json';
+
+          appUtil.makeGetRequestToHost(hostToQuery, querystring, function (errorMessage, data, statusCode) {
+            hostStatusCode = statusCode;
+
+            switch (statusCode) {
+            case 200:
+              viewData = JSON.parse(data);
+              break;
+            case 404:
+              viewData = 'No such container : ' + containerId;
+              break;
+            case 500:
+              viewData = 'Server Error';
+              break;
+            default:
+              console.log('Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>');
+              req.session.messages = {
+                text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+                type: 'error'
+              };
+              res.redirect( req.headers.referer);
+              res.end();
+              break;
+            }
+            logger.info(viewData);
+            callback();
+          });
+
+        
+      }], function(err){
+        if( err)
+          errMessages.push({text:err, type:'error'});
+
+        res.render('container/inspect', {
+          title: 'Inspect Container',
+          'data': viewData,
+          statusCode: hostStatusCode,
+          errorMessages: errMessages,
+          containerInfo :{
+            id: containerId,
+            runningOn: hostToQuery
+
+          }
+        });
+
+      });
+
+
+
+
+};
 /*
 || Get list of all servers
 || ->Filter all docker live servers
@@ -333,6 +437,96 @@ exports.toggleStatus = function (req, res) {
     });
   });  //  end 'isContainerRunning'
 };
+exports.htoggleStatus = function (req, res) {
+
+  var containerId = req.params.container_id;
+  var selectedHostId = parseInt(req.params.host_id);
+
+  var dockerHostList  = [];
+  var hostToQuery = {};
+  var errMessages = [];
+  var viewData = '';
+
+
+  async.series([
+    //Get dockerhost
+      function (callback) {
+        appUtil.getDockerHosts(function (err, hostList) {
+          if (err)
+            callback(err, null);
+          else {
+            dockerHostList = hostList;
+            callback();
+          }
+        });
+      },
+      function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+
+        hostToQuery= (dockerHostList.filter( function(item){
+              return item.id === selectedHostId;
+          }))[0];
+        if( typeof hostToQuery === 'undefined' ){
+             callback( "Invalid Host Id :'"+ selectedHostId + "' ") ;
+             return;
+        }
+        callback();
+
+      },
+      function(callback){
+        var cliMessage = null;
+        logger.info( "Retrieving image data from : " + hostToQuery);  
+
+          isContainerRunningInHost(hostToQuery, containerId, function (running) {
+            var taskToPerform = running ? 'stop' : 'start';
+            console.log(running ? 'Stopping container...' : 'Starting container...');
+            var querystring =  '/containers/' + containerId + '/' + taskToPerform;
+            appUtil.makePostRequestToHost(hostToQuery, querystring, null, null, function (result, statusCode, errorMessage) {
+              switch (statusCode) {
+              case 404:
+                req.session.messages = {
+                  text: 'No such container : \'' + containerId + '\' ',
+                  type: 'error'
+                };
+                break;
+              case 204:
+                req.session.messages = {
+                  text: '\'' + containerId + '\' container ' + (running ? 'stopped' : 'started') + ' successfully. ',
+                  type: 'alert'
+                };
+                break;
+              case 500:
+                req.session.messages = {
+                  text: 'Server error. ' + result,
+                  type: 'error'
+                };
+                break;
+              default:
+                req.session.messages = {
+                  text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+                  type: 'error'
+                };
+                break;
+              }
+              callback();
+
+            });
+          });  //  end 'isContainerRunning'
+
+        
+      }], function(err){
+        if( err)
+          errMessages.push({text:err, type:'error'});
+
+        res.redirect(req.headers.referer);
+        res.end();
+
+
+      });
+};
 exports.kill = function (req, res) {
   appUtil.makePostRequest('/containers/' + req.params.id + '/kill', null, null, function (result, statusCode, errorMessage) {
     switch (statusCode) {
@@ -365,6 +559,93 @@ exports.kill = function (req, res) {
     res.end();
   });
 };
+
+exports.hkill = function( req, res){
+  var containerId = req.params.container_id;
+  var selectedHostId = parseInt(req.params.host_id);
+
+  var dockerHostList  = [];
+  var hostToQuery = {};
+  var errMessages = [];
+  var viewData = '';
+
+
+  async.series([
+    //Get dockerhost
+      function (callback) {
+        appUtil.getDockerHosts(function (err, hostList) {
+          if (err)
+            callback(err, null);
+          else {
+            dockerHostList = hostList;
+            callback();
+          }
+        });
+      },
+      function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+
+        hostToQuery= (dockerHostList.filter( function(item){
+              return item.id === selectedHostId;
+          }))[0];
+        if( typeof hostToQuery === 'undefined' ){
+             callback( "Invalid Host Id :'"+ selectedHostId + "' ") ;
+             return;
+        }
+        callback();
+
+      },
+      function(callback){
+        var cliMessage = null;
+        logger.info( "Retrieving image data from : " + hostToQuery);  
+
+          var querystring  = '/containers/' + containerId + '/kill';
+
+          appUtil.makePostRequestToHost(hostToQuery, querystring, null, null, function (result, statusCode, errorMessage) {
+          switch (statusCode) {
+          case 404:
+            req.session.messages = {
+              text: 'No such container : \'' + containerId + '\' ',
+              type: 'error'
+            };
+            break;
+          case 204:
+            req.session.messages = {
+              text: '\'' + containerId + '\' container killed successfully.',
+              type: 'alert'
+            };
+            break;
+          case 500:
+            req.session.messages = {
+              text: 'Server Error : ' + result,
+              type: 'error'
+            };
+            break;
+          default:
+            req.session.messages = {
+              text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+              type: 'error'
+            };
+          }
+          res.redirect(req.headers.referer);
+          //res.redirect("/containers/list");
+          res.end();
+        });
+
+        
+      }], function(err){
+        if( err)
+          errMessages.push({text:err, type:'error'});
+        res.redirect(req.headers.referer);
+        res.end();
+      });
+};
+
+
+
 exports.delete = function (req, res) {
   appUtil.makeDELETERequest('/containers/' + req.params.id, function (result, statusCode, errorMessage) {
     switch (statusCode) {
@@ -402,9 +683,111 @@ exports.delete = function (req, res) {
     res.end();
   });
 };
+
+
+exports.hdelete = function(req, res){
+  var containerId = req.params.container_id;
+  var selectedHostId = parseInt(req.params.host_id);
+  var dockerHostList  = [];
+  var hostToQuery = {};
+  var errMessages = [];
+  var viewData = '';
+
+
+  async.series([
+    //Get dockerhost
+      function (callback) {
+        appUtil.getDockerHosts(function (err, hostList) {
+          if (err)
+            callback(err, null);
+          else {
+            dockerHostList = hostList;
+            callback();
+          }
+        });
+      },
+      function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+
+        hostToQuery= (dockerHostList.filter( function(item){
+              return item.id === selectedHostId;
+          }))[0];
+        if( typeof hostToQuery === 'undefined' ){
+             callback( "Invalid Host Id :'"+ selectedHostId + "' ") ;
+             return;
+        }
+        callback();
+
+      },
+      function(callback){
+        var cliMessage = null;
+        logger.info( "Retrieving image data from : " + hostToQuery);  
+
+          var querystring  = '/containers/' + containerId;
+
+          appUtil.makeDELETERequestToHost( hostToQuery, '/containers/' + containerId, function (result, statusCode, errorMessage) {
+
+            switch (statusCode) {
+            case 409:
+              req.session.messages = {
+                text: 'Conflict in removing container : \'' + containerId + '\' ',
+                type: 'error'
+              };
+              break;
+            case 404:
+              req.session.messages = {
+                text: 'No such container : \'' + containerId + '\' ',
+                type: 'error'
+              };
+              break;
+            case 204:
+              req.session.messages = {
+                text: '\'' + containerId + '\' container removed successfully.',
+                type: 'alert'
+              };
+              break;
+            case 500:
+              req.session.messages = {
+                text: 'Server Error : ' + result,
+                type: 'error'
+              };
+              break;
+            default:
+              req.session.messages = {
+                text: 'Unable to query docker container. Please check your internet connection. <' + errorMessage + '>',
+                type: 'error'
+              };
+            }
+            callback();
+          });
+
+        
+      }], function(err){
+        if( err)
+          errMessages.push({text:err, type:'error'});
+        res.redirect(req.headers.referer);
+        res.end();
+      });
+
+
+};
+
+
 function isContainerRunning(containerID, onResult) {
   var running = false;
   appUtil.makeGetRequest('/containers/' + containerID + '/json', function (data, statusCode) {
+    if (statusCode === 200) {
+      running = JSON.parse(data).State.Running;
+    }
+    onResult(running);
+  });
+}
+function isContainerRunningInHost(host, containerID, onResult) {
+  var running = false;
+  appUtil.makeGetRequestToHost(host, '/containers/' + containerID + '/json', function (data, statusCode) {
     if (statusCode === 200) {
       running = JSON.parse(data).State.Running;
     }
@@ -597,30 +980,4 @@ exports.createInAll = function (req, res) {
     res.end();
     return;
   });
-
-/*
-  function getDockerHosts(callback) {
-    var finalHostList = [];
-    var jHostList = [];
-    rdsClient.lrange('hosts', 0, -1, function (err, hostsList) {
-      if (err) {
-        callback(err, null);
-        return;
-      }
-      jHostList = hostsList.map(function (host) {
-        return JSON.parse(host);
-      });
-      async.filter(jHostList, function (host, cb) {
-        if (typeof host.hostname !== 'undefined')
-          cb(true);
-        else
-          cb(false);
-      }, function (results) {
-        logger.info('Finish filter hostslist...' + results.length);
-        callback(null, results);
-      });
-    });
-  }
-  */
-  return;
 };

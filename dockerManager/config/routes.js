@@ -62,19 +62,30 @@ exports.makeRoutes= function(app){
 
 	/*
 	||Docker Routes with hosts namespace
-	||
 	*/
-	app.get("/hosts/:host_id/dockers/list", docker.hlist);
 
-	/*	
-		|| NOTE: imgIdentifier : could be image repotag or image id
-	*/
+	app.get("/hosts/:host_id/dockers", docker.hlist);	
+
+	app.get("/hosts/:host_id/dockers/list", docker.hlist);	
+	//	|| NOTE: imgIdentifier : could be image repotag or image id	
 	app.post("/hosts/:host_id/dockers/:imgIdentifier/delete", docker.hdelete);
 	app.get("/hosts/:host_id/dockers/:imgIdentifier/inspect", docker.hinspect);
 	app.get("/hosts/:host_id/dockers/:imgIdentifier/containers", docker.hcontainers);
 
+	/*
+	||Containers Routes with hosts namespace
+	*/
+	//app.get("/hosts/:host_id/containers/list", container.hlist);	
+	
+	//app.post("/hosts/:host_id/containers/:container_id/delete", container.hdelete);
+	app.get("/hosts/:host_id/containers/:container_id/inspect", container.hinspect);
+	app.get("/hosts/:host_id/containers/:container_id/toggle", container.htoggleStatus);
+	app.get("/hosts/:host_id/containers/:container_id/kill", container.hkill)
+	app.get("/hosts/:host_id/containers/:id/delete", container.hdelete);
 
 
+
+	//app.get("/hosts/:host_id/containers/:container_id/containers", container.hcontainers);
 
 
 

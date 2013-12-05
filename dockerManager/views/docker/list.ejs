@@ -28,7 +28,7 @@
 
 	<% if( typeof hostList != "undefined" && hostList ){ %>
 		<select id="hostList">
-			<option value="0" > Select Server </option>
+			<option value="-1" > Select Server </option>
 			<% hostList.forEach(function(server, index){ %>
 				<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %> 
 				 class="<%= server.isAlive?"success":"error" %>" >
@@ -44,14 +44,14 @@
 
 
 
-<% if( statusCode !== 200 ) { %>
+<% if( statusCode && statusCode !== 200 ) { %>
 	<div class="somethingWentWrong">
 		<span ><%= data %> </span>
 	</div>	
 
 <% } %>
 
-<% if( typeof data === "object" && data.length == 0 ){ %>
+<% if( typeof data === "object" && data !== null && data.length === 0 ){ %>
 	
 	<div class="somethingWentWrong">
 		<span > No Image Created Yet. </span>
@@ -60,7 +60,7 @@
 <% } %>
 
 
-<% if( typeof data === "object" && data.length > 0  ){ %>
+<% if( typeof data === "object" && data !== null && data.length > 0  ){ %>
 	<table border='1' cellspacing='0'>
 		<thead>
 			<tr>

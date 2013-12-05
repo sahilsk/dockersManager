@@ -354,6 +354,11 @@ exports.hlist = function(req, res){
         return;
       }
 
+      if( selectedHostId === -1){
+         callback("Select Docker Host. ");
+        return;
+      }
+
       logger.info(" c_DockerHostList length: %d/%d", dockerHostList.length, c_DockerHostList.length);
 
       var hostToQuery = {};
@@ -362,12 +367,11 @@ exports.hlist = function(req, res){
        hostToQuery= (c_DockerHostList.filter( function(item){
             return item.id === selectedHostId;
         }))[0];
-      if( typeof hostToQuery === 'undefined' )
-          errMessages.push({ text: "Host with id :'"+selectedHostId + "' not found.", type:'error'} );
 
-
-      if( typeof hostToQuery === 'undefined' )
-         hostToQuery = c_DockerHostList[0];
+     if( typeof hostToQuery === 'undefined' ){
+        callback( "Invalid Host Id" );
+        return;
+     }
 
       logger.info("++++++++++++ " + JSON.stringify(hostToQuery));
 
@@ -399,21 +403,22 @@ exports.hlist = function(req, res){
     }
 	], 
 	function(err){
-    if( err)
-        errMessages.push({text:err, type:'error'});
-
-
-        res.render('docker/list', {
-          title: 'List of images',
-          page: 'images_list',
-          errorMessages: errMessages,
-          'data': viewData,
-          'areAll': areAll,
-          statusCode: hostStatusCode,
-          hostList : c_DockerHostList
-        });
-
+    if( err){
+      errMessages.push({text:err, type:'error'});
+    }
+    res.render('docker/list', {
+      title: 'List of images',
+      page: 'images_list',
+      errorMessages: errMessages,
+      'data': viewData,
+      'areAll': areAll,
+      statusCode: hostStatusCode,
+      hostList : c_DockerHostList
     });
+
+
+
+  });
 };
 exports.delete = function (req, res) {
 
