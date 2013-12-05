@@ -517,7 +517,7 @@ exports.hdelete = function (req, res) {
       //Send delete image request
       function(callback){
         var cliMessage = null;
-        logger.info( "Deleting image from : " + hostToQuery);
+        logger.info( "Deleting image from : " + JSON.stringify(hostToQuery));
         var  querystring = '/images/' + encodeURIComponent(imgIdentifier);
 
         appUtil.makeDELETERequestToHost(hostToQuery,  querystring, function (errorMessage, result, statusCode ) {
@@ -559,7 +559,7 @@ exports.hdelete = function (req, res) {
           };
         }
 
-        res.redirect(req.headers.referer);
+        res.redirect("/hosts/"+ hostToQuery.id + "/dockers/list");
 
 
   });
