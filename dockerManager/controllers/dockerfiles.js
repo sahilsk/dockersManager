@@ -610,7 +610,7 @@ exports.broadcastPull = function (req, res) {
               cliResponse = util.format('<%s:%s :> Error pulling image[%s] : %s', liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository), JSON.stringify(errorResponse));
               hostImagePullReport.push({
                 text: cliResponse,
-                type: 'error'
+                type: 'warn'
               });
             } else {
               cliResponse = util.format('<%s:%s :> Image[%s] pulled successfully.', liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository));
@@ -729,7 +729,7 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
 }
 function pushImageOnRegistry(host, tagWithRepository, callback) {
   
- var queryString = util.format('/v1.3/images/%s/push', tagWithRepository );
+ var queryString = util.format('/images/%s/push', tagWithRepository );
   
   var headers = {
     'X-Registry-Auth':null

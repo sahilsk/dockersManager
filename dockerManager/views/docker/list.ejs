@@ -93,9 +93,8 @@
 
 				<Div class="operation_menu" style="width:100px;"> 	
 					<span class="inspect">
-						<form action="/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else{ %><%= encodeURIComponent(item.Repository) %><% } %>/containers" method="GET">
-							<input type="hidden" name='host_id' value='<%= data.runningOn.id %>' /> 
-							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />					
+						<form action="/hosts/<%= data.runningOn.id %>/dockers/<%= item.Id%>/containers" method="GET">
+							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%=item.Repository %><% } %>" />					
 							<input type="hidden" name='created'  value="<%=item.Created %>" />
 							<button  title="Inspect">   &equiv;  </button>		
 						</form>
@@ -104,7 +103,7 @@
 					<span class="delete">
 						<form action="/hosts/<%= data.runningOn.id %>/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else{ %><%= encodeURIComponent(item.Repository) %><% } %>/delete" method="POST">
 
-							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= encodeURIComponent(item.Repository) %><% } %>" />
+							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= item.Repository %><% } %>" />
 
 							<button  title="remove"> &cross;  </button>
 							

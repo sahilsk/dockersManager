@@ -35,9 +35,7 @@
 		<ul>
 			<% if( !( typeof page !== 'undefined' && page === "inspect_image" ) ) { %>
 					<li> 
-						<form action="/dockers/<% if( !imgInfo.repository) { %><%= imgInfo.id %><% }else{ %><%= encodeURIComponent(imgInfo.repository) %><% } %>/inspect" method="GET">
-							<input type="hidden" name='hostname' value='<%= imgInfo.runningOn.hostname %>' />
-							<input type="hidden" name='port' value='<%= imgInfo.runningOn.dockerPort %>' />	 
+						<form action="/hosts/<%= imgInfo.runningOn.id %>/dockers/<%= imgInfo.id %>/inspect" method="GET">
 							<input type="hidden" name="repository"	value="<% if( imgInfo.repository){ %><%= encodeURIComponent(imgInfo.repository) %><% } %>" />					
 							<input type="hidden" name='created'  value="<%=imgInfo.created %>" />
 							<button  title="Inspect">   &equiv; Inspect  </button>		
@@ -49,10 +47,8 @@
 
 					<li> 
 
-						<form action="/dockers/<% if( !imgInfo.repository) { %><%= imgInfo.id %><% }else{ %><%= encodeURIComponent(imgInfo.repository) %><% } %>/containers" method="GET">
-							<input type="hidden" name='hostname' value='<%= imgInfo.runningOn.hostname %>' />
-							<input type="hidden" name='port' value='<%= imgInfo.runningOn.dockerPort %>' />	 
-							<input type="hidden" name="repository"	value="<% if( imgInfo.repository){ %><%= encodeURIComponent(imgInfo.repository) %><% } %>" />					
+						<form action="/hosts/<%= imgInfo.runningOn.id %>/dockers/<%= imgInfo.id %>/containers" method="GET">
+							<input type="hidden" name="repository"	value="<% if( imgInfo.repository){ %><%=imgInfo.repository %><% } %>" />					
 							<input type="hidden" name='created'  value="<%=imgInfo.created %>" />
 							<button  title="Inspect">   &equiv;List Containers  </button>		
 						</form>

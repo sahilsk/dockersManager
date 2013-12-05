@@ -9,6 +9,7 @@
 var async = require('async');
 var appUtil = require('./app_util');
 var logger = require('../config/logger');
+var util = require("util");
 exports.index = function (req, res) {
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
     var viewData = '';
@@ -91,6 +92,107 @@ exports.inspect = function (req, res) {
     });
   });
 };
+
+exports.hinspect = function (req, res) {
+
+  var imgIdentifier = req.params.imgIdentifier;
+  var selectedHostId = parseInt(req.params.host_id);
+
+  var repository,  hostStatusCode;
+  try{
+     repository = req.query.repository.trim();
+   }catch(err){
+      repository = "";
+   }
+
+  var imgInfo = {};
+  var containerList = [];
+  var dockerHostList  = [];
+  var hostToQuery = {};
+  var errMessages = [];
+  var viewData = '';
+
+
+  async.series([
+    //Get dockerhost
+      function (callback) {
+        appUtil.getDockerHosts(function (err, hostList) {
+          if (err)
+            callback(err, null);
+          else {
+            dockerHostList = hostList;
+            callback();
+          }
+        });
+      },
+      function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+
+        hostToQuery= (dockerHostList.filter( function(item){
+              return item.id === selectedHostId;
+          }))[0];
+        if( typeof hostToQuery === 'undefined' ){
+             callback( "Host with id :'"+selectedHostId + "' not found.") ;
+             return;
+        }
+        callback();
+
+      },
+      function(callback){
+        var cliMessage = null;
+        logger.info( "Retrieving image data from : " + hostToQuery);  
+
+        var querystring = '/images/' + imgIdentifier + '/json';
+        appUtil.makeGetRequestToHost( hostToQuery, querystring, function (errorMessage, data, statusCode) {
+          viewData = '';
+          hostStatusCode = statusCode;
+          switch (statusCode) {
+          case 200:
+            viewData = JSON.parse(data);
+            break;
+          case 404:
+            viewData = 'No such image : ' + imgIdentifier;
+            errMessages.push({text:viewData, type:'error'});
+            break;
+          case 500:
+            viewData = 'Server Error';
+            errMessages.push({text:viewData, type:'error'});            
+            break;
+          default:
+            viewData = 'Unable to query docker image. Please check your internet connection. <' + errorMessage + '>';
+            errMessages.push({text:viewData, type:'error'});
+          }
+          logger.info(viewData);
+          callback();
+        });
+      }], function(err){
+        if( err)
+          errMessages.push({text:err, type:'error'});
+
+        res.render('docker/inspect', {
+          title: 'Inspect Docker Image',
+          page: 'inspect_image',
+          'data': viewData,
+          statusCode: hostStatusCode,
+          imgInfo: {
+            id: imgIdentifier,
+            repository: repository,
+            created: req.query.created,
+            runningOn : hostToQuery
+          },
+          errorMessages : errMessages
+        });
+
+
+      });
+
+};
+
+
+
 exports.list = function (req, res) {
   var areAll = 1;
   if (req.query.all)
@@ -101,7 +203,7 @@ exports.list = function (req, res) {
   var dockerHostList = [];
   var c_DockerHostList = [];
   var hostContainersList = [];
-  var hostStatusCode = [];
+  var hostStatusCode = null;
   var  viewData = null;
   var errMessages = [];
 
@@ -211,9 +313,9 @@ exports.hlist = function(req, res){
 
   var dockerHostList = [];
   var c_DockerHostList = [];
-  var hostStatusCode = [];
+  var hostStatusCode = null;
   var  viewData = null;
-  var errMessages = null;
+  var errMessages = [];
 
   async.series([
     function (callback) {
@@ -231,7 +333,6 @@ exports.hlist = function(req, res){
         callback('No Docker host available yet.');
         return;
       }
-
 
       async.map( dockerHostList, function(host,cb){
 
@@ -262,7 +363,7 @@ exports.hlist = function(req, res){
             return item.id === selectedHostId;
         }))[0];
       if( typeof hostToQuery === 'undefined' )
-          errMessages =  { text: "Host with id :'"+selectedHostId + "' not found.", type:'error'} ;
+          errMessages.push({ text: "Host with id :'"+selectedHostId + "' not found.", type:'error'} );
 
 
       if( typeof hostToQuery === 'undefined' )
@@ -290,6 +391,7 @@ exports.hlist = function(req, res){
               type: 'error'
             };
             viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
+            break;
         }
         logger.info(viewData);
         callback();
@@ -297,22 +399,22 @@ exports.hlist = function(req, res){
     }
 	], 
 	function(err){
+    if( err)
+        errMessages.push({text:err, type:'error'});
+
 
         res.render('docker/list', {
           title: 'List of images',
+          page: 'images_list',
+          errorMessages: errMessages,
           'data': viewData,
           'areAll': areAll,
           statusCode: hostStatusCode,
-          page: 'images_list',
-          hostList : c_DockerHostList,
-          messages: errMessages
+          hostList : c_DockerHostList
         });
 
     });
 };
-
-
-
 exports.delete = function (req, res) {
 
   var repository,  querystring, imgIdentifier;
@@ -343,32 +445,32 @@ exports.delete = function (req, res) {
     switch (statusCode) {
     case 409:
       req.session.messages = {
-        text: 'Conflict in deleting image : \'' + imgIdentifier + '\' ',
+        text: util.format("<%s:%s> : Conflict in deleting image : \'%s\'", dockerHost.hostname, dockerHost.dockerPort, imgIdentifier ),
         type: 'error'
       };
       break;
     case 404:
       req.session.messages = {
-        text: 'No such image : \'' + imgIdentifier + '\' ',
+        text: util.format("<%s:%s> : No such image  \'%s\'", dockerHost.hostname, dockerHost.dockerPort, imgIdentifier ),
         type: 'error'
       };
       break;
     case 200:
       req.session.messages = {
-        text: '\'' + imgIdentifier + '\' image deleted successfully.',
+        text: util.format("<%s:%s> : Image[%s] deleted successfully.", dockerHost.hostname, dockerHost.dockerPort, imgIdentifier ),
         type: 'alert'
       };
      // res.redirect('/');
       break;
     case 500:
       req.session.messages = {
-        text: 'Server error.',
+        text:  util.format("<%s:%s> : Server error.", dockerHost.hostname, dockerHost.dockerPort),
         type: 'error'
       };
       break;
     default:
       req.session.messages = {
-        text: 'Unable to query docker image. Please check your internet connection. <' + errorMessage + '>',
+        text:  util.format("<%s:%s> : Unable to query docker image. Please check your internet connection. <%s>", dockerHost.hostname, dockerHost.dockerPort, errorMessage ),
         type: 'error'
       };
     }
@@ -414,27 +516,35 @@ exports.hdelete = function (req, res) {
       },
       //Send delete image request
       function(callback){
-
+        var cliMessage = null;
         logger.info( "Deleting image from : " + hostToQuery);
-        var  querystring = '/images/' + imgIdentifier;
+        var  querystring = '/images/' + encodeURIComponent(imgIdentifier);
 
         appUtil.makeDELETERequestToHost(hostToQuery,  querystring, function (errorMessage, result, statusCode ) {
           switch (statusCode) {
           case 409:
-              callback( "Conflict in deleting image : \'" + imgIdentifier + "\'" );
+              cliMessage = util.format("<%s:%s> : Conflict in deleting image : '%s'", hostToQuery.hostname, hostToQuery.dockerPort, imgIdentifier );
+              callback( cliMessage );
             break;
           case 404:
-             callback('No such image : \'' + imgIdentifier + '\' ');
+             callback( util.format("<%s:%s> : No such image : '%s'", hostToQuery.hostname, hostToQuery.dockerPort, imgIdentifier ) );
             break;
           case 200:
-              logger.info('\'' + imgIdentifier + '\' image deleted successfully.');
+              cliMessage = util.format("<%s:%s> : Image[%s] deleted successfully.", hostToQuery.hostname, hostToQuery.dockerPort, imgIdentifier ) ;            
+              logger.info(  );
+              req.session.messages = {
+                 text: cliMessage,
+                 type: 'success'
+              };              
               callback();
             break;
           case 500:
-              callback('Server error.');           
+              cliMessage = util.format("<%s:%s> : Server error.", hostToQuery.hostname, hostToQuery.dockerPort );
+              callback( cliMessage );           
             break;
           default:
-             callback('Unable to query docker image. Please check your internet connection. <' + errorMessage + '>');
+            cliMessage = util.format("<%s:%s> : Unable to query docker image. Please check your internet connection. <%s>",  hostToQuery.hostname, hostToQuery.dockerPort, errorMessage ) ;
+             callback( cliMessage );
              break;
           }
         });
@@ -453,12 +563,6 @@ exports.hdelete = function (req, res) {
 
 
   });
-
-
-
-
-
-
 };
 
 
@@ -527,4 +631,115 @@ exports.containers = function (req, res) {
 
   });
 
+};
+exports.hcontainers = function (req, res) {
+
+  var imgIdentifier = req.params.imgIdentifier;
+  var selectedHostId = parseInt(req.params.host_id);
+
+  var repository,  hostStatusCode;
+  try{
+     repository = req.query.repository.trim();
+   }catch(err){
+      repository = "";
+   }
+  var imageId = req.params.id;
+
+  var imgInfo = {};
+  var containerList = [];
+  var dockerHostList  = [];
+  var hostToQuery = {};
+  var errMessages = [];
+  var viewData = '';
+
+  async.series([
+    //Get dockerhost
+      function (callback) {
+        appUtil.getDockerHosts(function (err, hostList) {
+          if (err)
+            callback(err, null);
+          else {
+            dockerHostList = hostList;
+            callback();
+          }
+        });
+      },
+      function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+
+        hostToQuery= (dockerHostList.filter( function(item){
+              return item.id === selectedHostId;
+          }))[0];
+        if( typeof hostToQuery === 'undefined' ){
+             callback( "Host with id :'"+selectedHostId + "' not found.") ;
+             return;
+        }
+        callback();
+
+      },
+      function(callback){
+        var cliMessage = null;
+        logger.info( "Retrieving containers from : " + JSON.stringify(hostToQuery) );  
+        var querystring = '/containers/json?all=1&size=1';
+        appUtil.makeGetRequestToHost(hostToQuery, querystring, function (errorMessage, data, statusCode ) {
+          hostStatusCode = statusCode;
+          logger.info("statuscode:  " + hostStatusCode);
+          switch (statusCode) {
+            case 200:
+              viewData = JSON.parse(data);
+              viewData.forEach(function (container, index) {
+                logger.info(container.Image);
+                if (container.Image === imgIdentifier.substr(0, 12)) {
+                  containerList.push(container);
+                }
+              });
+              logger.info(" ContainersList.length " + containerList.length);
+              break;
+            case 400:
+              viewData = 'Bad Parameters ';
+              errMessages.push({text:viewData, type:'error'});
+              break;
+            case 500:
+              viewData = 'Server error : ' + errorMessage;
+              errMessages.push({text:viewData, type:'error'});
+              break;
+            default:
+              viewData = 'Unable to query list of containers. Please check your network connection.:<'+ errorMessage +'>';
+              errMessages.push({text:viewData, type:'error'});
+              break;
+          }
+          logger.info( repository.length === 0 ? '-' :repository);
+          logger.info("ContainersList.length " + containerList.length);
+
+          callback();
+
+        });
+
+
+      }], 
+      function(err){
+        if( err)
+          errMessages.push({text:err, type:'error'});        
+
+        res.render('docker/containers', {
+         'containerList': containerList,
+          title: 'List of Containers',
+          page: 'containers_list',
+          id: imgIdentifier,
+          'data': viewData,
+          'statusCode': hostStatusCode,
+          imgInfo: {
+            id: imgIdentifier,
+            repository: repository,
+            created: req.query.created,
+            runningOn : hostToQuery
+          },
+          errorMessages:errMessages
+        });
+
+      }
+  );
 };

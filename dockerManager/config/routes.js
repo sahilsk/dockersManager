@@ -70,6 +70,9 @@ exports.makeRoutes= function(app){
 		|| NOTE: imgIdentifier : could be image repotag or image id
 	*/
 	app.post("/hosts/:host_id/dockers/:imgIdentifier/delete", docker.hdelete);
+	app.get("/hosts/:host_id/dockers/:imgIdentifier/inspect", docker.hinspect);
+	app.get("/hosts/:host_id/dockers/:imgIdentifier/containers", docker.hcontainers);
+
 
 
 

@@ -70,19 +70,20 @@
 								 <%=  time.toLocaleDateString()	 %> , <%=  time.toLocaleTimeString()	 %> 
 							</td>
 							<td>
-								<Div class="operation_menu" style="width:100px;"> 	
+								<Div class="operation_menu" style="width:200px;"> 	
 									<span class="inspect"> <a href="/dockers/<%=image.image_id %>/containers?repository=<% if( !image.repository) { %>--<% }else { %><%= image.repository %><% }%>&created=<%=image.createdAt%>" title="Inspect">  &equiv;	 </a> </span>
 									<!--					
 									<span class="delete"> <a href="/dockers/<% if( !image.repository) { %><%= image.image_id %><% }else { %><%= encodeURIComponent(image.repository) %><% } %>/delete" title="remove"> &cross;  </a></span>
 									-->
 									<span class="status"> 
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="remove"> PUSH  </a></span>
+
+									<span class="delete"> 
+										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/broadcastPull" title=" Dispatch pull request to all docker server.Note: Only if image is pushed on the registry." disabled=disabled> 
+										Broadcast  </a></span>			
 									<span class="kill"> 
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/delete" title="NOTE: It won't delete the image but only take off this entry from the database."> 
 										&cross;  </a></span>
-									<span class="delete"> 
-										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/broadcastPull" title=" Dispatch pull request to all docker server.Note: Only if image is pushed on the registry." disabled=disabled> 
-										Broadcast  </a></span>										
 
 									
 								</Div>

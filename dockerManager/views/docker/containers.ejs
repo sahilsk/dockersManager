@@ -1,5 +1,16 @@
 <% include ../../layouts/dashboard_layout_top %>
 
+<% if( errorMessages ){ %>
+   	<ul class="flash" >
+   		<% errorMessages.forEach( function(error, index){ %> 
+   			<li class="<%= error.type %>" >
+   				<%= error.text %>
+				<span> &cross; </span>
+			</li>
+   		<%  }); %>
+	</ul>
+<% } %>
+
 <% if( statusCode === 200) { %>
 
 	<% include ../common/dockerImagePanel %>

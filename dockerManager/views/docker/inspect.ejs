@@ -1,5 +1,15 @@
 <% include ../../layouts/dashboard_layout_top %>
 
+<% if( errorMessages ){ %>
+   	<ul class="flash" >
+   		<% errorMessages.forEach( function(error, index){ %> 
+   			<li class="<%= error.type %>" >
+   				<%= error.text %>
+				<span> &cross; </span>
+			</li>
+   		<%  }); %>
+	</ul>
+<% } %>
 
 <% if( statusCode === 200) { %>
 
@@ -14,7 +24,6 @@
 
 <% } %>
 			
-
 
 <div class="inspectDataWrapper">
 
@@ -31,10 +40,6 @@
 					<br/>
 					<% for(var l in data[k]){ %>
 						<label class='sub'> <%=l %> : </label>
-
-
-
-
 						<span class="sub"> <%= JSON.stringify( data[k][l]) %> </span> <br/>
 					<% }%> 	
 				
