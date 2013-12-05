@@ -23,9 +23,9 @@ var config = {
         hostname: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com",
         port: 5000
       } 
+    },
+    globalTimeout:4000
 
-
-    }
 
   };
 module.exports = config;

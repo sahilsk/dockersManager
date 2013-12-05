@@ -43,7 +43,6 @@ exports.makeGetRequestToHost = function (host, queryString, callback) {
       path: queryString,
       method: 'GET'
     };
-  console.log(queryString);
   logger.info( options);
   var req = http.request(options, function (res) {
       console.log('STATUS: ' + res.statusCode);
@@ -58,7 +57,7 @@ exports.makeGetRequestToHost = function (host, queryString, callback) {
       });
     });
   req.on('socket', function (socket) {
-      socket.setTimeout(4000);  
+      socket.setTimeout(config.globalTimeout);  
       socket.on('timeout', function() {
         logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
         req.abort();
@@ -95,6 +94,14 @@ exports.makeDELETERequest = function (queryString, callback) {
         callback(inspectData, res.statusCode, null);
       });
     });
+  req.on('socket', function (socket) {
+      socket.setTimeout(config.globalTimeout);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });    
   req.on('error', function (e) {
     inspectData = '';
     console.log('problem with request: ' + e.message);
@@ -126,6 +133,14 @@ exports.makeDELETERequestToHost = function (host, queryString, callback) {
         callback(null, inspectData, res.statusCode);
       });
     });
+  req.on('socket', function (socket) {
+      socket.setTimeout(config.globalTimeout);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });    
   req.on('error', function (e) {
     inspectData = '';
     console.log('problem with request: ' + e.message);
@@ -188,6 +203,14 @@ exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onR
       });
     });
   req.setHeader('Content-Type', 'application/tar');
+  req.on('socket', function (socket) {
+      socket.setTimeout(config.globalTimeout);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });    
   req.on('error', function (e) {
     console.log('problem with request: ' + e.message);
     onResult(null, null, e.message);
@@ -222,6 +245,14 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
         callback(inspectData, res.statusCode, null);
       });
     });
+  req.on('socket', function (socket) {
+      socket.setTimeout(config.globalTimeout);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });    
   req.on('error', function (e) {
     inspectData = '';
     console.log('ERROR: Problem with request: ' + e.message);
@@ -276,7 +307,7 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, oResult) {
       method: 'GET'
     };
   var isAlive = false;
-  console.log('Checking Docker host - <' + dockerHost + '>:<' + dockerPort + '>');
+  logger.info('Checking Docker host - <' + dockerHost + '>:<' + dockerPort + '>');
   var req = http.request(options, function (res) {
       var statusCode = res.statusCode;
       var error = null;
@@ -307,7 +338,7 @@ exports.isDockerServerAlive = function (dockerHost, dockerPort, oResult) {
     });
   
   req.on('socket', function (socket) {
-      socket.setTimeout(3000);  
+      socket.setTimeout(config.globalTimeout);  
       socket.on('timeout', function() {
         logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
         req.abort();
@@ -350,6 +381,14 @@ exports.isServerFullyLoaded = function (server, callback) {
           callback(false);
       });
     });
+  req.on('socket', function (socket) {
+      socket.setTimeout(config.globalTimeout);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });    
   req.on('error', function (e) {
     logger.error('Error in requesting average load on '+ server.hostname + ". Cause: " + e.message);
     callback(false);
@@ -378,6 +417,14 @@ exports.sendImagePullRequestToHost = function (host, tagWithRepository, callback
         callback(null, resposeBody, res.statusCode);
       });
     });
+  req.on('socket', function (socket) {
+      socket.setTimeout(config.globalTimeout);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });    
   req.on('error', function (e) {
     resposeBody = '';
     console.log('problem with request: ' + e.message);
@@ -407,6 +454,14 @@ exports.sendImagePushRequestToHost = function (host, tagWithRepository, callback
         callback(resposeBody, res.statusCode, null);
       });
     });
+  req.on('socket', function (socket) {
+      socket.setTimeout(config.globalTimeout);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });    
   req.on('error', function (e) {
     resposeBody = '';
     console.log('Problem broadcasting pull request: ' + e.message);
