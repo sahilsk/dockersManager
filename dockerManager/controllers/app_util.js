@@ -57,6 +57,14 @@ exports.makeGetRequestToHost = function (host, queryString, callback) {
         callback(null, inspectData, res.statusCode);
       });
     });
+  req.on('socket', function (socket) {
+      socket.setTimeout(4000);  
+      socket.on('timeout', function() {
+        logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
+        req.abort();
+//        oResult(false, "Request Timeout");
+      });
+  });  
   req.on('error', function (e) {
     inspectData = '';
     console.log('Problem with request: ' + e.message);
@@ -94,6 +102,8 @@ exports.makeDELETERequest = function (queryString, callback) {
   });
   req.end();
 };
+
+
 exports.makeDELETERequestToHost = function (host, queryString, callback) {
   console.log('Making Delete Request..');
   var inspectData = '';
