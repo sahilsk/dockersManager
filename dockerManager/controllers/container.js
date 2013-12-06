@@ -248,7 +248,7 @@ exports.listAll = function(req, res){
               cliResponse = util.format('<%s:%s> : Container list[%d] retrieved successfully.', liveHost.hostname, liveHost.dockerPort, cliContainerList.length);
               
               cliContainerList.map( function(container){
-                return container.runningOn = liveHost.name;
+                return container.runningOn = liveHost;
               });
               hostContainerQueryReport.push({
                 text: cliResponse,
@@ -306,6 +306,137 @@ exports.listAll = function(req, res){
         messages:{ hostsReport:  hostContainerQueryReport}
       });
     return;
+  });
+};
+exports.hlistAll = function(req, res){
+  var areAll = 1;
+  if (req.query.all)
+    areAll = parseInt(req.query.all);
+
+  var selectedHostId = parseInt(req.params.host_id);
+
+  var querystring = '/containers/json?size=1&all=' + areAll;
+
+  var liveHostsList = [];
+  var dockerHostList = [];
+  var c_DockerHostList = [];
+  var hostContainersList = [];
+  var hostContainerQueryReport = [];
+  var hostStatusCode =null;
+  var errMessages =[];
+
+  async.series([
+    function (callback) {
+      appUtil.getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList;
+          callback();
+        }
+      });
+    },
+    function (callback) {
+      if (dockerHostList.length === 0) {
+        callback('No Docker host available yet.');
+        return;
+      }
+      async.map( dockerHostList, function(host,cb){
+        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
+          logger.info('=========================Alive : ' + isAlive);
+          host.isAlive = isAlive;
+          cb(null, host);
+        });
+
+      }, function(err, results){
+          c_DockerHostList = results;
+          callback();
+      });
+
+    },
+    function (callback) {
+      if (c_DockerHostList.length === 0) {
+        callback('No Docker Server is available yet. Please try again later. ');
+        return;
+      }
+
+      if( selectedHostId === -1){
+         callback("Select Docker Host. ");
+        return;
+      }
+
+      logger.info(" c_DockerHostList length: %d/%d", dockerHostList.length, c_DockerHostList.length);
+
+       hostToQuery= (c_DockerHostList.filter( function(item){
+            return item.id === selectedHostId;
+        }))[0];
+
+     if( typeof hostToQuery === 'undefined' ){
+        callback( "Invalid Host Id" );
+        return;
+     }
+
+      logger.info("++++++++++++ " + JSON.stringify(hostToQuery));
+
+        var cliResponse = null;       
+        appUtil.makeGetRequestToHost( hostToQuery, querystring, function (errorMessage, data, statusCode) {
+          hostStatusCode = statusCode;
+          switch (statusCode) {
+            case 200:
+              hostContainersList = JSON.parse(data);
+              cliResponse = util.format('<%s:%s> : Container list[%d] retrieved successfully.', hostToQuery.hostname, hostToQuery.dockerPort, hostContainersList.length);
+              hostContainersList.map( function(container){
+                return container.runningOn = hostToQuery;
+              });
+
+              hostContainersList.runningOn = hostToQuery;
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'success'
+              });
+              break;
+            case 400:
+              cliResponse = util.format('<%s:%s> : Bad Parameters.', hostToQuery.hostname, hostToQuery.dockerPort);
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'error'
+              });
+              break;
+            case 500:
+              cliResponse = util.format('<%s:%s> : Server error. %s', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage);
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'error'
+              });
+              break;
+            default:
+              cliResponse = util.format('<%s:%s> :Unable to query list of containers. Please check your network connection.<%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage);
+              hostContainerQueryReport.push({
+                text: cliResponse,
+                type: 'error'
+              });
+          }
+           logger.info(cliResponse);             
+
+          callback();
+        } );
+ 
+    }
+  ], function (err) {
+    if (err) {
+            errMessages.push({text:err, type:'error'});
+    }
+    if (hostContainerQueryReport.length > 0)
+      res.render('container/list', {
+        title: 'List of Containers',
+        'areAll': areAll,
+        'data': hostContainersList,
+        page: 'containers_list',
+        messages:{ hostsReport:  hostContainerQueryReport},
+        hostList: c_DockerHostList,
+        statusCode:hostStatusCode,
+        errorMessage:errMessages
+      });
   });
 };
 exports.index = function (req, res) {
@@ -728,7 +859,7 @@ exports.hdelete = function(req, res){
 
           var querystring  = '/containers/' + containerId;
 
-          appUtil.makeDELETERequestToHost( hostToQuery, '/containers/' + containerId, function (result, statusCode, errorMessage) {
+          appUtil.makeDELETERequestToHost( hostToQuery, '/containers/' + containerId, function (errorMessage, result, statusCode) {
 
             switch (statusCode) {
             case 409:

@@ -77,11 +77,15 @@ exports.makeRoutes= function(app){
 	*/
 	//app.get("/hosts/:host_id/containers/list", container.hlist);	
 	
-	//app.post("/hosts/:host_id/containers/:container_id/delete", container.hdelete);
+
+	app.get("/hosts/:host_id/containers/", container.hlistAll);
+	app.get("/hosts/:host_id/containers/list", container.hlistAll);
 	app.get("/hosts/:host_id/containers/:container_id/inspect", container.hinspect);
 	app.get("/hosts/:host_id/containers/:container_id/toggle", container.htoggleStatus);
 	app.get("/hosts/:host_id/containers/:container_id/kill", container.hkill)
-	app.get("/hosts/:host_id/containers/:id/delete", container.hdelete);
+	//app.post("/hosts/:host_id/containers/:container_id/delete", container.hdelete);
+	app.get("/hosts/:host_id/containers/:container_id/delete", container.hdelete);
+
 
 
 

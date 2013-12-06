@@ -16,7 +16,7 @@ var config = {
     },
     repository :{
     	development:{
-        hostname: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com",
+        hostname: "50.18.225.222", // "ec2-54-219-118-62.us-west-1.compute.amazonaws.com",
         port: 5000
       } ,
       production:{
@@ -24,7 +24,7 @@ var config = {
         port: 5000
       } 
     },
-    globalTimeout:4000
+    globalTimeout:5000
 
 
   };

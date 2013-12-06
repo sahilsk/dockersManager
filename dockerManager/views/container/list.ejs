@@ -12,7 +12,16 @@
 	</ul>
 <% } %>
 
-
+<% if( errorMessages ){ %>
+   	<ul class="flash" >
+   		<% errorMessages.forEach( function(error, index){ %> 
+   			<li class="<%= error.type %>" >
+   				<%= error.text %>
+				<span> &cross; </span>
+			</li>
+   		<%  }); %>
+	</ul>
+<% } %>
 
 
 
@@ -22,6 +31,25 @@
 	<h3 >Container List  | <a href ="/containers/new" > Create New </a></h3>
 	<span> Include all results? <a href="/containers/list?all=1"  class="<% if( areAll){%>highlight<%}%>" > Yes </a> |  <a href="/containers/list?all=0" class="<% if( !areAll){%>highlight<%}%>" > No </a> </span>
 	<hr/>
+
+	<h3> Server : 
+
+		<% if( typeof hostList != "undefined" && hostList ){ %>
+			<select id="hostList">
+				<option value="-1" > Select Server </option>
+				<% hostList.forEach(function(server, index){ %>
+					<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %> 
+					 class="<%= server.isAlive?"success":"error" %>" >
+					 		 <%= server.name %> (<%= server.hostname %>) 
+					 		 <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> 
+					 </option>
+				<% }) %>
+			</select>
+
+		<% }%>
+
+	</h3>
+
 
 
 
@@ -54,16 +82,79 @@
 	<% data.forEach( function(item, index){ %>
 		<tr>
 		<td>  <%= index + 1 %> </td>
+
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.Id %>
+					</div>
+				
+		</td>
+
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.Image %>
+					</div>
+				
+		</td>
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.Command %>
+					</div>
+				
+		</td>	
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.Created %>
+					</div>
+				
+		</td>	
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.Status %>
+					</div>
+				
+		</td>		
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.Ports %>
+					</div>
+				
+		</td>	
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.SizeRw %>
+					</div>
+				
+		</td>	
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.SizeRootFs %>
+					</div>
+				
+		</td>		
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<% if( item.Names) {%><%= item.Names %> <%} else { %> -- <% } %>
+					</div>
+				
+		</td>	
+		<td>
+					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+						<%= item.runningOn.name %>
+					</div>
+				
+		</td>										
+
+		<% /* %>
 		<% for(var k in item){ %>
 			<td>
 					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
 						<%= item[k] %>
 					</div>
-
-					
 				
 			</td>
 		<% } %>
+		<% */ %>
 			<td>
 
 				<Div class="operation_menu" style="width:140px;"> 	

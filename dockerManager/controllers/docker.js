@@ -483,13 +483,38 @@ exports.delete = function (req, res) {
   });
 };
 
+/* Delete Image:
+||  -> Delete first by repotags if present, else image id will be used to delete image
+||
+*/
 exports.hdelete = function (req, res) {
 
+  var 
+    imgIdentifier = null,
+    imageId = null,
+    repository = null,
+    selectedHostId = null,
+    dockerHostList,
+    hostToQuery    
+    ;
 
-  var imgIdentifier = req.params.imgIdentifier;
-  var selectedHostId = parseInt(req.params.host_id);
+  imageId = req.params.imgIdentifier;
+  try{
+     repository = req.body.repository.trim();
+   }catch(err){
+      repository = null;
+   }
 
-  var dockerHostList,hostToQuery ;
+
+
+  if( repository != null && repository.length > 0 )
+      imgIdentifier = repository;
+  else
+      imgIdentifier = imageId;
+
+
+  selectedHostId = parseInt(req.params.host_id);
+
 
   async.series([
     //Get dockerhost
@@ -562,6 +587,9 @@ exports.hdelete = function (req, res) {
              text: err,
              type: 'error'
           };
+
+          res.redirect(req.headers.referer);
+          return;
         }
 
         res.redirect("/hosts/"+ hostToQuery.id + "/dockers/list");
@@ -697,6 +725,10 @@ exports.hcontainers = function (req, res) {
               viewData = JSON.parse(data);
               viewData.forEach(function (container, index) {
                 logger.info(container.Image);
+
+//TODO
+                containerList.push(container);
+
                 if (container.Image === imgIdentifier.substr(0, 12)) {
                   containerList.push(container);
                 }

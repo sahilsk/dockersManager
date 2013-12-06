@@ -56,6 +56,8 @@ exports.makeGetRequestToHost = function (host, queryString, callback) {
         callback(null, inspectData, res.statusCode);
       });
     });
+  
+
   req.on('socket', function (socket) {
       socket.setTimeout(config.globalTimeout);  
       socket.on('timeout', function() {
@@ -63,7 +65,8 @@ exports.makeGetRequestToHost = function (host, queryString, callback) {
         req.abort();
 //        oResult(false, "Request Timeout");
       });
-  });  
+  }); 
+
   req.on('error', function (e) {
     inspectData = '';
     console.log('Problem with request: ' + e.message);
@@ -203,14 +206,16 @@ exports.makeFileUploadRequestToHost = function (host, filePath, queryString, onR
       });
     });
   req.setHeader('Content-Type', 'application/tar');
+  /*
   req.on('socket', function (socket) {
       socket.setTimeout(config.globalTimeout);  
       socket.on('timeout', function() {
         logger.info("TIMEOUT:  request timeout. Assuming it host is not reachable.");
         req.abort();
-//        oResult(false, "Request Timeout");
+        oResult(false, "Request Timeout");
       });
-  });    
+  });  
+  */  
   req.on('error', function (e) {
     console.log('problem with request: ' + e.message);
     onResult(null, null, e.message);

@@ -65,7 +65,7 @@
 			<% } %>
 
 			<li class="delete"> 
-				<form action="/hosts/<%= imgInfo.runningOn.id %>/dockers/<% if( !imgInfo.repository) { %><%= imgInfo.id %><% }else{ %><%= imgInfo.repository %><% } %>/delete" method="POST">
+				<form action="/hosts/<%= imgInfo.runningOn.id %>/dockers/<%= imgInfo.id %>/delete" method="POST">
 
 					<input type="hidden" name="repository"	value="<% if( imgInfo.Repository){ %><%= imgInfo.Repository %><% } %>" />
 

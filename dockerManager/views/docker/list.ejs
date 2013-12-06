@@ -26,21 +26,21 @@
 	<hr/>
 	<h3> Server : 
 
-	<% if( typeof hostList != "undefined" && hostList ){ %>
-		<select id="hostList">
-			<option value="-1" > Select Server </option>
-			<% hostList.forEach(function(server, index){ %>
-				<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %> 
-				 class="<%= server.isAlive?"success":"error" %>" >
-				 		 <%= server.name %> (<%= server.hostname %>) 
-				 		 <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> 
-				 </option>
-			<% }) %>
-		</select>
+		<% if( typeof hostList != "undefined" && hostList ){ %>
+			<select id="hostList">
+				<option value="-1" > Select Server </option>
+				<% hostList.forEach(function(server, index){ %>
+					<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %> 
+					 class="<%= server.isAlive?"success":"error" %>" >
+					 		 <%= server.name %> (<%= server.hostname %>) 
+					 		 <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> 
+					 </option>
+				<% }) %>
+			</select>
 
-	<% }%>
+		<% }%>
 
-	 </h3>
+	</h3>
 
 
 
@@ -101,7 +101,7 @@
 							 
 					</span>					
 					<span class="delete">
-						<form action="/hosts/<%= data.runningOn.id %>/dockers/<% if( !item.Repository) { %><%= item.Id %><% }else{ %><%= encodeURIComponent(item.Repository) %><% } %>/delete" method="POST">
+						<form action="/hosts/<%= data.runningOn.id %>/dockers/<%= item.Id %>/delete" method="POST">
 
 							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= item.Repository %><% } %>" />
 
