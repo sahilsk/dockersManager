@@ -2,14 +2,14 @@
 
 
 <% if( messages && typeof messages.hostsReport !== "undefined" && messages.hostsReport ){ %>
-   	<ul class="flash" >
-   		<% messages.hostsReport.forEach( function(item, index){ %> 
-   			<li class="<%= item.type %>" >
-   				<%= item.text %>
-				<span> &cross; </span>
-			</li>
-   		<%  }); %>
-	</ul>
+           <ul class="flash" >
+                   <% messages.hostsReport.forEach( function(item, index){ %> 
+                           <li class="<%= item.type %>" >
+                                   <%= item.text %>
+                                <span> &cross; </span>
+                        </li>
+                   <%  }); %>
+        </ul>
 <% } %>
 
 <% if( errorMessages ){ %>
@@ -29,7 +29,12 @@
 
 
 	<h3 >Container List  | <a href ="/containers/new" > Create New </a></h3>
-	<span> Include all results? <a href="/containers/list?all=1"  class="<% if( areAll){%>highlight<%}%>" > Yes </a> |  <a href="/containers/list?all=0" class="<% if( !areAll){%>highlight<%}%>" > No </a> </span>
+
+
+	<span> Include all results? 
+		<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
+		<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
+	</span>
 	<hr/>
 
 	<h3> Server : 
@@ -157,12 +162,13 @@
 		<% */ %>
 			<td>
 
-				<Div class="operation_menu" style="width:140px;"> 	
-					<span class="inspect"> <a href="/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
-					<span class="status" >  <a href="/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
-					<span class="kill"> <a href="/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>
-					<span class="delete"> <a href="/containers/<%=item.Id %>/delete" title="remove"> &cross;  </a></span>
-				</Div>
+				<td>
+					<Div class="operation_menu"> 	
+						<span class="inspect"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
+						<span class="status" >  <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
+						<span class="kill"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>
+						<span class="delete"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/delete" title="remove"> &cross;  </a></span>
+					</Div>
 
 			</td>
 		<tr/>

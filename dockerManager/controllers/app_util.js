@@ -250,6 +250,8 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
         callback(inspectData, res.statusCode, null);
       });
     });
+
+  /*
   req.on('socket', function (socket) {
       socket.setTimeout(config.globalTimeout);  
       socket.on('timeout', function() {
@@ -257,7 +259,9 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
         req.abort();
 //        oResult(false, "Request Timeout");
       });
-  });    
+  });
+*/
+
   req.on('error', function (e) {
     inspectData = '';
     console.log('ERROR: Problem with request: ' + e.message);

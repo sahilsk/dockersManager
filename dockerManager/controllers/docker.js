@@ -361,8 +361,7 @@ exports.hlist = function(req, res){
 
       logger.info(" c_DockerHostList length: %d/%d", dockerHostList.length, c_DockerHostList.length);
 
-      var hostToQuery = {};
-      
+      var hostToQuery = {};     
 
        hostToQuery= (c_DockerHostList.filter( function(item){
             return item.id === selectedHostId;

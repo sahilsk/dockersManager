@@ -390,28 +390,25 @@ exports.hlistAll = function(req, res){
               });
 
               hostContainersList.runningOn = hostToQuery;
-              hostContainerQueryReport.push({
-                text: cliResponse,
-                type: 'success'
-              });
+
               break;
             case 400:
               cliResponse = util.format('<%s:%s> : Bad Parameters.', hostToQuery.hostname, hostToQuery.dockerPort);
-              hostContainerQueryReport.push({
+              errMessages.push({
                 text: cliResponse,
                 type: 'error'
               });
               break;
             case 500:
               cliResponse = util.format('<%s:%s> : Server error. %s', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage);
-              hostContainerQueryReport.push({
+              errMessages.push({
                 text: cliResponse,
                 type: 'error'
               });
               break;
             default:
               cliResponse = util.format('<%s:%s> :Unable to query list of containers. Please check your network connection.<%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage);
-              hostContainerQueryReport.push({
+              errMessages.push({
                 text: cliResponse,
                 type: 'error'
               });
@@ -423,19 +420,17 @@ exports.hlistAll = function(req, res){
  
     }
   ], function (err) {
-    if (err) {
+    if (err)
             errMessages.push({text:err, type:'error'});
-    }
-    if (hostContainerQueryReport.length > 0)
+    
       res.render('container/list', {
         title: 'List of Containers',
         'areAll': areAll,
         'data': hostContainersList,
         page: 'containers_list',
-        messages:{ hostsReport:  hostContainerQueryReport},
         hostList: c_DockerHostList,
         statusCode:hostStatusCode,
-        errorMessage:errMessages
+        errorMessages:errMessages
       });
   });
 };
@@ -1107,7 +1102,7 @@ exports.createInAll = function (req, res) {
       };
       res.redirect('/containers/new');
     } else
-      res.redirect('/containers/list');
+      res.redirect('/hosts/-1/containers/list');
     res.end();
     return;
   });

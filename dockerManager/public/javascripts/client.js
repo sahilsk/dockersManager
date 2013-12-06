@@ -62,7 +62,12 @@ function onServerChange(){
 
 	var queryString = "?all=" + ( $("#includeAllResults").is(":checked")?"1":"0" );
 
-	window.location.href = window.location.origin + "/hosts/" + $("#hostList").find("option:selected").val() + "/dockers/list" + queryString;
+	var  path = "dockers";
+	if( window.location.pathname.indexOf("/containers/") !== -1)
+		path = "containers";
+
+
+	window.location.href = window.location.origin + "/hosts/" + $("#hostList").find("option:selected").val() + "/"+ path + "/list" + queryString;
 
 }
 
