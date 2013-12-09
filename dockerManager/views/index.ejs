@@ -26,27 +26,34 @@
 
 			<form method="post" enctype="multipart/form-data" action="/upload" >
 
-				<label> Image Name </label>
-				<input type="text" name="build_name"  id="build_name" pattern="[a-z0-9-_.]{3,30}" required title="Invalid repository name, only [a-z0-9-_.] are allowed and should have atmost 30 characters" />
+				<label> Build Name </label>
+					<input type="text" name="build_name"  id="build_name" pattern="[a-z0-9-_.]{3,30}" required title="Invalid repository name, only [a-z0-9-_.] are allowed and should have atmost 30 characters" />
 				<br/> <br/>
 
 				<input type="file" name="dockerfile" id="dockerfile" /> 
+				
+				 <!--
+				<br/><br/>
+				<span > --------------------------- OR ---------------------------</span>
+				<br/><br/>
+				 -->
+				<div id="dropbox"  style="padding:15px; text-align:center; margin:0 auto; border: 1px dashed #ccc; background-color:#eee; color:#ccc;">
+			    	Drop file here
+			    </div>
 				<input type="hidden" id="NameBox" ><br>
 
 				<br/> <Br/>
 				<input type="submit" value="upload and build" id="UploadButton" class="btn lrg" />
 			</form>
-
  
       </div>
+
+
 
 </div>
 
 
 <%= include /common/cmd_ux.ejs %>
-
-
-
 
 
 
@@ -68,6 +75,55 @@
 	//-----------------------------
 
 
+	$("#dockerfile").hide();
+
+	$("#dropbox").bind("click", function(){
+		$("#dockerfile").click();
+	})
+
+
+
+
+	var dragbox ;
+	dropbox = document.getElementById("dropbox");
+	dropbox.addEventListener("dragenter", dragenter, false);
+	dropbox.addEventListener("dragover", dragover, false);
+	dropbox.addEventListener("dragleave", dragleave, false);
+
+	dropbox.addEventListener("drop", drop, false);
+	function dragenter(e) {
+		console.log("dragenter");
+	  e.stopPropagation();
+	  e.preventDefault();
+	  $(this).css({'background-color':'#FFF', color: 'purple'});
+	}
+
+	function dragover(e) {
+		console.log("dragover");
+	  e.stopPropagation();
+	  e.preventDefault();
+
+	}
+
+	function dragleave(e) {
+		console.log("dragleave");
+	  e.stopPropagation();
+	  e.preventDefault();
+  	  $(this).css({'background-color':'#eee', color: '#333'});
+
+	}
+
+
+	function drop(e) {
+	  e.stopPropagation();
+	  e.preventDefault();
+
+	  if( e.dataTransfer.files.length > 0){
+		  var dt = e.dataTransfer;
+		  var files = dt.files;
+		  handleFile(files);
+	  }
+	}
 
 	if (window.File && window.FileReader) {
 	    $("#UploadButton").click(StartUpload);
@@ -79,11 +135,21 @@
 	var SelectedFile;
 
 	function FileChosen(evnt) {
-	    SelectedFile = evnt.target.files[0];
-	    $('#NameBox').val(SelectedFile.name);
-	    console.log(SelectedFile.name);
+
+		handleFile (evnt.target.files);
+
 
 	}
+
+	function handleFile(files){
+	    SelectedFile = files[0];
+	    $('#NameBox').val(SelectedFile.name);
+
+	    $("#dropbox").text( SelectedFile.name );
+
+	    console.log("HandleFile: ", SelectedFile.name);
+	}
+
 
 
 	/*==========  Socket ============= */
@@ -94,7 +160,14 @@
 	function StartUpload(e) {
 	    e.preventDefault();
 	    buildName = $("#build_name").val();
-	    if ($('#dockerfile').val() != "" && buildName != "") {
+
+	    if( buildName === ''){
+	        alert("Please provide build name");
+	        return ;
+	    }
+
+
+	    if ($('#dockerfile').val() != "") {
 
 	        $("#UploadArea").slideUp();
 
