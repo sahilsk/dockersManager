@@ -1,5 +1,6 @@
 <% include ../layouts/dashboard_layout_top %>
 
+
 <% if( messages && typeof messages.errorList !== "undefined" && messages.errorList ){ %>
 
    	<ul class="flash" >
@@ -21,18 +22,167 @@
 
 <div class="uploaderWrapper">
 
-	<form method="post" enctype="multipart/form-data" action="/upload" >
+      <div id='UploadArea'>
 
-		<label> Image Name </label>
-		<input type="text" name="build_name"  id="build_name" pattern="[a-z0-9-_.]{3,30}" required title="Invalid repository name, only [a-z0-9-_.] are allowed and should have atmost 30 characters" />
-		<br/> <br/>
+			<form method="post" enctype="multipart/form-data" action="/upload" >
 
-		<input type="file" name="dockerfile" id="dockerfile" /> 
-		<br/> <Br/>
-		<input type="submit" value="upload and build" class="btn lrg" />
-	</form>
+				<label> Image Name </label>
+				<input type="text" name="build_name"  id="build_name" pattern="[a-z0-9-_.]{3,30}" required title="Invalid repository name, only [a-z0-9-_.] are allowed and should have atmost 30 characters" />
+				<br/> <br/>
+
+				<input type="file" name="dockerfile" id="dockerfile" /> 
+				<input type="hidden" id="NameBox" ><br>
+
+				<br/> <Br/>
+				<input type="submit" value="upload and build" id="UploadButton" class="btn lrg" />
+			</form>
+
+ 
+      </div>
 
 </div>
 
 
+<%= include /common/cmd_ux.ejs %>
+
+
+
+
+
+
+
 <% include ../layouts/dashboard_layout_bottom %>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var server = io.connect("/");
+	server.on("messages", function (data) {
+	    if (data) console.log("websockets ready...");
+	    else cosole.log("webscokets not ready...");
+	});
+
+	server.on('identifier', function (id) {
+	    console.log("Client id :", id);
+	});
+
+	//-----------------------------
+
+
+
+	if (window.File && window.FileReader) {
+	    $("#UploadButton").click(StartUpload);
+	    $('#dockerfile').bind('change', FileChosen);
+	} else {
+	   $('#UploadArea').html("Your Browser Doesn't Support The File API Please Update Your Browser" );
+	}
+
+	var SelectedFile;
+
+	function FileChosen(evnt) {
+	    SelectedFile = evnt.target.files[0];
+	    $('#NameBox').val(SelectedFile.name);
+	    console.log(SelectedFile.name);
+
+	}
+
+
+	/*==========  Socket ============= */
+	var FReader;
+	var Name;
+	var buildName;
+
+	function StartUpload(e) {
+	    e.preventDefault();
+	    buildName = $("#build_name").val();
+	    if ($('#dockerfile').val() != "" && buildName != "") {
+
+	        $("#UploadArea").slideUp();
+
+	        FReader = new FileReader();
+	        Name = document.getElementById('NameBox').value;
+	        var Content = "<span id='NameArea'>Uploading " + SelectedFile.name + " as " + Name + "</span>";
+	        Content += '<div id="ProgressContainer"><div id="ProgressBar"></div></div><span id="percent">0%</span>';
+	        Content += "<span id='Uploaded'> - <span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + "MB</span>";
+	        $(".uploaderWrapper").append(Content);
+
+	        FReader.onload = function (evnt) {
+	            server.emit('Upload', {
+	                'Name': Name,
+	                Data: evnt.target.result,
+	                "buildName": buildName
+	            });
+	        }
+	        server.emit('Start', {
+	            'Name': Name,
+	            'Size': SelectedFile.size,
+	            "buildName": buildName
+	        });
+
+	    } else {
+	        alert("Please Select A File");
+	    }
+	}
+
+
+	server.on('MoreData', function (data) {
+	    UpdateBar(data['Percent']);
+	    var Place = data['Place'] * 524288; //The Next Blocks Starting Position
+	    var NewFile; //The Variable that will hold the new Block of Data
+	    if (SelectedFile.slice) NewFile = SelectedFile.slice(Place, Place + Math.min(524288, (SelectedFile.size - Place)));
+	    else NewFile = SelectedFile.mozSlice(Place, Place + Math.min(524288, (SelectedFile.size - Place)));
+	    FReader.readAsBinaryString(NewFile);
+	});
+
+	function UpdateBar(percent) {
+	    document.getElementById('ProgressBar').style.width = percent + '%';
+	    document.getElementById('percent').innerHTML = (Math.round(percent * 100) / 100) + '%';
+	    var MBDone = Math.round(((percent / 100.0) * SelectedFile.size) / 1048576);
+	    document.getElementById('MB').innerHTML = MBDone;
+	}
+
+	server.on('Done', function (data) {
+	    var Content = "Dockerfile Successfully Uploaded !!"
+	    console.log(Content);
+	    $(".uploaderWrapper").append(Content);
+
+	    server.emit("start build", null);
+
+	});
+
+	server.on('build start', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
+
+	});
+	server.on('build progress', function (msg) {
+	    if (!$(".cmd_wrapper ul").is(":visible")) $(".cmd_wrapper ul").show();
+	    console.log(msg);
+
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li>" + msg + "</li>");
+
+	});
+	server.on('build error', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='error'>" + msg + "</li>");
+
+	});
+	server.on('build end', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
+
+	});
+
+
+
+
+
+
+	$(".cmd_wrapper .toggle_display").click(function () {
+	    $ul = $(this).next();
+	    console.log($ul);
+	    if ($ul.is(':visible')) {
+	        $ul.hide();
+	        console.log($ul);
+	    } else $ul.show();
+
+
+	});
+
+</script>

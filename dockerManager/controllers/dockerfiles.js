@@ -21,6 +21,7 @@ var progress = 0;
 || 	Description:  Upload dockerfile and build it
 */
 exports.upload = function (req, res) {
+
   var newFilePath = path.join(__dirname, '../uploads');
   var newFileName = 'dockerfile_copy';
   var uploadedBytes = '';
@@ -114,6 +115,8 @@ exports.upload = function (req, res) {
 ||
 */
 exports.uploadToAll = function (req, res) {
+
+
   var newFilePath = path.join(__dirname, '../uploads');
   var newFileName = 'dockerfile_copy';
   var uploadedBytes = '';
@@ -243,73 +246,7 @@ exports.uploadToAll = function (req, res) {
           });
         }
       });
-    }  /*
-     //PUSHing the built image on the registry
-    function( callback){  
-        appUtil.sendImagePushRequestToHost( buildServer, remoteBuildTagName, repository , function( result, statusCode){
-            switch(statusCode){
-              case 200:
-                logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository) );
-                dockerfileBuiltReport.push( {text: util.format("<%s:%s> : '<%s>' pushed successfully on registry[%s].", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository) ), type:"success"});
-                 return;
-                break;
-              case 500:
-                logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository) );
-                //dockerfileBuiltReport.push({text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository) ), type:"error"});
-                callback(util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository) ) );
-                return;
-                break;
-              default:
-                logger.info( util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable.", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository)));
-                //dockerfileBuiltReport.push({ text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable.", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository) ), type:"error"});
-                callback(util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", buildServer.hostname, buildServer.dockerPort, buildTagName, JSON.stringify(repository) ) );
-                return;
-                break;
-            }
-
-            callback();
-          });
-    },
-    //Send PULL request to rest of the hosts
-    function(callback){
-      if (liveHostsList.length === 0) {
-        if(dockerHostList > liveHostsList){
-         dockerfileBuiltReport.push({text : 'No other Docker Server is up. Please try again later. ', type:"error"});
-        }
-        req.session.messages = { errorList: dockerfileBuiltReport };
-        callback();
-        return;
-      }
-
-      async.each( liveHostsList, function(liveHost, cb){
-          appUtil.sendImagePullRequestToHost(liveHost, buildTagName, repository, function(result, statusCode, err){
-            switch(statusCode){
-              case 200:
-                logger.info("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.hostname, liveHost.dockerPort, buildTagName, JSON.stringify(repository) );
-                dockerfileBuiltReport.push( {text: util.format("<%s:%s> : '<%s>' pulled successfully from repository[%s].", liveHost.hostname, liveHost.dockerPort, buildTagName, JSON.stringify(repository) ), type:"success"});
-                break;
-              case 500:
-                logger.info("<%s:%s> : '<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.hostname, liveHost.dockerPort, buildTagName, JSON.stringify(repository) );
-                dockerfileBuiltReport.push({text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Cause: Server error.", liveHost.hostname, liveHost.dockerPort, buildTagName, JSON.stringify(repository) ), type:"error"});
-                break;
-              default:
-                logger.info( util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.hostname, liveHost.dockerPort, buildTagName, JSON.stringify(repository)));
-                dockerfileBuiltReport.push({ text: util.format("<%s:%s> :'<%s>' image failed to be pulled from repository['%s']. Please verify if host is reachable.", liveHost.hostname, liveHost.dockerPort, buildTagName, JSON.stringify(repository) ), type:"error"});
-                break;
-            }
-            cb();
-          });
-
-      }, function(err){
-        if (err) 
-          callback(err,null);
-        else 
-         req.session.messages = { errorList: dockerfileBuiltReport };
-        logger.info("Dockerfiles built process on multiple hosts finished.");
-        callback();
-      });  // end 'async.each'
-    }
-    */
+    } 
   ], function (err, results) {
     if (err) {
       req.session.messages = {

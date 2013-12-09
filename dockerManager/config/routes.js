@@ -22,7 +22,8 @@ exports.makeRoutes= function(app){
 	||Dockerfile Operations
 	||
 	*/
-	app.post("/upload", dockerfile.uploadToAll);
+	//app.post("/upload", dockerfile.uploadToAll);
+	app.post("/upload", dockerfile.upload);
 
 	app.get("/dashboard/:docfileName", function(req, res){
 		res.redirect("/dockers/" + req.params.docfileName );
