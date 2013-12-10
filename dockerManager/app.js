@@ -5,13 +5,19 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var logger = require("./config/logger.js");
-var socket = require('socket.io');
+
 var Primus = require('primus.io');
+var resource = require('primus-resource');
+
+
 var rdsClient = require('./config/database');
 
+var streamController = require("./controllers/streamController.js")
 
 
-var server, io;
+
+
+var server;
 
 var routes = require('./config/routes.js');
 var app = express();
@@ -53,13 +59,20 @@ routes.makeRoutes(app);
 
 
 server = http.createServer(app); 
-io = socket.listen(server);
 
 server.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
 
 var primus = new Primus( server, { transformer : 'websockets', parse: 'JSON'} );
+
+primus.use('resource', resource);
+
+var Dockerfile =  primus.resource('Dockerfile');
+
+Dockerfile.onupload = streamController.upload;
+
+
 
 
 

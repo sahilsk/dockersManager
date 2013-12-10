@@ -74,6 +74,32 @@
 	});
 
 
+	var dockerfile = server.resource('Dockerfile');
+
+
+	dockerfile.on('ready', function () {
+
+	  // start calling remote events
+	  dockerfile.upload('sleep', function (res) {
+	    console.log(res);
+	  });
+
+
+		server.on('foo', function(data){
+			console.log( "Resouce response: " + data);
+
+		});
+
+
+	});
+
+
+	server.on('resource', function(data){
+		console.log( "Resouce response: " + data);
+
+	});
+
+
 	server.on("messages", function (data) {
 	    if (data) console.log("websockets ready...");
 	    else cosole.log("webscokets not ready...");
