@@ -6,7 +6,7 @@ var config = {
 
     redis: {
       development:{
-      	hostname:  "ec2-54-219-118-62.us-west-1.compute.amazonaws.com" ,
+      	hostname:  '192.168.0.231', //"ec2-54-219-118-62.us-west-1.compute.amazonaws.com" ,
       	port: 6379
       },
       schema:{
@@ -24,6 +24,12 @@ var config = {
         port: 5000
       } 
     },
+    build_server : {
+        name : "App Build Server",
+        hostname: "54.241.62.90",
+        dockerPort: 4273
+    }
+    ,
     globalTimeout:5000
 
 

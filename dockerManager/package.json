@@ -6,14 +6,19 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "express": "3.4.4",
+    "express": "~3.4.4",
     "ejs": "*",
     "less-middleware": "*",
-    "ping": "0.1.6",
-    "redis":"0.9.0",
-    "winston": "0.7.2",
-    "async" : "0.2.9",
-    "follow-redirects" : "0.0.3",
-    "socket-io" : "0.9.16"
+    "ping": "~0.1.6",
+    "redis": "~0.9.0",
+    "winston": "~0.7.2",
+    "async": "~0.2.9",
+    "follow-redirects": "~0.0.3",
+    "primus.io": "~2.0.2",
+    "primus-multiplex": "~2.2.0",
+    "primus-rooms": "~2.2.0",
+    "primus-emitter": "~2.0.5",
+    "ws": "~0.4.31",
+    "primus": "~1.5.0"
   }
 }

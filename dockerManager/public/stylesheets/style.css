@@ -78,7 +78,7 @@ ul.flash li {
 }
 /******** Buttons ********/
 .btn {
-  background-color: #B43C59;
+  background-color: #B43C59 !important;
   border: none;
   color: #FFF;
   border-radius: 5px;
@@ -89,7 +89,7 @@ ul.flash li {
   cursor: pointer;
 }
 .lrg {
-  padding: 5px;
+  padding: 5px !important;
 }
 .somethingWentWrong {
   border: 1px dashed #CCC;

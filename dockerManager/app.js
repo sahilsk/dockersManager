@@ -6,6 +6,10 @@ var http = require('http');
 var path = require('path');
 var logger = require("./config/logger.js");
 var socket = require('socket.io');
+var Primus = require('primus.io');
+var rdsClient = require('./config/database');
+
+
 
 var server, io;
 
@@ -55,11 +59,7 @@ server.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
 
-
-
-
-
-
+var primus = new Primus( server, { transformer : 'websockets', parse: 'JSON'} );
 
 
 
@@ -85,66 +85,69 @@ function handler (req, res) {
 }
 
 
+primus.on('connection', function(client){
+//io.sockets.on('connection', function(client){
 
-io.sockets.on('connection', function(client){
       console.log("client connected");
-      client.set('user', client.id);
-      client.emit('identifier', client.id );
+  //    client.set('user', client.id);
+      client.send('identifier', client.id );
 
-      client.emit('messages', true);
+      client.send('messages', true);
+      primus.write("New Client connected: " + client.id );
 
 	  client.on('Start', function (data) { //data contains the variables that we passed through in the html file
 	  		console.log("start triggered");
-			var Name = data['Name'];
 			var buildName = data['buildName'];
-			Files[Name] = {  //Create a new Entry in The Files Variable
+			Files[buildName] = {  //Create a new Entry in The Files Variable
 				FileSize : data['Size'],
 				Data	 : "",
 				Downloaded : 0
 			}
 			var Place = 0;
 			try{
-				var Stat = fs.statSync('uploads/temp/' +  Name);
+				var Stat = fs.statSync('uploads/temp/' +  buildName);
 				if(Stat.isFile())
 				{
-					Files[Name]['Downloaded'] = Stat.size;
+					Files[buildName]['Downloaded'] = Stat.size;
 					Place = Stat.size / 524288;
 				}
 			}
 	  		catch(er){
 	  			console.log("Error: ", er);
+	  			client.send("build error",  JSON.stringify(er) ) ;
 	  		} //It's a New File
-			fs.open("uploads/temp/" + Name, 'a', 0755, function(err, fd){
+
+			fs.open("uploads/temp/" + buildName, 'a', 0755, function(err, fd){
 				if(err)
 				{
 					console.log(err);
 				}
 				else
 				{
-					Files[Name]['Handler'] = fd; //We store the file handler so we can write to it later
-					client.emit('MoreData', { 'Place' : Place, Percent : 0 });
+					Files[buildName]['Handler'] = fd; //We store the file handler so we can write to it later
+					client.send('MoreData', { 'Place' : Place, Percent : 0 });
 				}
 			});
 		});
 	
 	  client.on('Upload', function (data){
-			var Name = data['Name'];
-			Files[Name]['Downloaded'] += data['Data'].length;
-			Files[Name]['Data'] += data['Data'];
+			var buildName = data['buildName'];
+			Files[buildName]['Downloaded'] += data['Data'].length;
+			Files[buildName]['Data'] += data['Data'];
 			var buildName =  data['buildName'];
-			if(Files[Name]['Downloaded'] == Files[Name]['FileSize']) //If File is Fully Uploaded
+			if(Files[buildName]['Downloaded'] == Files[buildName]['FileSize']) //If File is Fully Uploaded
 			{
-				fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Writen){
-					var inp = fs.createReadStream("uploads/temp/" + Name);
-					var newFileName = Name + "_" + (+new Date );
+				fs.write(Files[buildName]['Handler'], Files[buildName]['Data'], null, 'Binary', function(err, Writen){
+					var inp = fs.createReadStream("uploads/temp/" + buildName);
+					var newFileName = buildName + "_" + (+new Date );
 
 					var out = fs.createWriteStream("uploads/" + newFileName);
 					inp.pipe(out);
 					inp.on("end",  function(){
-						fs.unlink("uploads/temp/" + Name, function () { //This Deletes The Temporary File
+						fs.unlink("uploads/temp/" + buildName, function () { //This Deletes The Temporary File
 							console.log("file moved");
-							client.emit('Done', {'Dockerfile' : 'uploads/' + Name });
-							client.emit('build start', "Starting building...");
+							client.send('Done', {'Dockerfile' : 'uploads/' + buildName });
+							client.send('build start', "Starting building...");
 							buildDockerfile(buildName, "uploads/" + newFileName);
 
 
@@ -152,19 +155,19 @@ io.sockets.on('connection', function(client){
 					});
 				});
 			}
-			else if(Files[Name]['Data'].length > 10485760){ //If the Data Buffer reaches 10MB
-				fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Writen){
-					Files[Name]['Data'] = ""; //Reset The Buffer
-					var Place = Files[Name]['Downloaded'] / 524288;
-					var Percent = (Files[Name]['Downloaded'] / Files[Name]['FileSize']) * 100;
-					client.emit('MoreData', { 'Place' : Place, 'Percent' :  Percent});
+			else if(Files[buildName]['Data'].length > 10485760){ //If the Data Buffer reaches 10MB
+				fs.write(Files[buildName]['Handler'], Files[buildName]['Data'], null, 'Binary', function(err, Writen){
+					Files[buildName]['Data'] = ""; //Reset The Buffer
+					var Place = Files[buildName]['Downloaded'] / 524288;
+					var Percent = (Files[buildName]['Downloaded'] / Files[buildName]['FileSize']) * 100;
+					client.send('MoreData', { 'Place' : Place, 'Percent' :  Percent});
 				});
 			}
 			else
 			{
-				var Place = Files[Name]['Downloaded'] / 524288;
-				var Percent = (Files[Name]['Downloaded'] / Files[Name]['FileSize']) * 100;
-				client.emit('MoreData', { 'Place' : Place, 'Percent' :  Percent});
+				var Place = Files[buildName]['Downloaded'] / 524288;
+				var Percent = (Files[buildName]['Downloaded'] / Files[buildName]['FileSize']) * 100;
+				client.send('MoreData', { 'Place' : Place, 'Percent' :  Percent});
 			}
 
 		});
@@ -174,74 +177,47 @@ io.sockets.on('connection', function(client){
 	function buildDockerfile( buildTagName ,filePath){
 
 
-
 	  var newFilePath = filePath; //path.join(__dirname, '../uploads');
 	//  var buildTagName = "ajax_upload_test_001"; //require('querystring').escape(req.body.build_name);
 	  var remoteBuildTagName = encodeURIComponent(config.repository.development.hostname + ':' + config.repository.development.port + '/' + buildTagName);
 	  var tarFileUploadedPath = filePath;
 
-	  client.emit("build progress", 'file path' + tarFileUploadedPath);
-	  client.emit("build progress",'build name'+ buildTagName);
-	  client.emit("build progress", "tag name: " + remoteBuildTagName);
+	  client.send("build progress", 'file path' + tarFileUploadedPath);
+	  client.send("build progress",'build name'+ buildTagName);
+	  client.send("build progress", "tag name: " + remoteBuildTagName);
 
 	  if (buildTagName.length == 0) {
-	  	client.emit("build error", 'Please provide tag name to build image');
+	  	client.send("build error", 'Please provide tag name to build image');
 	    return;
 	  }
 
 
-	  var liveHostsList = [];
-	  var dockerHostList = [];
-	  var dockerfileBuiltReport = [];
 	  var buildServer;
 	  var builtImageID = null;
 	  var repository = config.repository.development;
 	  //util.format("%s:%s", config.repository.development.hostname, config.repository.development.port);
 	  async.series([
-	    function (callback) {
-	      appUtil.getDockerHosts(function (err, hostList) {
-	        if (err)
-	          callback(err, null);
-	        else {
-	          dockerHostList = hostList;
-	          callback();
-	        }
-	      });
-	    },
-	    function (callback) {
-	      if (dockerHostList.length === 0) {
-	        callback('No Docker host available yet.', null);
-	        return;
-	      }
-		  client.emit("build progress","Docker hosts found: " + dockerHostList.length);
+	     function (callback) {
+	     	buildServer = config.build_server;
 
-	      async.filter(dockerHostList, function (host, cb) {
-	        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
+	        appUtil.isDockerServerAlive(buildServer.hostname, buildServer.dockerPort, function (isAlive, errorMessage) {
 	          logger.info('===========================Alive : ' + isAlive);
-	          cb(isAlive);
+	          if( !isAlive)
+	          	callback(  util.format("Build Server[%s:%s] not alive.", buildServer.hostname, buildServer.dockerPort) );
+	           else
+	           	callback();
 	        });
-	      }, function (results) {
-	        liveHostsList = results;
-	        callback();
-	      });
+
 	    },
 	    function (callback) {
-	      if (liveHostsList.length === 0) {
-	        callback('No Docker Server is up. Please try again later. ', null);
-	        return;
-	      }
-  		  client.emit("build progress","live Docker hosts found: " + liveHostsList.length);
-
 	      /*
 	      || Dispatch build request
 	          |-> Build on one dockerhost
 	          |-> Send pull request to all other livehosts
 	      ||
 	      */
-	      buildServer = liveHostsList.pop();
-          client.emit("build progress", "build server chooosen: " + JSON.stringify(buildServer) );
-	      //Building Image on dockerhost
-
+          client.send("build progress", "build server : " + JSON.stringify(buildServer) );
+	      
 		  var resBody = '';
 		  var queryString =  '/build?t=' + remoteBuildTagName;
 		  var options = {
@@ -250,32 +226,41 @@ io.sockets.on('connection', function(client){
 		      path: queryString,
 		      method: 'POST'
 		    };
-		  client.emit( "build progress", 'Building dockerfile on ' + JSON.stringify(options));
+		  client.send( "build progress", 'Building dockerfile on ' + JSON.stringify(options));
 		  var req = http.request(options, function (res) {
 
 		      console.log('STATUS: ' + res.statusCode);
 		      console.log('HEADERS: ' + JSON.stringify(res.headers));
 		    
-		      client.emit("build progress", 'STATUS: ' + res.statusCode);
-		      client.emit("build progress", 'HEADERS: ' + JSON.stringify(res.headers));
+		      client.send("build progress", 'STATUS: ' + res.statusCode);
 
 		      res.setEncoding('utf8');
 		      res.on('data', function (chunk) {
 		        resBody += chunk;
-		        client.emit("build progress",chunk);
+		        client.send("build progress",chunk);
 		        logger.info(chunk);
 		      });
 		      res.on('end', function () {
-		     		client.emit("build end", "Build Server response ended");
-		     	   //onResult(resBody, res.statusCode, null);
-		     
+		     		client.send("build end", "-------------------- END -------------------");
+				    if (res.statusCode === 200) {
+				      if (resBody.toString().indexOf('Successfully built') != -1) {
+				        logger.info(resBody.split('Successfully built'));
+				        builtImageID = resBody.split('Successfully built')[1].trim();
+				        client.send("build progress", "Build Image Id: " + builtImageID );
+				      }
+				    }else
+				    	client.send("build error", "Error building image: " + resBody );	
+
+				    callback();	     		
+	     
 		      });
+
 		  });
 		  req.setHeader('Content-Type', 'application/tar');
 
 		  req.on('error', function (e) {
 		    console.log('problem with request: ' + e.message);
-		    client.emit("build progress", "problem with request: " + e.message);
+		    client.send("build progress", "problem with request: " + e.message);
 		    //onResult(null, null, e.message);
 		  });
 
@@ -290,36 +275,26 @@ io.sockets.on('connection', function(client){
 	      logger.info('Built Image Id: <%s>', builtImageID);
 	      var newSetEntryKey = util.format('Image_%d', Date.now());
 	      rdsClient.hmset(newSetEntryKey, 'id', newSetEntryKey, 'image_id', builtImageID, 'build_tag', buildTagName, 'repository', remoteBuildTagName, 'build_server', JSON.stringify(buildServer), 'isReplicated', false, 'isPushedOnRegistry', false, 'createdAt', Date.now(), function (err, result) {
-	        if (err)
-	          callback('Failed to insert record in the database');
-	        else {
+	        if (err){
+	          callback('Failed to insert record in the database' , err);
+	          client.send("build error", 'Failed to insert record in the database: '+ err);
+	    	}else {
 	          rdsClient.lpush('SubmittedImages', newSetEntryKey, function (err, result) {
 	            if (!err) {
 	              logger.info('Image information stored successfully');
-	              callback(err);
+	              client.send( 'build progress', 'Image information stored successfully');
+	              callback();
 	            } else {
 	              logger.info('Failed to push set key into images list');
-	              callback();
+	              callback('Failed to push set key into images list');
 	            }
 	          });
 	        }
 	      });
 	    } 
 	  ], function (err, results) {
-	    if (err) {
-	      req.session.messages = {
-	        text: err ? JSON.stringify(err) : '',
-	        type: 'error'
-	      };
-	      if (dockerfileBuiltReport.length > 0)
-	        req.session.messages.errorList = dockerfileBuiltReport;
-	      res.redirect('/');
-	    } else {
-	      res.redirect('/dockerfiles');
-	    }
-	    //        res.redirect('/dockerfiles/'+ encodeURIComponent(buildTagName) );
-	    res.end();
-	    return;
+	    if (err)
+	    	client.send("build progress", err);
 	  });
 
 

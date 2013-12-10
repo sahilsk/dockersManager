@@ -364,9 +364,9 @@ exports.push = function (req, res) {
         };
         break;
       case 500:
-        logger.info('<%s:%s> : \'<%s>\' image failed to be pushed on the registry[\'%s\']. Cause: Server error.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository));
+        logger.info('<%s:%s> : \'<%s>\' image failed to be pushed on the registry[\'%s\']. Cause: %s.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), data);
         req.session.messages = {
-          text: util.format('<%s:%s> :\'<%s>\' image failed to be pushed on the registry[\'%s\']. Cause: Server error.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository)),
+          text: util.format('<%s:%s> :\'<%s>\' image failed to be pushed on the registry[\'%s\']. Cause: %s.', record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), data),
           type: 'error'
         };
         break;

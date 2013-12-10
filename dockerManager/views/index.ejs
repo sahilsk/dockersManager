@@ -40,9 +40,8 @@
 				<div id="dropbox"  style="padding:15px; text-align:center; margin:0 auto; border: 1px dashed #ccc; background-color:#eee; color:#ccc;">
 			    	Drop file here
 			    </div>
-				<input type="hidden" id="NameBox" ><br>
 
-				<br/> <Br/>
+				<Br/>
 				<input type="submit" value="upload and build" id="UploadButton" class="btn lrg" />
 			</form>
  
@@ -60,9 +59,21 @@
 
 <% include ../layouts/dashboard_layout_bottom %>
 
-<script src="/socket.io/socket.io.js"></script>
+<script src="/primus/primus.io.js"></script>
+
+
 <script>
-	var server = io.connect("/");
+
+	var server = Primus.connect('ws://localhost:3000/');
+
+	server.on('open', function () {
+	    server.send('hi', 'hello world');
+	    server.on('hello', function (msg) {
+	        console.log(msg);
+	    });
+	});
+
+
 	server.on("messages", function (data) {
 	    if (data) console.log("websockets ready...");
 	    else cosole.log("webscokets not ready...");
@@ -74,83 +85,72 @@
 
 	//-----------------------------
 
-
 	$("#dockerfile").hide();
-
-	$("#dropbox").bind("click", function(){
-		$("#dockerfile").click();
+	$("#dropbox").bind("click", function () {
+	    $("#dockerfile").click();
 	})
 
-
-
-
-	var dragbox ;
+	var dropbox;
 	dropbox = document.getElementById("dropbox");
 	dropbox.addEventListener("dragenter", dragenter, false);
 	dropbox.addEventListener("dragover", dragover, false);
 	dropbox.addEventListener("dragleave", dragleave, false);
 
 	dropbox.addEventListener("drop", drop, false);
+
 	function dragenter(e) {
-		console.log("dragenter");
-	  e.stopPropagation();
-	  e.preventDefault();
-	  $(this).css({'background-color':'#FFF', color: 'purple'});
+	    console.log("dragenter");
+	    e.stopPropagation();
+	    e.preventDefault();
+	    $(this).css({
+	        'background-color': '#FFF',
+	        color: 'purple'
+	    });
 	}
 
 	function dragover(e) {
-		console.log("dragover");
-	  e.stopPropagation();
-	  e.preventDefault();
-
+	    console.log("dragover");
+	    e.stopPropagation();
+	    e.preventDefault();
 	}
-
 	function dragleave(e) {
-		console.log("dragleave");
-	  e.stopPropagation();
-	  e.preventDefault();
-  	  $(this).css({'background-color':'#eee', color: '#333'});
-
+	    console.log("dragleave");
+	    e.stopPropagation();
+	    e.preventDefault();
+	    $(this).css({
+	        'background-color': '#eee',
+	        color: '#333'
+	    });
 	}
-
 
 	function drop(e) {
-	  e.stopPropagation();
-	  e.preventDefault();
+	    e.stopPropagation();
+	    e.preventDefault();
 
-	  if( e.dataTransfer.files.length > 0){
-		  var dt = e.dataTransfer;
-		  var files = dt.files;
-		  handleFile(files);
-	  }
+	    if (e.dataTransfer.files.length > 0) {
+	        var dt = e.dataTransfer;
+	        var files = dt.files;
+	        handleFile(files);
+	    }
 	}
 
 	if (window.File && window.FileReader) {
 	    $("#UploadButton").click(StartUpload);
 	    $('#dockerfile').bind('change', FileChosen);
 	} else {
-	   $('#UploadArea').html("Your Browser Doesn't Support The File API Please Update Your Browser" );
+	    $('#UploadArea').html("Your Browser Doesn't Support The File API Please Update Your Browser");
 	}
 
-	var SelectedFile;
+	var SelectedFile = null;
 
 	function FileChosen(evnt) {
-
-		handleFile (evnt.target.files);
-
-
+	    handleFile(evnt.target.files);
 	}
-
-	function handleFile(files){
+	function handleFile(files) {
 	    SelectedFile = files[0];
-	    $('#NameBox').val(SelectedFile.name);
-
-	    $("#dropbox").text( SelectedFile.name );
-
+	    $("#dropbox").text(SelectedFile.name);
 	    console.log("HandleFile: ", SelectedFile.name);
 	}
-
-
 
 	/*==========  Socket ============= */
 	var FReader;
@@ -159,36 +159,43 @@
 
 	function StartUpload(e) {
 	    e.preventDefault();
+
+	    var patt = new RegExp("^[a-z0-9-_.]{3,30}$");
+
+
 	    buildName = $("#build_name").val();
 
-	    if( buildName === ''){
-	        alert("Please provide build name");
-	        return ;
+	    if (!patt.test(buildName)) {
+	        alert("Please provide valid build name [ [a-z0-9-_.]{3,30} ] ");
+	        return;
 	    }
 
-
-	    if ($('#dockerfile').val() != "") {
+	    if (SelectedFile !== null) {
 
 	        $("#UploadArea").slideUp();
 
 	        FReader = new FileReader();
-	        Name = document.getElementById('NameBox').value;
-	        var Content = "<span id='NameArea'>Uploading " + SelectedFile.name + " as " + Name + "</span>";
-	        Content += '<div id="ProgressContainer"><div id="ProgressBar"></div></div><span id="percent">0%</span>';
-	        Content += "<span id='Uploaded'> - <span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + "MB</span>";
+	        var Content = "<div id='uploadResult'>  <span id='NameArea'>Uploading " + SelectedFile.name + "</span>";
+	        Content += '<div id="ProgressContainer"><div id="ProgressBar">' + "<div id='uploadStatus'> <span id='percent'>0%</span>  <span id='Uploaded'> - <span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + 'MB</span></div></div></div>';
+	        Content += "</div>";
 	        $(".uploaderWrapper").append(Content);
+	        $("#uploadResult").append("<button class='btn lrg' id='reload'> Upload New File </button>");
+	        $("#reload").click(function () {
+	            $(this).parent().remove();
+	            $("#UploadArea").slideDown();
+	            $("#dropbox").html("Drop file here");
+	            $("form").trigger("reset");
+	        });
 
 	        FReader.onload = function (evnt) {
-	            server.emit('Upload', {
-	                'Name': Name,
+	            server.send('Upload', {
 	                Data: evnt.target.result,
-	                "buildName": buildName
+	                    "buildName": buildName
 	            });
 	        }
-	        server.emit('Start', {
-	            'Name': Name,
+	        server.send('Start', {
 	            'Size': SelectedFile.size,
-	            "buildName": buildName
+	                "buildName": buildName
 	        });
 
 	    } else {
@@ -213,12 +220,17 @@
 	    document.getElementById('MB').innerHTML = MBDone;
 	}
 
-	server.on('Done', function (data) {
-	    var Content = "Dockerfile Successfully Uploaded !!"
-	    console.log(Content);
-	    $(".uploaderWrapper").append(Content);
 
-	    server.emit("start build", null);
+	server.on('Done', function (data) {
+	    document.getElementById('percent').innerHTML = '100%';
+	    var Content = "<span style='font-family: monospace; color: rgb(194, 152, 192);'> Dockerfile Successfully Uploaded !! </span>"
+	    document.getElementById('ProgressBar').style.width = 100 + '%';
+	    console.log(Content);
+	    $("#uploadResult").append(Content);
+
+
+
+	    server.send("start build", null);
 
 	});
 
@@ -231,20 +243,19 @@
 	    console.log(msg);
 
 	    $(".cmd_wrapper").eq(0).find("ul").append("<li>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
 
 	});
 	server.on('build error', function (msg) {
 	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='error'>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
 
 	});
 	server.on('build end', function (msg) {
 	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
 
 	});
-
-
-
-
 
 
 	$(".cmd_wrapper .toggle_display").click(function () {
