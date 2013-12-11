@@ -3,57 +3,94 @@ var resource = require('primus-resource');
 var logger = require('../config/logger.js');
 var http = require('http');
 var rdsClient = require('../config/database');
-
-  var util = require('util'),
-   Files = {}, 
-   fs = require('fs'),
-    async = require('async'),
-     config = require('../config/config.js'), 
-     appUtil = require('../controllers/app_util.js');
-
+var util = require('util'), Files = {}, fs = require('fs'), async = require('async'), config = require('../config/config.js'), appUtil = require('../controllers/app_util.js');
 exports.upload = function (client, data, fn) {
   console.log(data);
   fn('Creature just got data 02: ' + data);
 };
+var primus;
+var connectedClient = null;
 exports.init = function (server) {
-  var primus = new Primus(server, {
-      transformer: 'websockets',
-      parse: 'JSON'
-    });
-  primus.send('foo', 'resources working.. from upload remote method');
- 
-  primus.use('resource', resource);
- 
-  var Dockerfile = primus.resource('Dockerfile');
-  Dockerfile.onupload = function (client, data, fn) {
-	console.log(data);
-	fn('Creature just got data 02: ' + data);
-  };
- 
-  primus.on('bar', function (d) {
-    console.log('bar: received');
+  primus = new Primus(server, {
+    transformer: 'websockets',
+    parse: 'JSON'
   });
- 
-  primus.send('foo', 'reosurces working.. from upload remote method');
+  primus.send('foo', 'resources working.. from upload remote method');
+  primus.use('resource', resource);
 
-  function handler(req, res) {
-    fs.readFile(__dirname + '/index.html', function (err, data) {
-      if (err) {
-        res.writeHead(500);
-        return res.end('Error loading index.html');
-      }
-      res.writeHead(200);
-      res.end(data);
+  primus.on("connection", function(client){
+      connectedClient = client;
+  });
+
+
+  /**
+   * handle_uploadBuild_Dockerfile : Handle Dockerfile upload and build operation
+   *      
+   * @param primus
+   */
+  handle_uploadBuild_Dockerfile(primus);
+  handle_push_into_Repository(primus);
+
+
+
+
+
+  /**
+ * Primus-Resource : Dockerfile
+ *
+ */
+  var Dockerfile = primus.resource('Dockerfile');
+  Dockerfile.onuploadAndBuild = function (client, data, fn) {
+    console.log(data);
+
+    if(!connectedClient){
+      console.log("No client connected yet");
+      return;
+    }
+
+    client.send("onuploadAndBuild Resource", "from server");
+    client.on("onuploadAndBuild Resource", function(d){
+        console.log(d);
+        client.send("onuploadAndBuild Resource", "from server");
+
     });
-  }
+    fn('Build Successfully: ' + data);
+  };
+ /**
+ * Primus-Resource : DockerImage
+ *
+ */ 
+  var DockerImage = primus.resource('DockerImage');
+  DockerImage.onpushImage = function (client, data, fn) {
+      console.log( data);
+  };
+
+
+};
+// end 'init'
+/**
+ * handle_uploadBuild_Dockerfile : Handle Dockerfile upload and build operation
+ *      
+ * @param primus
+ */
+var handle_uploadBuild_Dockerfile = function (primus) {
   primus.on('connection', function (client) {
     console.log('client connected');
     client.send('identifier', client.id);
-    client.send('messages', true);
+    /** 
+    *   Testing handshake
+    */    
+    client.on('Tango', function (data) {
+      client.send('Charlie', client.id);
+    });
+
+    client.on('OK', function(){
+        console.log( "Handshake passed");
+    }); 
+
+
     primus.write('New Client connected: ' + client.id);
     client.on('Start', function (data) {
-      //data contains the variables that we passed through in the html file
-      console.log('start triggered');
       var buildName = data.buildName;
       Files[buildName] = {
         FileSize: data.Size,
@@ -160,11 +197,11 @@ exports.init = function (server) {
         },
         function (callback) {
           /*
-	      || Dispatch build request
-	          |-> Build on one dockerhost
-	          |-> Send pull request to all other livehosts
-	      ||
-	      */
+        || Dispatch build request
+            |-> Build on one dockerhost
+            |-> Send pull request to all other livehosts
+        ||
+        */
           client.send('build progress', 'build server : ' + JSON.stringify(buildServer));
           var resBody = '';
           var queryString = '/build?t=' + remoteBuildTagName;
@@ -193,9 +230,11 @@ exports.init = function (server) {
                     builtImageID = resBody.split('Successfully built')[1].trim();
                     client.send('build progress', 'Build Image Id: ' + builtImageID);
                   }
-                } else
+                  callback();
+                } else {
                   client.send('build error', 'Error building image: ' + resBody);
-                callback();
+                  callback(resBody);
+                }
               });
             });
           req.setHeader('Content-Type', 'application/tar');
@@ -212,29 +251,52 @@ exports.init = function (server) {
         function (callback) {
           logger.info('Built Image Id: <%s>', builtImageID);
           var newSetEntryKey = util.format('Image_%d', Date.now());
-          rdsClient.hmset(newSetEntryKey, 'id', newSetEntryKey, 'image_id', builtImageID, 'build_tag', buildTagName, 'repository', remoteBuildTagName, 'build_server', JSON.stringify(buildServer), 'isReplicated', false, 'isPushedOnRegistry', false, 'createdAt', Date.now(), function (err, result) {
-            if (err) {
-              callback('Failed to insert record in the database', err);
-              client.send('build error', 'Failed to insert record in the database: ' + err);
-            } else {
-              rdsClient.lpush('SubmittedImages', newSetEntryKey, function (err, result) {
-                if (!err) {
-                  logger.info('Image information stored successfully');
-                  client.send('build progress', 'Image information stored successfully');
-                  callback();
-                } else {
-                  logger.info('Failed to push set key into images list');
-                  callback('Failed to push set key into images list');
-                }
-              });
-            }
-          });
+          if (builtImageID && builtImageID !== '') {
+            rdsClient.hmset(newSetEntryKey, 'id', newSetEntryKey, 'image_id', builtImageID, 'build_tag', buildTagName, 'repository', remoteBuildTagName, 'build_server', JSON.stringify(buildServer), 'isReplicated', false, 'isPushedOnRegistry', false, 'createdAt', Date.now(), function (err, result) {
+              if (err) {
+                callback('Failed to insert record in the database', err);
+                client.send('build error', 'Failed to insert record in the database: ' + err);
+              } else {
+                rdsClient.lpush('SubmittedImages', newSetEntryKey, function (er, result) {
+                  if (!er) {
+                    logger.info('Image information stored successfully');
+                    client.send('build progress', 'Image information stored successfully');
+                    callback();
+                  } else {
+                    logger.info('Failed to push set key into images list');
+                    callback('Failed to push set key into images list');
+                  }
+                });
+              }
+            });
+          }
         }
       ], function (err, results) {
         if (err)
-          client.send('build progress', err);
+          client.send('build error', err);
       });
     }  // end ' buildDockerfile'
   });
-}  // end 'init'
-;
+};
+/**
+ * handle_push_into_Repository : Push built image on the registry(centeral repository)
+ *      
+ * @param primus
+ */
+var handle_push_into_Repository = function (primus) {
+  primus.on('connection', function (client) {
+
+    /** 
+    *   Testing handshake
+    */
+    client.on('Tango', function (data) {
+      client.send('Charlie', client.id);
+    });
+
+    client.on('OK', function(){
+        console.log( "Handshake passed");
+    });  
+
+
+  });
+};

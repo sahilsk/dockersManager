@@ -389,11 +389,11 @@ exports.hlist = function(req, res){
             viewData = 'Server Error : ' + errorMessage;
             break;
           default:
-            req.session.messages = {
-              text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
+           errMessages.push( {
+              text: util.format('<%s:%s> Unable to query list of containers. Please check your network connection. : <%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage),
               type: 'error'
-            };
-            viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
+            });
+            viewData = util.format('<%s:%s> Unable to query list of containers. Please check your network connection. : <%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage);
             break;
         }
         logger.info(viewData);

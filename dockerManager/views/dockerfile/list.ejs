@@ -76,7 +76,7 @@
 									<span class="delete"> <a href="/dockers/<% if( !image.repository) { %><%= image.image_id %><% }else { %><%= encodeURIComponent(image.repository) %><% } %>/delete" title="remove"> &cross;  </a></span>
 									-->
 									<span class="status"> 
-										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="remove"> PUSH  </a></span>
+										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="Push" id="pushImageBtn" image_id='<%= encodeURIComponent(image.id) %>'> PUSH  </a></span>
 
 									<span class="delete"> 
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/broadcastPull" title=" Dispatch pull request to all docker server.Note: Only if image is pushed on the registry." disabled=disabled> 
@@ -95,5 +95,45 @@
  <%  }%>
 
 
+<script src="/primus/primus.io.js"></script>
+
+<script>	
+	var isDockerImageResourceReady = false;
+
+	var server = Primus.connect('ws://localhost:3000/');
+
+	server.on('open', function () {
+	    server.send('Tango', 'hello world');
+	    server.on('Charlie', function(d){
+		    server.send('OK', true);
+	    	console.log( "Handshake passed");
+	    });
+
+	});
+
+	var DockerImage = server.resource('DockerImage');
+	DockerImage.on('ready', function () {
+
+	  // start calling remote events
+	  isDockerImageResourceReady = true;
+	  console.log("DockerImage Resource ready to ignite");
+	  
+
+	});
+
+
+	$("#pushImageBtn").bind("click", function(e){
+		e.preventDefault();
+
+		if( isDockerImageResourceReady ){
+			DockerImage.pushImage( $(this).attr('image_id') , function (res) {
+				console.log(res);
+			});
+		}
+
+	});
+
+
+</script>
 
 <% include ../../layouts/dashboard_layout_bottom %>

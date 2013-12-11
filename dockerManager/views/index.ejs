@@ -67,9 +67,9 @@
 	var server = Primus.connect('ws://localhost:3000/');
 
 	server.on('open', function () {
-	    server.send('hi', 'hello world');
-	    server.on('hello', function (msg) {
-	        console.log(msg);
+	    server.send('Tango', 'hello world');
+	    server.on('Charlie', function(d){
+	    	console.log( "Handshake passed");
 	    });
 	});
 
@@ -77,28 +77,21 @@
 	dockerfile.on('ready', function () {
 
 	  // start calling remote events
-	  dockerfile.upload('sleep', function (res) {
-	    console.log(res);
+	  dockerfile.uploadAndBuild('calling uploadAndBuild', function (res) {
+
+	  	server.send("onuploadAndBuild Resource", "from client");
+
+	  	 server.on("onuploadAndBuild Resource", function(d){
+	  	 		console.log(d);
+ 			  	server.send("onuploadAndBuild Resource", "from client");
+
+	  	 });
+
+	     console.log(res);
 	  });
 
 	});
 
-  	server.send("bar", "dfddfd");
-	server.on('foo', function(data){
-		console.log( "Resouce response: " + data);
-	});
-
-
-	server.on('resource', function(data){
-		console.log( "Resouce response: " + data);
-
-	});
-
-
-	server.on("messages", function (data) {
-	    if (data) console.log("websockets ready...");
-	    else cosole.log("webscokets not ready...");
-	});
 
 	server.on('identifier', function (id) {
 	    console.log("Client id :", id);

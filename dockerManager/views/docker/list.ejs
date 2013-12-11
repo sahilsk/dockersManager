@@ -44,7 +44,7 @@
 
 
 
-<% if( statusCode && statusCode !== 200 ) { %>
+<% if(  typeof statusCode != 'undefined' && statusCode !== 200 ) { %>
 	<div class="somethingWentWrong">
 		<span ><%= data %> </span>
 	</div>	
@@ -120,13 +120,6 @@
 	</table>
 
 	<% } %>
-
-
-
-
-
-
-
 
 <% include ../../layouts/dashboard_layout_bottom %>
 

@@ -26,7 +26,7 @@ var config = {
     },
     build_server : {
         name : "App Build Server",
-        hostname: "54.241.62.90",
+        hostname: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com" ,
         dockerPort: 4273
     }
     ,
