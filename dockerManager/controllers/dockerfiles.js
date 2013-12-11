@@ -320,6 +320,7 @@ exports.show = function (req, res) {
   var buildTagName = req.params.buildTag;
 };
 exports.push = function (req, res) {
+
   var recordID = decodeURIComponent(req.params.recordID);
   logger.info('reocrdID: ' + recordID);
   var record = null;
@@ -334,7 +335,6 @@ exports.push = function (req, res) {
     }
     record = result;
     record.save = function () {
-      logger.info();
       var isSaved = false;
       rdsClient.hmset(this.id, 'image_id', this.image_id, 'build_tag', this.build_tag, 'repository', this.repository, 'build_server', JSON.stringify(this.build_server), 'isReplicated', this.isReplicated, 'isPushedOnRegistry', this.isPushedOnRegistry, 'updatedAt', Date.now(), function (err, result) {
         if (err)
@@ -381,66 +381,7 @@ exports.push = function (req, res) {
       // end 'switch'
       res.redirect('/dockerfiles');
     });  // end 'pushImageOnRegistry'
-         /*
-    app_util.sendImagePushRequestToHost( record.build_server, record.repository, function( result, statusCode, err){
-        switch(statusCode){
-          case 200:
-            logger.info("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
-            req.session.messages = {
-              text: util.format("<%s:%s> : '<%s>' pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
-              type:"success"
-            };
-            break;
-          case 201:
 
-            var jResponse = JSON.parse(result);
-            if( !jResponse.success){
-              logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause:  %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message );
-              req.session.messages = {
-                  text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: %s.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), JSON.parse(result).message  ),
-                type:"error"
-              };
-            }else{
-
-              record.isPushedOnRegistry = isAlreadyPushed;
-
-              if( jResponse.isAlreadyPushed ){
-                logger.info("<%s:%s> : '<%s>' is already pushed on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
-                req.session.messages = {
-                  text: util.format("<%s:%s> : '<%s>' is already pushed on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
-                  type:"alert"
-                };         
-              }else{
-                logger.info("<%s:%s> : '<%s>' is pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
-                req.session.messages = {
-                  text: util.format("<%s:%s> : '<%s>' is pushed successfully on registry[%s].", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ), 
-                  type:"success"
-                };                  
-              }
-
-              updateSubmittedImageRecord( record);
-
-            }
-            break;
-
-          case 500:
-            logger.info("<%s:%s> : '<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) );
-             req.session.messages = {
-                text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Cause: Server error.", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository) ),
-                type:"error"
-              };
-            break;
-          default:
-            logger.info( util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err) );
-            req.session.messages = {
-             text: util.format("<%s:%s> :'<%s>' image failed to be pushed on the registry['%s']. Please verify if host is reachable. Cause: %s", record.build_server.hostname, record.build_server.dockerPort, record.build_tag, decodeURIComponent(record.repository), err ), 
-             type:"error"
-            };
-            break;
-        }
-        res.redirect("/dockerfiles");
-    });  
-  */
   });  // end 'rdsClient.hgetall'
 };
 /*

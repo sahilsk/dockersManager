@@ -33,7 +33,7 @@ exports.init = function (server) {
     /**
     * handle_uploadBuild_Dockerfile : Handle Dockerfile upload and build operation
     */
-    handle_uploadBuild_Dockerfile(connectedClient, function (err) {
+    handle_uploadBuild_Dockerfile(connectedClient, data , function (err) {
       if (err)
         fn({
           text: 'Build finished: ' + err,
@@ -60,15 +60,12 @@ exports.init = function (server) {
     /**
     * handle_uploadBuild_Dockerfile : Handle Dockerfile upload and build operation
     */
-    handle_push_into_Repository(connectedClient, function (err, data) {
+    handle_push_into_Repository(connectedClient, data, function (err, data) {
       if (err)
-        fn({
-          text: ' finished: ' + err,
-          type: 'error'
-        });
+        fn(err);
       else
         fn({
-          text: 'Build finished',
+          text: data,
           type: 'success'
         });
     });
@@ -80,7 +77,7 @@ exports.init = function (server) {
  *      
  * @param primus
  */
-var handle_uploadBuild_Dockerfile = function (client, oResult) {
+var handle_uploadBuild_Dockerfile = function (client, data, oResult) {
   console.log('client connected');
   client.send('identifier', client.id);
   /** 
@@ -288,7 +285,7 @@ var handle_uploadBuild_Dockerfile = function (client, oResult) {
  *      
  * @param primus
  */
-var handle_push_into_Repository = function (client, oResult) {
+var handle_push_into_Repository = function (client, data, oResult) {
   console.log('client connected');
   client.send('identifier', client.id);
   /** 
@@ -300,4 +297,114 @@ var handle_push_into_Repository = function (client, oResult) {
   client.on('OK', function () {
     console.log('Handshake passed');
   });
-};
+
+
+/************************** START */
+
+var  record  = null,
+     recordID = data.dImage_id ,
+     cliResponse = {};
+
+logger.info('reocrdID: ' + recordID);
+rdsClient.hgetall(recordID, function (err, result) {
+  if (err || !result) {
+     oResult('Invalid Submitted Image Record Id. Cause: ' + err, null)
+     client.send("push error", 'Invalid Submitted Image Record Id. Cause: ' + err);
+     return;
+  }
+    
+  record = result;
+  record.save = function () {
+    var isSaved = false;
+    rdsClient.hmset(this.id, 'image_id', this.image_id, 'build_tag', this.build_tag, 'repository', this.repository, 'build_server', JSON.stringify(this.build_server), 'isReplicated', this.isReplicated, 'isPushedOnRegistry', this.isPushedOnRegistry, 'updatedAt', Date.now(), function (err, result) {
+      if (err)
+        isSaved = false;
+      else
+        isSaved = true;
+      logger.log('::::::::::::::::::: Saved: ' + this.id + ': ' + this.isPushedOnRegistry);
+    });
+  };
+  record.build_server = JSON.parse(result.build_server);
+
+
+
+ var
+   queryString = util.format('/images/%s/push', record.repository ),
+   headers = {
+    'X-Registry-Auth':null
+  },
+  respBody = '',
+  options = {
+      hostname: record.build_server.hostname,
+      port: record.build_server.dockerPort,
+      path: queryString,
+      method: 'POST',
+      headers: headers
+  } ;
+  
+  logger.info(options);
+  var req = http.request(options, function (res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+
+      client.send("push progress", 'STATUS: ' + res.statusCode);
+
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+        logger.info(chunk);
+        client.send("push progress", chunk);
+        if( respBody.length != 0)
+            respBody += ", ";
+        respBody += chunk;
+      });
+
+      res.on('end', function () {
+        client.send('Push end', '-------------------- END -------------------');
+        if (res.statusCode === 200) {
+          var jRespBody   = JSON.parse( "["+ respBody + "]" );
+
+          var finalResult = jRespBody[ jRespBody.length - 1];
+          logger.info( finalResult);
+
+          if( typeof finalResult.error !== 'undefined' && finalResult.error){
+              record.isPushedOnRegistry = false;
+              client.send( "push error",finalResult.error );
+              oResult( { text: finalResult.error, type: "error"} ,null);
+          }
+          else{
+              record.isPushedOnRegistry = true;
+              client.send( "push success", JSON.stringify( finalResult) );
+              oResult( null, JSON.stringify( finalResult) );
+          }
+        } else {
+          client.send('push error', 'Error pushing image: ' + resBody);
+          oResult( { text: finalResult.error, type: "error"}, null );
+
+        }
+
+        record.save();
+
+      }); // end 'res.on'
+  });
+
+  req.on('error', function (e) {
+    respBody = '';
+    logger.info('ERROR: Problem with request: ' + e.message);
+    client.send("push error", 'Problem with request: ' + e.message);
+    oResult( { text: finalResult.error, type: "error"}, null );
+  });
+
+  req.end();
+
+});  // end 'rdsClient.hgetall'
+
+
+
+
+/************************** END */
+
+
+
+
+
+}; // end 'handle_push_into_Repository'

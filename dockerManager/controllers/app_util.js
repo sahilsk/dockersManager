@@ -231,6 +231,8 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
         logger.info(chunk);
+        if( inspectData.length != 0)
+            inspectData += ", ";
         inspectData += chunk;
       });
       res.on('end', function () {
@@ -256,6 +258,7 @@ exports.makePostRequestToHost = function (host, queryString, headers, requestBod
   if (requestBody)
     req.write(requestBody);
   req.end();
+  
 };
 exports.makePostRequest = function (queryString, headers, body, callback) {
   var inspectData = '';

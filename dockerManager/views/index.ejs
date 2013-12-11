@@ -73,26 +73,22 @@
 	    });
 	});
 
-	var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
-
-
 	var Dockerfile = server.resource('Dockerfile');
+	var isDockerImageResourceReady = false;
 	Dockerfile.on('ready', function () {
-
-	  Dockerfile.uploadAndBuild('calling uploadAndBuild', function (res) {
-	    //var jResult = JSON.stringify(res)
-
-		if( $('body').find('flash').length > 0    ){
-			$('body').find('flash').remove();
-		}
-
-		$flashMessageHTML.addClass( res.type ).prepend(res.text);
-		$('body').prepend($flashMessageHTML);
-
-	     console.log(res);
-	  });
-
+	  isDockerfileResourceReady = true;
+	  console.log("DockerImage Resource ready to serve");
 	});
+
+
+
+	if (window.File && window.FileReader) {
+	    $("#UploadButton").click(StartUpload);
+	    $('#dockerfile').bind('change', FileChosen);
+	} else {
+	    $('#UploadArea').html("Your Browser Doesn't Support The File API Please Update Your Browser");
+	}
+
 
 
 	server.on('identifier', function (id) {
@@ -150,12 +146,6 @@
 	    }
 	}
 
-	if (window.File && window.FileReader) {
-	    $("#UploadButton").click(StartUpload);
-	    $('#dockerfile').bind('change', FileChosen);
-	} else {
-	    $('#UploadArea').html("Your Browser Doesn't Support The File API Please Update Your Browser");
-	}
 
 	var SelectedFile = null;
 
@@ -177,10 +167,7 @@
 	    e.preventDefault();
 
 	    var patt = new RegExp("^[a-z0-9-_.]{3,30}$");
-
-
 	    buildName = $("#build_name").val();
-
 	    if (!patt.test(buildName)) {
 	        alert("Please provide valid build name [ [a-z0-9-_.]{3,30} ] ");
 	        return;
@@ -188,8 +175,23 @@
 
 	    if (SelectedFile !== null) {
 
-	        $("#UploadArea").slideUp();
+			if( $('body').find('.flash').length > 0    ){
+				$('body').find('.flash').remove();
+			}
 
+			if( !isDockerfileResourceReady ){
+				return ;
+			}
+			console.log("firing Dockerfile resource");			
+			Dockerfile.uploadAndBuild('Upload and Build Dockerfile', function (res) {
+				var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
+				$flashMessageHTML.addClass( res.type ).prepend(res.text);
+				$('body').prepend($flashMessageHTML);
+
+			     console.log(res);
+			});
+
+	        $("#UploadArea").slideUp();
 	        FReader = new FileReader();
 	        var Content = "<div id='uploadResult'>  <span id='NameArea'>Uploading " + SelectedFile.name + "</span>";
 	        Content += '<div id="ProgressContainer"><div id="ProgressBar">' + "<div id='uploadStatus'> <span id='percent'>0%</span>  <span id='Uploaded'> - <span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + 'MB</span></div></div></div>';
@@ -243,8 +245,6 @@
 	    document.getElementById('ProgressBar').style.width = 100 + '%';
 	    console.log(Content);
 	    $("#uploadResult").append(Content);
-
-
 
 	    server.send("start build", null);
 

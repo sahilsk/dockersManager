@@ -76,7 +76,7 @@
 									<span class="delete"> <a href="/dockers/<% if( !image.repository) { %><%= image.image_id %><% }else { %><%= encodeURIComponent(image.repository) %><% } %>/delete" title="remove"> &cross;  </a></span>
 									-->
 									<span class="status"> 
-										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="Push" id="pushImageBtn" image_id='<%= encodeURIComponent(image.id) %>'> PUSH  </a></span>
+										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="Push" class="pushImageBtn" image_id='<%= encodeURIComponent(image.id) %>'> PUSH  </a></span>
 
 									<span class="delete"> 
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/broadcastPull" title=" Dispatch pull request to all docker server.Note: Only if image is pushed on the registry." disabled=disabled> 
@@ -94,14 +94,14 @@
 		</table>
  <%  }%>
 
+<%= include ../common/cmd_ux.ejs %>
+
 
 <script src="/primus/primus.io.js"></script>
 
-<script>	
+<script>
 	var isDockerImageResourceReady = false;
-
 	var server = Primus.connect('ws://localhost:3000/');
-
 	server.on('open', function () {
 	    server.send('Tango', 'hello world');
 	    server.on('Charlie', function(d){
@@ -113,27 +113,72 @@
 
 	var DockerImage = server.resource('DockerImage');
 	DockerImage.on('ready', function () {
-
-	  // start calling remote events
 	  isDockerImageResourceReady = true;
 	  console.log("DockerImage Resource ready to ignite");
-	  
-
 	});
 
 
-	$("#pushImageBtn").bind("click", function(e){
+	$(".pushImageBtn").bind("click", function(e){
 		e.preventDefault();
 
+		if( $('body').find('.flash').length > 0 ){
+			$('body').find('.flash').remove();
+		}		
+
 		if( isDockerImageResourceReady ){
-			DockerImage.pushImage( $(this).attr('image_id') , function (res) {
-				console.log(res);
+			DockerImage.pushImage( {dImage_id: $(this).attr('image_id') } , function (res) {
+				var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
+				$flashMessageHTML.addClass( res.type ).prepend(res.text);
+				$('body').prepend($flashMessageHTML);
+
+			     console.log(res);
 			});
 		}
 
 	});
 
 
+  /***  Console Output **********
+  ||---------------------------------------------------
+  ||
+  */
+
+	server.on('push start', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
+
+	});
+	server.on('push progress', function (msg) {
+	    if (!$(".cmd_wrapper ul").is(":visible")) $(".cmd_wrapper ul").show();
+	    console.log(msg);
+
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
+
+	});
+	server.on('push error', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='error'>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
+
+	});
+	server.on('push end', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
+
+	});
+
+
+	$(".cmd_wrapper .toggle_display").click(function () {
+	    $ul = $(this).next();
+	    console.log($ul);
+	    if ($ul.is(':visible')) {
+	        $ul.hide();
+	        console.log($ul);
+	    } else $ul.show();
+
+	});
+
+
 </script>
+
 
 <% include ../../layouts/dashboard_layout_bottom %>
