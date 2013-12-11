@@ -73,19 +73,21 @@
 	    });
 	});
 
-	var dockerfile = server.resource('Dockerfile');
-	dockerfile.on('ready', function () {
+	var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
 
-	  // start calling remote events
-	  dockerfile.uploadAndBuild('calling uploadAndBuild', function (res) {
 
-	  	server.send("onuploadAndBuild Resource", "from client");
+	var Dockerfile = server.resource('Dockerfile');
+	Dockerfile.on('ready', function () {
 
-	  	 server.on("onuploadAndBuild Resource", function(d){
-	  	 		console.log(d);
- 			  	server.send("onuploadAndBuild Resource", "from client");
+	  Dockerfile.uploadAndBuild('calling uploadAndBuild', function (res) {
+	    //var jResult = JSON.stringify(res)
 
-	  	 });
+		if( $('body').find('flash').length > 0    ){
+			$('body').find('flash').remove();
+		}
+
+		$flashMessageHTML.addClass( res.type ).prepend(res.text);
+		$('body').prepend($flashMessageHTML);
 
 	     console.log(res);
 	  });

@@ -25,8 +25,8 @@ var config = {
       } 
     },
     build_server : {
-        name : "App Build Server",
-        hostname: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com" ,
+        name : "Dpcker App Server",
+        hostname: "54.219.118.62" ,
         dockerPort: 4273
     }
     ,
