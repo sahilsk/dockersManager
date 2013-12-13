@@ -160,11 +160,17 @@
 		}		
 
 		if( isDockerImageResourceReady ){
+
+			$("ul.flash").remove();
+
 			DockerImage.broadcastImage( {dImage_id: $(this).attr('image_id') } , function (res) {
-				var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
-				$flashMessageHTML.addClass( res.type ).prepend(res.text);
-				$('body').prepend($flashMessageHTML);
-				alert( res);
+				var $flashMessageListHTML = $(' <ul class="flash" > </ul>');
+				 res.report.hostPullReport.forEach( function(result, index){
+				 		$flashMessageListHTML.append( '<li class="' + result.type + '" >'+ result.text +' <span> &cross; </span> ' + '</li>' );
+						$('body').prepend($flashMessageListHTML);
+				});
+
+
 				console.log(res);
 			});
 		}
