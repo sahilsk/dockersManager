@@ -276,14 +276,9 @@ exports.list = function (req, res) {
       res.end();
       return;
     }
-    if (result.length === 0) {
+    if (result.length === 0) 
       logger.info('No image uploaded yet.');
-      res.render('dockerfile/list', {
-        title: 'Submitted Images',
-        imageList: submittedImageList
-      });
-      return;
-    }
+    
     async.each(result, function (key, cb) {
       //verify if is valid id
       if (key.indexOf('Image_') != -1) {

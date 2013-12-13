@@ -61,6 +61,7 @@ exports.init = function (server) {
     * handle_uploadBuild_Dockerfile : Handle Dockerfile upload and build operation
     */
     handle_push_into_Repository(connectedClient, data, function (err, data) {
+      connectedClient.send("push end", "---------- END ------------");
       if (err)
         fn(err);
       else
@@ -70,6 +71,29 @@ exports.init = function (server) {
         });
     });
   };
+  DockerImage.onbroadcastImage = function (client, data, fn) {
+    if (!connectedClient) {
+      console.log('No client connected yet');
+      return;
+    }
+    console.log(data);
+    /**
+    * handle_uploadBuild_Dockerfile : Handle Dockerfile upload and build operation
+    */
+    handle_broadcastImage(connectedClient, data, function (err, data) {
+      connectedClient.send("broadcast end", "--------- TODO ------------");
+      if (err)
+        fn(err);
+      else
+        fn({
+          report: data,
+          type: 'success'
+        });
+    });
+  };
+
+
+
 };
 // end 'init'
 /**
@@ -299,11 +323,15 @@ var handle_push_into_Repository = function (client, data, oResult) {
   });
 
 
-/************************** START */
+/************************** 
+   START 
+*/
+client.send("push start", "Starting pushing image : ", data.dImage_id);
 
 var  record  = null,
      recordID = data.dImage_id ,
-     cliResponse = {};
+     cliResponse = {}
+     ;
 
 logger.info('reocrdID: ' + recordID);
 rdsClient.hgetall(recordID, function (err, result) {
@@ -327,20 +355,17 @@ rdsClient.hgetall(recordID, function (err, result) {
   record.build_server = JSON.parse(result.build_server);
 
 
-
  var
    queryString = util.format('/images/%s/push', record.repository ),
-   headers = {
-    'X-Registry-Auth':null
-  },
-  respBody = '',
-  options = {
+   headers = { 'X-Registry-Auth':null },
+   respBody = '',
+   options = {
       hostname: record.build_server.hostname,
       port: record.build_server.dockerPort,
       path: queryString,
       method: 'POST',
       headers: headers
-  } ;
+      } ;
   
   logger.info(options);
   var req = http.request(options, function (res) {
@@ -353,32 +378,44 @@ rdsClient.hgetall(recordID, function (err, result) {
       res.on('data', function (chunk) {
         logger.info(chunk);
         client.send("push progress", chunk);
-        if( respBody.length != 0)
-            respBody += ", ";
         respBody += chunk;
       });
 
       res.on('end', function () {
         client.send('Push end', '-------------------- END -------------------');
         if (res.statusCode === 200) {
-          var jRespBody   = JSON.parse( "["+ respBody + "]" );
 
-          var finalResult = jRespBody[ jRespBody.length - 1];
-          logger.info( finalResult);
+          respBody = respBody.split("}{");
+          respBody[0] =  respBody[0].trim().replace(new RegExp(" *{"), "")
+          respBody[ respBody.length -1 ] =  respBody[respBody.length -1].trim().replace(new RegExp(" *}"), "");
+          respBody = respBody.map( function(item,index){ return "{" + item + "}"});
 
-          if( typeof finalResult.error !== 'undefined' && finalResult.error){
-              record.isPushedOnRegistry = false;
-              client.send( "push error",finalResult.error );
-              oResult( { text: finalResult.error, type: "error"} ,null);
+
+          var finalResult = null;
+          try{
+             finalResult   = JSON.parse(  respBody[ respBody.length -1 ]  );
+             logger.info( finalResult);
+
+            if( typeof finalResult.error !== 'undefined' && finalResult.error){
+                record.isPushedOnRegistry = false;
+                client.send( "push error",finalResult.error );
+                oResult( { text: finalResult.error, type: "error"} ,null);
+            }
+            else{
+                record.isPushedOnRegistry = true;
+                client.send( "push success", JSON.stringify( finalResult) );
+                oResult( null, JSON.stringify( finalResult) );
+            }
+
+
+          }catch(e){
+            logger.error("failed to parse response body ");
+             oResult( null, JSON.stringify( finalResult) );
           }
-          else{
-              record.isPushedOnRegistry = true;
-              client.send( "push success", JSON.stringify( finalResult) );
-              oResult( null, JSON.stringify( finalResult) );
-          }
+
         } else {
-          client.send('push error', 'Error pushing image: ' + resBody);
-          oResult( { text: finalResult.error, type: "error"}, null );
+          client.send('push error', 'Error pushing image: ' + respBody);
+          oResult( { text: respBody, type: "error"}, null );
 
         }
 
@@ -401,10 +438,223 @@ rdsClient.hgetall(recordID, function (err, result) {
 
 
 
-/************************** END */
-
-
-
+/************************** 
+END 
+*/
 
 
 }; // end 'handle_push_into_Repository'
+
+
+var handle_broadcastImage = function (client, data, oResult) {
+  console.log('client connected');
+  client.send('identifier', client.id);
+  /** 
+    *   Testing handshake
+    */
+  client.on('Tango', function (data) {
+    client.send('Charlie', client.id);
+  });
+  client.on('OK', function () {
+    console.log('Handshake passed');
+  });
+
+
+/************************** 
+   START 
+*/
+
+var  record  = null,
+     recordID = data.dImage_id ,
+     cliResponse = {},
+   liveHostsList = [], 
+   dockerHostList = [], 
+   hostImagePullReport = [], 
+   imageToBroadcast = null, 
+   repository = config.repository.development
+   ;
+
+  async.series([
+    function (callback) {
+      rdsClient.hgetall(recordID, function (err, result) {
+        if (err) {
+          callback(err, null);
+          return;
+        }
+        imageToBroadcast = result;
+        imageToBroadcast.build_server = JSON.parse(result.build_server);
+        imageToBroadcast.save = function () {
+          var isSaved = false;
+          rdsClient.hmset(this.id, 'image_id', this.image_id, 'build_tag', this.build_tag, 'repository', this.repository, 'build_server', JSON.stringify(this.build_server), 'isReplicated', this.isReplicated, 'isPushedOnRegistry', this.isPushedOnRegistry, 'updatedAt', Date.now(), function (err, result) {
+            if (err)
+              isSaved = false;
+            else
+              isSaved = true;
+            logger.log('::::::::::::::::::: Saved: ' + this.id + ': ' + this.isPushedOnRegistry);
+          });
+        };
+        // end 'save'
+        callback();
+      });
+    },
+    function (callback) {
+      logger.info(':::::::::::::::::::: isPushedOnRegistry : ' + imageToBroadcast.isPushedOnRegistry);
+      if (imageToBroadcast.isPushedOnRegistry === false){
+        callback('Image is not pushed on the registry. Please push it first!!', null);
+      }
+      else
+        callback();
+    },
+    function (callback) {
+      appUtil.getDockerHosts(function (err, hostList) {
+        if (err)
+          callback(err, null);
+        else {
+          dockerHostList = hostList.filter(function (host) {
+            return !(host.hostname.toString() === imageToBroadcast.build_server.hostname && host.dockerPort === imageToBroadcast.build_server.dockerPort);
+          });
+          logger.info('Docker Host Count: %d/%d ', dockerHostList.length, hostList.length);
+          client.send("broadcast progress", util.format('Docker Host Count: %d/%d ', dockerHostList.length, hostList.length) );
+          callback();
+        }
+      });
+    },
+    function (callback) {
+      if (dockerHostList.length === 0) {
+        callback('No Docker host available yet.', null);
+        return;
+      }
+      async.filter(dockerHostList, function (host, cb) {
+        appUtil.isDockerServerAlive(host.hostname, host.dockerPort, function (isAlive, errorMessage) {
+          logger.info('=========================Alive : ' + isAlive);
+          client.send("broadcast progress", util.format('===========%s:%s => Alive : %s', host.hostname, host.dockerPort, isAlive) );
+          cb(isAlive);
+        });
+      }, function (results) {
+        liveHostsList = results;
+        callback();
+      });
+    },
+    function (callback) {
+      if (liveHostsList.length === 0) {
+        callback('No Docker Server is up. Please try again later. ', null);
+        return;
+      }
+      logger.info('Live Docker Host Count: %d/%d ', liveHostsList.length, dockerHostList.length);
+      client.send("broadcast progress", util.format('Live Docker Host Count: %d/%d ', liveHostsList.length, dockerHostList.length));
+      var queryString = '/images/create?fromImage=' + imageToBroadcast.repository;
+      async.each(liveHostsList, function (liveHost, cb) {
+        var cliResponse = null;
+
+        client.send("broadcast progress", util.format("Dispatching pull request to : %s<%s:%s>", liveHost.name, liveHost.hostname, liveHost.dockerPort ));
+        
+       var
+         respBody = '',
+         options = {
+            hostname: liveHost.hostname,
+            port: liveHost.dockerPort,
+            path: queryString,
+            method: 'POST'
+            } ;
+        
+        logger.info(options);
+        client.send("broadcast progress", JSON.stringify( options));
+        var req = http.request(options, function (res) {
+            console.log('STATUS: ' + res.statusCode);
+            console.log('HEADERS: ' + JSON.stringify(res.headers));
+
+            client.send("broadcast progress", 'STATUS: ' + res.statusCode);
+
+            res.setEncoding('utf8');
+            
+            res.on('data', function (chunk) {
+              logger.info(chunk);
+              client.send("broadcast progress", chunk);
+              respBody += chunk;
+            });
+
+          setTimeout( function(){
+            res.destroy();       
+            res.emit('end');
+          }, 3000);            
+
+            res.on('end', function () {
+             console.log("End called ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+             switch ( res.statusCode) {
+              case 200:
+                cliResponse = util.format('<%s:%s :> Image[%s] pull request received.', liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository));
+                logger.info(cliResponse);
+                  hostImagePullReport.push({
+                    text: cliResponse,
+                    type: 'success'
+                  });
+                client.send( "broadcast success", cliResponse );
+                  //imageToBroadcast.isReplicated = true;
+                  //imageToBroadcast.save();
+                break;
+              case 500:
+                cliResponse = util.format('<%s:%s :> Failed to pull image[%s]. Cause: server error', liveHost.hostname, liveHost.dockerPort, decodeURIComponent(imageToBroadcast.repository) );
+                logger.info(cliResponse);
+                client.send( "broadcast error", JSON.stringify( cliResponse) );
+                hostImagePullReport.push({
+                  text: cliResponse,
+                  type: 'error'
+                });
+                break;
+              default:
+                cliResponse = util.format('<%s:%s> :Host is unreachable.', liveHost.hostname, liveHost.dockerPort);
+                logger.info(cliResponse);
+                client.send( "broadcast error", JSON.stringify( cliResponse) );
+
+                hostImagePullReport.push({
+                  text: cliResponse,
+                  type: 'error'
+                });
+                break;
+              }
+               cb();
+            }); // end 'res.on'
+        });
+
+        req.on('error', function (e) {
+          respBody = '';
+          cliResponse = 'ERROR: Problem with request: ' + e.message;
+          logger.info(cliResponse);
+          client.send("broadcast error", cliResponse);
+          hostImagePullReport.push({
+            text: cliResponse,
+            type: 'error'
+          });        
+
+        });
+
+        req.end();
+
+
+
+      }, function (err) {
+        callback();
+      });  // end 'async.each'
+    }
+  ], function (err, result) {
+    if (err) {
+      oResult({ text: err ? JSON.stringify(err) : '', type: 'error'}, null);
+    }
+    if (hostImagePullReport.length > 0)
+      oResult(null, {
+        hostPullReport: hostImagePullReport
+      });
+  });
+
+
+
+
+/************************** 
+END 
+*/
+
+
+
+
+
+}; // end 'handle_broadcastImage'

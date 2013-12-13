@@ -597,7 +597,76 @@ exports.hdelete = function (req, res) {
   });
 };
 
+exports.containers = function (req, res) {
 
+  var repository,  querystring, hostStatusCode;
+  try{
+     repository = req.query.repository.trim();
+   }catch(err){
+      repository = "";
+   }
+  var imageId = req.params.id;
+  var dockerHost  =  { 
+            hostname: req.query.hostname,
+            dockerPort : parseInt(req.query.port) 
+          };
+
+  var imgInfo = {};
+  var containerList = [];
+
+  
+  querystring = '/containers/json?all=1';
+
+  appUtil.makeGetRequestToHost(dockerHost, querystring, function (errorMessage, data, statusCode ) {
+    var viewData = '';
+  hostStatusCode = statusCode;
+    logger.info("statuscode:  " + hostStatusCode);
+    switch (statusCode) {
+      case 200:
+        viewData = JSON.parse(data);
+        viewData.forEach(function (container, index) {
+          logger.info(container.Image);
+//TODO         
+          if (container.Image === imageId.substr(0, 12)) {
+            containerList.push(container);
+          }
+        });
+        logger.info(" ContainersList.length " + containerList.length);
+        break;
+      case 400:
+        viewData = 'Bad Parameters ';
+        break;
+      case 500:
+        viewData = 'Server error : ' + errorMessage;
+        break;
+      default:
+        viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
+        break;
+    }
+    logger.info( repository.length === 0 ? '-' :repository);
+    logger.info("ContainersList.length " + containerList.length);
+
+    res.render('docker/containers', {
+     'containerList': containerList,
+      title: 'List of Containers',
+      page: 'containers_list',
+      id: imageId,
+      data: viewData,
+      statusCode: hostStatusCode,
+      imgInfo: {
+        id: imageId,
+        repository: repository,
+        created: req.query.created,
+        runningOn : dockerHost
+      },
+      errorMessages :[]
+    });
+
+  });
+
+};
+
+/*
 exports.containers = function (req, res) {
 
   var repository,  querystring, hostStatusCode;
@@ -664,6 +733,7 @@ exports.containers = function (req, res) {
   });
 
 };
+*/
 exports.hcontainers = function (req, res) {
 
   var imgIdentifier = req.params.imgIdentifier;

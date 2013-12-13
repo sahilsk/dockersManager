@@ -71,7 +71,22 @@
 							</td>
 							<td>
 								<Div class="operation_menu" style="width:200px;"> 	
-									<span class="inspect"> <a href="hosts/<%= server.id %>/dockers/<%=image.image_id %>/containers?repository=<% if( image.repository) { %><%= image.repository %><% }%>&created=<%=image.createdAt%>" title="Inspect">  &equiv;	 </a> </span>
+								<!--
+									TODO
+									<span class="inspect"> 
+										<script >console.log(<%=   JSON.stringify(  image )%> ); </script>
+										<form action="/dockers/<%= image.image_id %>/containers" method="GET">
+											<input type="hidden" name="repository"	value="<% if( image.repository){ %><%= decodeURIComponent(image.repository) %><% } %>" />
+											<input type="hidden" name="hostname" value="<%= server.hostname %>"/>
+											<input type="hidden" name="port" value="<%= server.dockerPort %>" />
+											<input type="hidden" name='created'  value="<%=image.createdAt %>" />
+											<button  title="Inspect">   &equiv;  </button>		
+										</form>
+
+										<a href="/dockers/<%=image.image_id %>/containers?repository=<% if( image.repository) { %><%= image.repository %><% }%>&created=<%=image.createdAt%>" title="Inspect">  &equiv;	 
+										</a>
+									 </span>
+									 -->
 									<!--					
 									<span class="delete"> <a href="/dockers/<% if( !image.repository) { %><%= image.image_id %><% }else { %><%= encodeURIComponent(image.repository) %><% } %>/delete" title="remove"> &cross;  </a></span>
 									-->
@@ -79,7 +94,7 @@
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/push" title="Push" class="pushImageBtn" image_id='<%= encodeURIComponent(image.id) %>'> PUSH  </a></span>
 
 									<span class="delete"> 
-										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/broadcastPull" title=" Dispatch pull request to all docker server.Note: Only if image is pushed on the registry." disabled=disabled> 
+										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/broadcastPull" title=" Dispatch pull request to all docker server.Note: Only if image is pushed on the registry." class="broadcastImageBtn" image_id='<%= encodeURIComponent(image.id) %>' > 
 										Broadcast  </a></span>			
 									<span class="kill"> 
 										<a href="/dockerfiles/<%= encodeURIComponent(image.id) %>/delete" title="NOTE: It won't delete the image but only take off this entry from the database."> 
@@ -137,6 +152,25 @@
 
 	});
 
+	$(".broadcastImageBtn").bind("click", function(e){
+		e.preventDefault();
+
+		if( $('body').find('.flash').length > 0 ){
+			$('body').find('.flash').remove();
+		}		
+
+		if( isDockerImageResourceReady ){
+			DockerImage.broadcastImage( {dImage_id: $(this).attr('image_id') } , function (res) {
+				var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
+				$flashMessageHTML.addClass( res.type ).prepend(res.text);
+				$('body').prepend($flashMessageHTML);
+				alert( res);
+				console.log(res);
+			});
+		}
+
+	});	
+
 
   /***  Console Output **********
   ||---------------------------------------------------
@@ -161,6 +195,29 @@
 
 	});
 	server.on('push end', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
+
+	});
+
+	server.on('broadcast start', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
+
+	});
+	server.on('broadcast progress', function (msg) {
+	    if (!$(".cmd_wrapper ul").is(":visible")) $(".cmd_wrapper ul").show();
+	    console.log(msg);
+
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
+
+	});
+	server.on('broadcast error', function (msg) {
+	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='error'>" + msg + "</li>");
+	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
+
+	});
+	server.on('broadcast end', function (msg) {
 	    $(".cmd_wrapper").eq(0).find("ul").append("<li class='alert'>" + msg + "</li>");
 	    $(".cmd_wrapper ul").scrollTop($(".cmd_wrapper ul").eq(0).prop('scrollHeight'));
 

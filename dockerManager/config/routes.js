@@ -58,6 +58,8 @@ exports.makeRoutes= function(app){
 	app.post("/dockers/delete", docker.delete);
 //	app.get("/dockers/:id/containers", docker.containers);
 	app.get("/dockers/:id/containers", docker.containers);
+	app.get("/dockers/:id/containers", docker.containers);  // Used in Dockerfile Submitted Images
+
 //	app.delete("/dockers/:id/delete", docker.delete)
 
 
