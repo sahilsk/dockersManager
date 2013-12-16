@@ -5,14 +5,11 @@
 
    	<ul class="flash" >
    		<% messages.hostPullReport.forEach( function(item, index){ %> 
-   				
    			<li class="<%= item.type %>" >
    				<%= item.text %>
 				<span> &cross; </span>
 			</li>
-
    		<%  }); %>
-		
 	</ul>
 
 <% } %>
@@ -145,6 +142,7 @@
 				var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
 				$flashMessageHTML.addClass( res.type ).prepend(res.text);
 				$('body').prepend($flashMessageHTML);
+								UI_init();
 
 			     console.log(res);
 			});
@@ -170,7 +168,7 @@
 						$('body').prepend($flashMessageListHTML);
 				});
 
-
+				UI_init();
 				console.log(res);
 			});
 		}

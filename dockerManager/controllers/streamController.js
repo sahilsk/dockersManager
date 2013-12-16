@@ -81,7 +81,7 @@ exports.init = function (server) {
     * handle_uploadBuild_Dockerfile : Handle Dockerfile upload and build operation
     */
     handle_broadcastImage(connectedClient, data, function (err, data) {
-      connectedClient.send("broadcast end", "--------- TODO ------------");
+      connectedClient.send("broadcast end", "--------- END ------------");
       if (err)
         fn(err);
       else
@@ -511,7 +511,7 @@ var  record  = null,
           callback(err, null);
         else {
           dockerHostList = hostList.filter(function (host) {
-            return !(host.hostname.toString() === imageToBroadcast.build_server.hostname && host.dockerPort === imageToBroadcast.build_server.dockerPort);
+            return  true; //!(host.hostname.toString() === imageToBroadcast.build_server.hostname && host.dockerPort === imageToBroadcast.build_server.dockerPort);
           });
           logger.info('Docker Host Count: %d/%d ', dockerHostList.length, hostList.length);
           client.send("broadcast progress", util.format('Docker Host Count: %d/%d ', dockerHostList.length, hostList.length) );
@@ -573,10 +573,11 @@ var  record  = null,
               respBody += chunk;
             });
 
-          setTimeout( function(){
-            res.destroy();       
-            res.emit('end');
-          }, 3000);            
+            res.setTimeout(1000,  function(){
+              //res.destroy();    
+              console.log("::::::::::::::::::::: Ending response....");
+              client.send("broadcast error", "Ending response")   ;
+            });            
 
             res.on('end', function () {
              console.log("End called ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");

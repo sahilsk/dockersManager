@@ -1,0 +1,98 @@
+
+<% include ../../layouts/dashboard_layout_top %>
+
+<h1> Create New Container </h1>
+
+	<fieldset>
+
+	<form method="Post" action="/containers/create" >
+
+		<label> Container Name </label>
+		<input type="text" name="name"  id="name"  placeholder="name"  value="<% if( messages && messages.oData){ %><%= unescape(messages.oData.Name) %><% } %>" />
+		<br/> <br/>
+
+
+		<label> hostname </label>
+		<input type="text" name="Hostname"  id="Hostname"  placeholder="Hostname eg. 12.2.2.2" value="<% if( messages && messages.oData){ %><%= messages.oData.Hostname %><% } %>" />
+		<br/> <br/>
+
+		<label> User </label>
+		<input type="text" name="User"  id="User"  placeholder="name" value="<% if( messages && messages.oData){ %><%= messages.oData.User %><% } %>" />
+		<br/> <br/>	
+
+		<label> Memory </label>
+		<input type="text" name="Memory"  id="Memory"  placeholder="name"   value="<% if( messages && messages.oData){ %><%= messages.oData.Memory %><% }else { %>0<% } %>" />
+		<br/> <br/>	
+
+		<label> MemorySwap </label>
+		<input type="text" name="MemorySwap"  id="MemorySwap"  placeholder="name"   value="<% if( messages && messages.oData){ %><%= messages.oData.MemorySwap %><% }else { %>0<% } %>" />
+		<br/> <br/>
+
+		<label> AttachStdin </label>
+		<input type="checkbox" name="AttachStdin"  id="AttachStdin"  placeholder="name"  "<% if( messages && messages.oData){ %> <% if(messages.oData.AttachStdin) { %> Checked  <% } } %>" />
+		<br/> <br/>	
+
+		<label> AttachStdout </label>
+		<input type="checkbox" name="AttachStdout"  id="AttachStdout"  placeholder="name" "<% if( messages && messages.oData){ %> <% if(messages.oData.AttachStdout) { %> Checked  <% } } %>" />
+		<br/> <br/>	
+
+		<label> AttachStderr </label>
+		<input type="checkbox" name="AttachStderr"  id="AttachStderr"  placeholder="name"   "<% if( messages && messages.oData){ %> <% if(messages.oData.AttachStderr) { %> Checked  <% } } %>" />
+		<br/> <br/>
+
+		<label> PortSpecs </label>
+		<input type="text" name="PortSpecs"  id="PortSpecs"  placeholder="name"   value="<% if( messages && messages.oData){ %><%= messages.oData.PortSpecs %><% }else { %>null<% } %>" />
+		<br/> <br/>	
+
+		<label> Privileged </label>
+		<input type="checkbox" name="Privileged"  id="Privileged"  placeholder="name" "<% if( messages && messages.oData){ %> <% if(messages.oData.Privileged) { %> Checked  <% } } %>" />
+		<br/> <br/>	
+
+		<label> Tty </label>
+		<input type="checkbox" name="Tty"  id="Tty"  placeholder="name" "<% if( messages && messages.oData){ %> <% if(messages.oData.Tty) { %> Checked  <% } } %>" />
+		<br/> <br/>
+
+		<label> OpenStdin </label>
+		<input type="checkbox" name="OpenStdin"  id="OpenStdin"  placeholder="name" "<% if( messages && messages.oData){ %> <% if(messages.oData.OpenStdin) { %> Checked  <% } } %>" />
+		<br/> <br/>	
+
+		<label> StdinOnce </label>
+		<input type="checkbox" name="StdinOnce"  id="StdinOnce"  placeholder="name" "<% if( messages && messages.oData){ %> <% if(messages.oData.StdinOnce) { %> Checked  <% } } %>" />
+		<br/> <br/>	
+
+		<label> Env </label>
+		<input type="text" name="Env"  id="Env"  placeholder="name"  value='null'  value="<% if( messages && messages.oData){ %><%= messages.oData.Env %><% }else { %>null<% } %>" />
+		<br/> <br/>
+
+		<label> Cmd </label>
+		<input type="text" name="Cmd"  id="Cmd"  placeholder="name"  value="<% if( messages && messages.oData){ %><%= messages.oData.Cmd %><% }else { %>date<% } %>" />
+		<br/> <br/>	
+
+		<label> Dns </label>
+		<input type="text" name="Dns"  id="Dns"  placeholder="name"  value="<% if( messages && messages.oData){ %><%= messages.oData.Dns %><% }else { %>null<% } %>" />
+		<br/> <br/>	
+
+		<label> Image </label>
+		<input type="text" name="Image"  id="Image"  placeholder="name"  value="<% if( messages && messages.oData){ %><%= messages.oData.Image %><% }else  { %>base<% } %>" />
+		<br/> <br/>
+
+		<label> Volumes </label>
+		<input type="text" name="Volumes"  id="Volumes"  placeholder="Volumes" value="<% if( messages && messages.oData){ %><%= messages.oData.Volumes %><% } %>" />
+		<br/> <br/>	
+
+		<label> Volumes From </label>
+		<input type="text" name="VolumesFrom"  id="VolumesFrom"  placeholder=" Volumes From" value="<% if( messages && messages.oData){ %><%= messages.oData.VolumesFrom %><% } %>" />
+		<br/> <br/>		
+
+		<label> Working Dir </label>
+		<input type="text" name="WorkingDir"  id="WorkingDir"  placeholder="working directory" value="<% if( messages && messages.oData){ %><%= messages.oData.WorkingDir %><% } %>" />
+		<br/> <br/>		
+
+		<input type="submit"  value="create container" />
+
+	</form>
+	</fieldset>
+
+
+
+<% include ../../layouts/dashboard_layout_bottom %>
