@@ -1,12 +1,12 @@
 var config = {
     docker: {
-      hostname: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com" , //'192.168.0.231',
+      hostname: "54.219.217.19" , //'192.168.0.231',
       port: 4273
     },
 
     redis: {
       development:{
-      	hostname:  "ec2-54-219-118-62.us-west-1.compute.amazonaws.com" ,
+      	hostname:  "54.219.217.19" ,
       	port: 6379
       },
       schema:{
@@ -16,17 +16,17 @@ var config = {
     },
     repository :{
     	development:{
-        hostname: "50.18.225.222", // "ec2-54-219-118-62.us-west-1.compute.amazonaws.com",
+        hostname: "50.18.225.222", // "54.219.217.19",
         port: 5000
       } ,
       production:{
-        hostname: "ec2-54-219-118-62.us-west-1.compute.amazonaws.com",
+        hostname: "54.219.217.19",
         port: 5000
       } 
     },
     build_server : {
-        name : "Dpcker App Server",
-        hostname: "54.219.118.62" ,
+        name : "Docker App Server",
+        hostname: "50.18.225.222" ,
         dockerPort: 4273
     }
     ,

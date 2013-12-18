@@ -420,9 +420,16 @@ exports.hlistAll = function(req, res){
  
     }
   ], function (err) {
-    if (err)
-            errMessages.push({text:err, type:'error'});
-    
+    if( err){
+      res.render('docker/list', {
+        title: 'List of images',
+        page: 'images_list',
+        criticalError: err,
+        hostList : c_DockerHostList
+
+      });
+      return ;
+    }else    
       res.render('container/list', {
         title: 'List of Containers',
         'areAll': areAll,

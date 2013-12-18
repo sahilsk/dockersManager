@@ -17,7 +17,6 @@
 <h1> Dashboard </h1>
 
 
-	<span >All User Created Images </span> 
 
 <% if( typeof imageList === "object" && imageList.length == 0 ){ %>
 	
@@ -25,9 +24,9 @@
 		<span > No Image Built Yet. </span>
 		<a href="/"> Submit New Dockerfile </a>
 	</div>	
-<% } %>
+<% }else{ %>
+	<span >All User Created Images </span> 
 
-<% if( typeof imageList === "object" && imageList.length > 0 ){ %>
 		<table border='1' cellspacing='0'>
 			<thead>
 				<tr>
@@ -142,7 +141,8 @@
 				var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
 				$flashMessageHTML.addClass( res.type ).prepend(res.text);
 				$('body').prepend($flashMessageHTML);
-								UI_init();
+
+				UI_init();
 
 			     console.log(res);
 			});
@@ -162,11 +162,22 @@
 			$("ul.flash").remove();
 
 			DockerImage.broadcastImage( {dImage_id: $(this).attr('image_id') } , function (res) {
-				var $flashMessageListHTML = $(' <ul class="flash" > </ul>');
-				 res.report.hostPullReport.forEach( function(result, index){
-				 		$flashMessageListHTML.append( '<li class="' + result.type + '" >'+ result.text +' <span> &cross; </span> ' + '</li>' );
-						$('body').prepend($flashMessageListHTML);
-				});
+				
+				<% if( typeof  res !== 'undefined' && typeof  res.report !== 'undefined' &&  typeof res.report.hostPullReport != 'undefined' ){ %>
+					console.log(" Host Pull Report");
+					var $flashMessageListHTML = $(' <ul class="flash" > </ul>');
+					 res.report.hostPullReport.forEach( function(result, index){
+					 		$flashMessageListHTML.append( '<li class="' + result.type + '" >'+ result.text +' <span> &cross; </span> ' + '</li>' );
+							$('body').prepend($flashMessageListHTML);
+					});
+
+				<%}%>
+				<% if( typeof res !== 'undefined'  ){ %>
+						console.log("error");
+						var $flashMessageHTML =  $("<div class='flash' > 	<span> &cross; </span> </div>");
+						$flashMessageHTML.addClass( res.type ).prepend(res.text);
+						$('body').prepend($flashMessageHTML);
+				<% } %>
 
 				UI_init();
 				console.log(res);

@@ -1,7 +1,7 @@
 <% include ../../layouts/dashboard_layout_top %>
 
 
-<% if( errorMessages ){ %>
+<% if( typeof errorMessages !== 'undefined'){ %>
    	<ul class="flash" >
    		<% errorMessages.forEach( function(error, index){ %> 
    			<li class="<%= error.type %>" >
@@ -17,36 +17,41 @@
 <h1> Dashboard </h1>
 
 
+	<% if(typeof criticalError === 'undefined'  && criticalError){ %>
 	<h3 >Image List </h3> 
 	<span> Include all results? 
 		<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
 		<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
 	</span>
+	<% } %>
 
 	<hr/>
-	<h3> Server : 
+	
 
-		<% if( typeof hostList != "undefined" && hostList ){ %>
-			<select id="hostList">
-				<option value="-1" > Select Server </option>
-				<% hostList.forEach(function(server, index){ %>
-					<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %> 
-					 class="<%= server.isAlive?"success":"error" %>" >
-					 		 <%= server.name %> (<%= server.hostname %>) 
-					 		 <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> 
-					 </option>
-				<% }) %>
-			</select>
+		<% if( typeof hostList != "undefined" && hostList && hostList.length > 0 ){ %>
+			<h3> Docker Host : 		
+				<select id="hostList">
+					<option value="-1" > Select Server </option>
+					<% hostList.forEach(function(server, index){ %>
+						<option value="<%= server.id %>"  <% if( statusCode === 200 && data.runningOn.id === server.id) {%> selected <%} %> 
+						 class="<%= server.isAlive?"success":"error" %>" >
+						 		 <%= server.name %> (<%= server.hostname %>) 
+						 		 <span class="kill" > <%= server.isAlive?"Alive":"Dead" %> </span> 
+						 </option>
+					<% }) %>
+				</select>
+			</h3>
+		<% }else {%>
+			<h2> No server available yet.</h2>
+		<% } %>
 
-		<% }%>
-
-	</h3>
 
 
 
-<% if(  typeof statusCode != 'undefined' && statusCode !== 200 ) { %>
+
+<% if( typeof criticalError != 'undefined' && criticalError) { %>
 	<div class="somethingWentWrong">
-		<span ><%= data %> </span>
+		<span ><%= criticalError %> </span>
 	</div>	
 
 <% } %>

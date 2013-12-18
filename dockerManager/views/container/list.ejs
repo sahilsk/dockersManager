@@ -12,7 +12,7 @@
         </ul>
 <% } %>
 
-<% if( errorMessages ){ %>
+<% if( typeof errorMessages !== 'undefined' && errorMessages){ %>
    	<ul class="flash" >
    		<% errorMessages.forEach( function(error, index){ %> 
    			<li class="<%= error.type %>" >
@@ -23,23 +23,25 @@
 	</ul>
 <% } %>
 
-
-
 <h1> Dashboard </h1>
 
 
 	<h3 >Container List  | <a href ="/containers/new" > Create New </a></h3>
 
+	<% if(typeof criticalError === 'undefined'  && criticalError){ %>
+	<h3 >Image List </h3> 
+		<span> Include all results? 
+			<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
+			<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
+		</span>
+	<% } %>
 
-	<span> Include all results? 
-		<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
-		<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
-	</span>
+
+
 	<hr/>
 
-	<h3> Server : 
-
-		<% if( typeof hostList != "undefined" && hostList ){ %>
+	<% if( typeof hostList != "undefined" && hostList && hostList.length > 0 ){ %>
+		<h3> Docker Host : 		
 			<select id="hostList">
 				<option value="-1" > Select Server </option>
 				<% hostList.forEach(function(server, index){ %>
@@ -50,12 +52,19 @@
 					 </option>
 				<% }) %>
 			</select>
+		</h3>
+	<% }else {%>
+		<h2> No server available yet.</h2>
+	<% } %>	
 
-		<% }%>
-
-	</h3>
 
 
+<% if( typeof criticalError != 'undefined' && criticalError) { %>
+	<div class="somethingWentWrong">
+		<span ><%= criticalError %> </span>
+	</div>	
+
+<% } %>
 
 
 <% if( typeof data === "object" && data.length == 0 ){ %>

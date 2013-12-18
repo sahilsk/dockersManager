@@ -410,7 +410,7 @@ rdsClient.hgetall(recordID, function (err, result) {
 
           }catch(e){
             logger.error("failed to parse response body ");
-             oResult( null, JSON.stringify( finalResult) );
+             oResult( null, JSON.stringify( "failed to parse response body ") );
           }
 
         } else {
@@ -639,7 +639,8 @@ var  record  = null,
     }
   ], function (err, result) {
     if (err) {
-      oResult({ text: err ? JSON.stringify(err) : '', type: 'error'}, null);
+      client.send("broadcast error", JSON.stringify(err) );
+      oResult({ text: JSON.stringify(err), type: 'error'}, null);
     }
     if (hostImagePullReport.length > 0)
       oResult(null, {

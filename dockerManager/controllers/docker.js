@@ -330,7 +330,8 @@ exports.hlist = function(req, res){
     },
     function (callback) {
       if (dockerHostList.length === 0) {
-        callback('No Docker host available yet.');
+        viewData = 'No Docker Host available yet.';
+        callback(viewData);
         return;
       }
 
@@ -350,7 +351,8 @@ exports.hlist = function(req, res){
     },
     function (callback) {
       if (c_DockerHostList.length === 0) {
-        callback('No Docker Server is available yet. Please try again later. ');
+        viewData = 'No Docker Server is available yet. Please try again later. ';
+        callback(viewData);
         return;
       }
 
@@ -383,17 +385,17 @@ exports.hlist = function(req, res){
             viewData.runningOn = hostToQuery;
             break;
           case 400:
-            viewData = 'Bad Parameters ';
+            viewData = 'Bad Parameters';
             break;
           case 500:
             viewData = 'Server Error : ' + errorMessage;
             break;
           default:
            errMessages.push( {
-              text: util.format('<%s:%s> Unable to query list of containers. Please check your network connection. : <%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage),
+              text: util.format('<%s:%s> Unable to query list of images. Please check your network connection. : <%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage),
               type: 'error'
             });
-            viewData = util.format('<%s:%s> Unable to query list of containers. Please check your network connection. : <%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage);
+            viewData = util.format('<%s:%s> Unable to query list of images. Please check your network connection. : <%s>', hostToQuery.hostname, hostToQuery.dockerPort, errorMessage);
             break;
         }
         logger.info(viewData);
@@ -403,8 +405,15 @@ exports.hlist = function(req, res){
 	], 
 	function(err){
     if( err){
-      errMessages.push({text:err, type:'error'});
-    }
+      res.render('docker/list', {
+        title: 'List of images',
+        page: 'images_list',
+        criticalError: err,
+        hostList : c_DockerHostList
+      });
+
+      return ;
+    }else 
     res.render('docker/list', {
       title: 'List of images',
       page: 'images_list',
@@ -412,7 +421,7 @@ exports.hlist = function(req, res){
       'data': viewData,
       'areAll': areAll,
       statusCode: hostStatusCode,
-      hostList : c_DockerHostList
+      hostList : c_DockerHostList,
     });
 
 
