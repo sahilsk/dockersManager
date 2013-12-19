@@ -1,4 +1,5 @@
 node_modules
 uploads
 public/stylesheets/style.css
+dockerManager/public/stylesheets/style.css
 dockerManager.log
