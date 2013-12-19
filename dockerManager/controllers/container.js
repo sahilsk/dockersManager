@@ -425,7 +425,8 @@ exports.hlistAll = function(req, res){
         title: 'List of images',
         page: 'images_list',
         criticalError: err,
-        hostList : c_DockerHostList
+        hostList : c_DockerHostList,
+        statusCode:hostStatusCode
 
       });
       return ;

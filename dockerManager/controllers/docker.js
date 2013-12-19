@@ -409,10 +409,9 @@ exports.hlist = function(req, res){
         title: 'List of images',
         page: 'images_list',
         criticalError: err,
-        hostList : c_DockerHostList
+        hostList : c_DockerHostList,
+        statusCode : hostStatusCode
       });
-
-      return ;
     }else 
     res.render('docker/list', {
       title: 'List of images',

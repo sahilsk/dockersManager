@@ -17,12 +17,12 @@
 <h1> Dashboard </h1>
 
 
-	<% if(typeof criticalError === 'undefined'  && criticalError){ %>
-	<h3 >Image List </h3> 
-	<span> Include all results? 
-		<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
-		<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
-	</span>
+	<% if( typeof criticalError === 'undefined'){ %>
+		<h3 >Image List </h3> 
+		<span> Include all results? 
+			<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
+			<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
+		</span>
 	<% } %>
 
 	<hr/>

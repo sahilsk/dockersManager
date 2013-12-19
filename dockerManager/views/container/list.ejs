@@ -26,10 +26,9 @@
 <h1> Dashboard </h1>
 
 
-	<h3 >Container List  | <a href ="/containers/new" > Create New </a></h3>
 
-	<% if(typeof criticalError === 'undefined'  && criticalError){ %>
-	<h3 >Image List </h3> 
+	<% if(typeof criticalError === 'undefined' ){ %>
+		<h3 >Container List  | <a href ="/containers/new" > Create New </a></h3>
 		<span> Include all results? 
 			<input type="checkbox" name="includeAllResults" id="includeAllResults" <%= areAll? "checked" :""%> />
 			<span  class="<% if( areAll){%>highlight<%}%>" > Yes </span> |  <span class="<% if( !areAll){%>highlight<%}%>" > No </a> 
