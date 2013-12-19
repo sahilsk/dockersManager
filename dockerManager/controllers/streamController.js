@@ -251,7 +251,7 @@ var handle_uploadBuild_Dockerfile = function (client, data, oResult) {
                 if (resBody.toString().indexOf('Successfully built') != -1) {
                   logger.info(resBody.split('Successfully built'));
                   builtImageID = resBody.split('Successfully built')[1].trim();
-                  client.send('build progress', 'Build Image Id: ' + builtImageID);
+                  client.send('build progress', 'Built Image Id: ' + builtImageID);
                 }
                 callback();
               } else {
@@ -273,11 +273,15 @@ var handle_uploadBuild_Dockerfile = function (client, data, oResult) {
       },
       function (callback) {
         logger.info('Built Image Id: <%s>', builtImageID);
+         if ( typeof builtImageID ==="undefined" || builtImageID === null || builtImageID === '') {
+            callback('Failed to get build image id');
+            return ;
+         }
+
         var newSetEntryKey = util.format('Image_%d', Date.now());
-        if (builtImageID && builtImageID !== '') {
-          rdsClient.hmset(newSetEntryKey, 'id', newSetEntryKey, 'image_id', builtImageID, 'build_tag', buildTagName, 'repository', remoteBuildTagName, 'build_server', JSON.stringify(buildServer), 'isReplicated', false, 'isPushedOnRegistry', false, 'createdAt', Date.now(), function (err, result) {
+        rdsClient.hmset(newSetEntryKey, 'id', newSetEntryKey, 'image_id', builtImageID, 'build_tag', buildTagName, 'repository', remoteBuildTagName, 'build_server', JSON.stringify(buildServer), 'isReplicated', false, 'isPushedOnRegistry', false, 'createdAt', Date.now(), function (err, result) {
             if (err) {
-              callback('Failed to insert record in the database', err);
+              callback('Failed to insert record in the database : ' +  err);
               client.send('build error', 'Failed to insert record in the database: ' + err);
             } else {
               rdsClient.lpush('SubmittedImages', newSetEntryKey, function (er, result) {
@@ -292,7 +296,7 @@ var handle_uploadBuild_Dockerfile = function (client, data, oResult) {
               });
             }
           });
-        }
+
       }
     ], function (err, results) {
       if (err) {

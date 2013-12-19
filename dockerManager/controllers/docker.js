@@ -191,8 +191,6 @@ exports.hinspect = function (req, res) {
 
 };
 
-
-
 exports.list = function (req, res) {
   var areAll = 1;
   if (req.query.all)
@@ -634,8 +632,9 @@ exports.containers = function (req, res) {
         viewData = JSON.parse(data);
         viewData.forEach(function (container, index) {
           logger.info(container.Image);
-//TODO         
-          if (container.Image === imageId.substr(0, 12)) {
+        
+        
+         if (container.Image === imageId.substr(0, 12)) { //TODO 
             containerList.push(container);
           }
         });
@@ -674,74 +673,6 @@ exports.containers = function (req, res) {
 
 };
 
-/*
-exports.containers = function (req, res) {
-
-  var repository,  querystring, hostStatusCode;
-  try{
-     repository = req.query.repository.trim();
-   }catch(err){
-      repository = "";
-   }
-  var imageId = req.params.id;
-  var dockerHost  =  { 
-            hostname: req.query.hostname,
-            dockerPort : parseInt(req.query.port) 
-          };
-
-  var imgInfo = {};
-  var containerList = [];
-
-  
-  querystring = '/containers/json?all=1&size=1';
-
-  appUtil.makeGetRequestToHost(dockerHost, querystring, function (errorMessage, data, statusCode ) {
-    var viewData = '';
-
-    logger.info("statuscode:  " + hostStatusCode);
-    switch (statusCode) {
-      case 200:
-        viewData = JSON.parse(data);
-        viewData.forEach(function (container, index) {
-          logger.info(container.Image);
-          if (container.Image === imageId.substr(0, 12)) {
-            containerList.push(container);
-          }
-        });
-        logger.info(" ContainersList.length " + containerList.length);
-        break;
-      case 400:
-        viewData = 'Bad Parameters ';
-        break;
-      case 500:
-        viewData = 'Server error : ' + errorMessage;
-        break;
-      default:
-        viewData = 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>';
-        break;
-    }
-    logger.info( repository.length === 0 ? '-' :repository);
-    logger.info("ContainersList.length " + containerList.length);
-
-    res.render('docker/containers', {
-     'containerList': containerList,
-      title: 'List of Containers',
-      page: 'containers_list',
-      id: imageId,
-      'data': viewData,
-      'statusCode': statusCode,
-      imgInfo: {
-        id: imageId,
-        repository: repository,
-        created: req.query.created,
-        runningOn : dockerHost
-      }
-    });
-
-  });
-
-};
-*/
 exports.hcontainers = function (req, res) {
 
   var imgIdentifier = req.params.imgIdentifier;
@@ -803,10 +734,7 @@ exports.hcontainers = function (req, res) {
               viewData.forEach(function (container, index) {
                 logger.info(container.Image);
 
-//TODO
-                containerList.push(container);
-
-                if (container.Image === imgIdentifier.substr(0, 12)) {
+                if (container.Image === imgIdentifier.substr(0, 12)) { // TODO
                   containerList.push(container);
                 }
               });
@@ -838,7 +766,7 @@ exports.hcontainers = function (req, res) {
         if( err)
           errMessages.push({text:err, type:'error'});        
 
-        res.render('docker/containers', {
+        res.render('docker/container/containers', {
          'containerList': containerList,
           title: 'List of Containers',
           page: 'containers_list',
@@ -856,4 +784,164 @@ exports.hcontainers = function (req, res) {
 
       }
   );
+};
+
+exports.hnewContainer = function(req, res){
+
+  res.render('docker/container/new', { 
+    title: 'Create New Container',
+    hostId: parseInt(req.params.host_id),
+    imageId:  req.params.imgIdentifier,
+    commandToRun : "bash"
+  });
+
+}
+
+exports.hcreateContainer = function( req, res){
+
+  var imgIdentifier = req.params.imgIdentifier;
+  var selectedHostId = parseInt(req.params.host_id);
+  var imgInfo = {}; 
+  var hostToQuery = {};
+
+
+  var containerName = require('querystring').escape(req.body.name.trim());
+//  var Hostname = req.body.Hostname;
+  var User = req.body.User;
+  var Memory = parseInt(req.body.Memory);
+  var MemorySwap = parseInt(req.body.MemorySwap);
+  var AttachStdin = typeof req.body.AttachStdin === 'undefined' ? false : true;
+  var AttachStdout = typeof req.body.AttachStdout === 'undefined' ? false : true;
+  var AttachStderr = typeof req.body.AttachStderr === 'undefined' ? false : true;
+  var PortSpecs = req.body.PortSpecs === 'null' ? null : req.body.PortSpecs;
+  var Privileged = typeof req.body.Privileged === 'undefined' ? false : true;
+  var Tty = typeof req.body.Tty === 'undefined' ? false : true;
+  var OpenStdin = typeof req.body.OpenStdin === 'undefined' ? false : true;
+  var StdinOnce = typeof req.body.StdinOnce === 'undefined' ? false : true;
+  var Env = req.body.Env === 'null' ? null : req.body.Env;
+  var Cmd = [];
+  Cmd.push(req.body.Cmd);
+  var Dns = req.body.Dns === 'null' ? null : req.body.Dns;
+  var Image = req.body.Image;
+  var Volumes = null;
+  // req.body.Volumes ;
+  var VolumesFrom = req.body.VolumesFrom;
+  var WorkingDir = req.body.WorkingDir;
+  console.log('AttachStdin : ' + req.body.AttachStdin);
+  var jsonContainerData = {
+      Name: containerName,
+      User: User,
+      Memory: Memory,
+      MemorySwap: MemorySwap,
+      AttachStdin: AttachStdin,
+      AttachStdout: AttachStdout,
+      AttachStderr: AttachStderr,
+      PortSpecs: PortSpecs,
+      Privileged: Privileged,
+      Tty: Tty,
+      OpenStdin: OpenStdin,
+      StdinOnce: StdinOnce,
+      Env: Env,
+      Cmd: Cmd,
+      Dns: Dns,
+      Image: Image.toString(),
+      Volumes: Volumes,
+      VolumesFrom: VolumesFrom,
+      WorkingDir: WorkingDir
+    };
+
+
+
+  async.series([
+    //Get dockerhost
+      function (callback) {
+        appUtil.getDockerHosts(function (err, hostList) {
+          if (err)
+            callback(err, null);
+          else {
+            dockerHostList = hostList;
+            callback();
+          }
+        });
+      },
+      function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+
+        hostToQuery= (dockerHostList.filter( function(item){
+              return item.id === selectedHostId;
+          }))[0];
+        if( typeof hostToQuery === 'undefined' ){
+             callback( "Host with id :'"+selectedHostId + "' not found.") ;
+             return;
+        }
+        callback();
+
+      },
+      function(callback){
+        var cliMessage = null;
+        logger.info( "Retrieving containers from : " + JSON.stringify(hostToQuery) );  
+        jsonContainerData.Hostname = hostToQuery.hostname;
+        var str_ContainerData = JSON.stringify(jsonContainerData);
+        //res.end( str_ContainerData);
+        var headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': str_ContainerData.length
+          };
+        var querystring = '/containers/create?name=' + containerName;
+
+        appUtil.makePostRequestToHost(hostToQuery, querystring , headers, str_ContainerData, function (result, statusCode, errorMessage) {
+          switch (statusCode) {
+          case 404:
+            req.session.messages = {
+              text: 'No such image : \'' + Image + '\' ',
+              type: 'error',
+              oData: jsonContainerData
+            };
+            break;
+          case 201:
+            var jResult = JSON.parse(result);
+            console.log(jResult);
+            req.session.messages = {
+              text: 'Container[' + jResult.Id + '] created successfully.  Warnings: ' + jResult.Warnings,
+              type: 'alert'
+            };
+            break;
+          case 500:
+            req.session.messages = {
+              text: 'Server error.' + result,
+              type: 'error',
+              oData: jsonContainerData
+            };
+            break;
+          default:
+            req.session.messages = {
+              text: 'Unable to query docker host. Please check network connection. : <' + errorMessage + '>',
+              type: 'error',
+              oData: jsonContainerData
+            };
+          }
+         callback();
+
+        });
+
+      }], 
+      function(err){
+        if( err){
+            req.session.messages = {
+              text: err,
+              type: 'error',
+            }          
+           res.redirect(req.headers.referer);
+        }else
+          res.redirect('hosts/' + selectedHostId + '/dockers/'+ imgIdentifier + '/containers');
+
+      }
+  );
+
+
+
+
 };
