@@ -81,10 +81,52 @@
 		</thead>
 		<tbody>
 	<% data.forEach( function(item, index){ %>
-		<tr>
-			<td>  <%= index + 1 %> </td>
+		
 
-			<td> <div style="width:150px; overflow:hidden; text-overflow:ellipsis;" title=" <%= item.Id %>" > <%= item.Id %> </div> </td>
+			<% if( item.RepoTags) {
+				var reposArr = item.RepoTags.toString().split(",");
+
+			    reposArr.forEach( function(repo, position){
+			%>
+			<tr>
+				<td>  <%= index + 1 %>.<%= position %> </td>
+				<td> <div style="width:150px; overflow:hidden; text-overflow:ellipsis;" title=" <%= item.Id %>" ><%= item.Id %> </div> </td>
+
+				<td> <% if( !item.Tag) { %>-- <% }else { %> <%= item.Tag %>  <% } %> </td>
+				<td> <%= repo %> </td>
+				<td> <%= item.RepoTags %> </td>
+				<td> <% if( !item.Created) { %> --  <% }else { %> <%= item.Created %>  <% } %>  </td>
+				<td> <% if( !item.Size) { %> --  <% }else { %> <%= item.Size %>  <% } %> </td>
+				<td> <% if( !item.VirtualSize) { %> --  <% }else { %> <%= item.VirtualSize %>  <% } %> </td>
+
+				<td>
+					<Div class="operation_menu" style="width:100px;"> 	
+						<span class="inspect">
+							<form action="/hosts/<%= data.runningOn.id %>/dockers/<%= item.Id%>/containers" method="GET">
+								<input type="hidden" name="repository"	value="<%= repo %>" />					
+								<input type="hidden" name='created'  value="<%=item.Created %>" />
+								<button  title="Inspect">   &equiv;  </button>		
+							</form>		 
+						</span>					
+						<span class="delete">
+							<form action="/hosts/<%= data.runningOn.id %>/dockers/<%= item.Id %>/delete" method="POST">
+								<input type="hidden" name="repository" value="<%= repo %>" />
+								<button  title="remove"> &cross;  </button>								
+							</form>
+						</span>						
+					</Div>
+				</td>
+			<tr/>
+			<%
+			  });
+			}else{ %>
+
+			<tr>
+			<td>  <%= index++ + 1 %> </td>
+			<td> <div style="width:150px; overflow:hidden; text-overflow:ellipsis;" title=" <%= item.Id %>" >
+			 		<%= item.Id %> 
+			 	  </div> 
+			</td>
 
 			<td> <% if( !item.Tag) { %>-- <% }else { %> <%= item.Tag %>  <% } %> </td>
 			<td> <% if( !item.Repository) { %> --  <% }else { %><%= item.Repository %><% } %> </td>
@@ -95,7 +137,6 @@
 
 
 			<td>
-
 				<Div class="operation_menu" style="width:100px;"> 	
 					<span class="inspect">
 						<form action="/hosts/<%= data.runningOn.id %>/dockers/<%= item.Id%>/containers" method="GET">
@@ -117,8 +158,11 @@
 
 					
 				</Div>
-
 			</td>
+
+		<% } %>
+
+
 		<tr/>
 	<% }) %>
 		</tbody>

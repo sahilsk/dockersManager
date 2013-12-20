@@ -495,7 +495,7 @@ exports.delete = function (req, res) {
 exports.hdelete = function (req, res) {
 
   var 
-    imgIdentifier = null,
+    targetToDelete = null,
     imageId = null,
     repository = null,
     selectedHostId = null,
@@ -512,10 +512,10 @@ exports.hdelete = function (req, res) {
 
 
 
-  if( repository != null && repository.length > 0 )
-      imgIdentifier = repository;
+  if( repository != null && repository.length > 0 && repository !== '<none>:<none>' )
+      targetToDelete = repository;
   else
-      imgIdentifier = imageId;
+      targetToDelete = imageId;
 
 
   selectedHostId = parseInt(req.params.host_id);
@@ -553,19 +553,19 @@ exports.hdelete = function (req, res) {
       function(callback){
         var cliMessage = null;
         logger.info( "Deleting image from : " + JSON.stringify(hostToQuery));
-        var  querystring = '/images/' + encodeURIComponent(imgIdentifier);
+        var  querystring = '/images/' + encodeURIComponent(targetToDelete);
 
         appUtil.makeDELETERequestToHost(hostToQuery,  querystring, function (errorMessage, result, statusCode ) {
           switch (statusCode) {
           case 409:
-              cliMessage = util.format("<%s:%s> : Conflict in deleting image : '%s'", hostToQuery.hostname, hostToQuery.dockerPort, imgIdentifier );
+              cliMessage = util.format("<%s:%s> : Conflict in deleting image : '%s'", hostToQuery.hostname, hostToQuery.dockerPort, targetToDelete );
               callback( cliMessage );
             break;
           case 404:
-             callback( util.format("<%s:%s> : No such image : '%s'", hostToQuery.hostname, hostToQuery.dockerPort, imgIdentifier ) );
+             callback( util.format("<%s:%s> : No such image : '%s'", hostToQuery.hostname, hostToQuery.dockerPort, targetToDelete ) );
             break;
           case 200:
-              cliMessage = util.format("<%s:%s> : Image[%s] deleted successfully.", hostToQuery.hostname, hostToQuery.dockerPort, imgIdentifier ) ;            
+              cliMessage = util.format("<%s:%s> : Image[%s] deleted successfully.", hostToQuery.hostname, hostToQuery.dockerPort, targetToDelete ) ;            
               logger.info(  );
               req.session.messages = {
                  text: cliMessage,
@@ -732,9 +732,9 @@ exports.hcontainers = function (req, res) {
             case 200:
               viewData = JSON.parse(data);
               viewData.forEach(function (container, index) {
-                logger.info(container.Image);
+                logger.info("Comparing with repository: :::::::::::::::::: >> " + container.Image + ":" + repository);
 
-                if (container.Image === imgIdentifier.substr(0, 12)) { // TODO
+                if (container.Image === imgIdentifier.substr(0, 12) || container.Image === repository) { // TODO
                   containerList.push(container);
                 }
               });
@@ -787,11 +787,20 @@ exports.hcontainers = function (req, res) {
 };
 
 exports.hnewContainer = function(req, res){
-
+  var repository;
+  try{
+     repository = req.query.repository.trim();
+   }catch(err){
+      repository = "";
+   }
   res.render('docker/container/new', { 
     title: 'Create New Container',
     hostId: parseInt(req.params.host_id),
-    imageId:  req.params.imgIdentifier,
+    imgInfo: {
+      id: req.params.imgIdentifier,
+      repository: repository,
+      created: req.query.created
+    },    
     commandToRun : "bash"
   });
 
@@ -805,8 +814,18 @@ exports.hcreateContainer = function( req, res){
   var hostToQuery = {};
 
 
+
+  var repository, createdOn = "";
+  try{
+     repository = req.body.repository;
+   }catch(err){
+      repository = "";
+   }
+  createdOn = req.body.created;
+
+
   var containerName = require('querystring').escape(req.body.name.trim());
-//  var Hostname = req.body.Hostname;
+  //  var Hostname = req.body.Hostname;
   var User = req.body.User;
   var Memory = parseInt(req.body.Memory);
   var MemorySwap = parseInt(req.body.MemorySwap);
@@ -819,14 +838,15 @@ exports.hcreateContainer = function( req, res){
   var OpenStdin = typeof req.body.OpenStdin === 'undefined' ? false : true;
   var StdinOnce = typeof req.body.StdinOnce === 'undefined' ? false : true;
   var Env = req.body.Env === 'null' ? null : req.body.Env;
-  var Cmd = [];
-  Cmd.push(req.body.Cmd);
+  var Cmd = ["node", "index.js"];
+//  Cmd.push(req.body.Cmd);
+  
   var Dns = req.body.Dns === 'null' ? null : req.body.Dns;
   var Image = req.body.Image;
   var Volumes = null;
   // req.body.Volumes ;
   var VolumesFrom = req.body.VolumesFrom;
-  var WorkingDir = req.body.WorkingDir;
+  var WorkingDir = "/home/dockworker"  ; //req.body.WorkingDir;
   console.log('AttachStdin : ' + req.body.AttachStdin);
   var jsonContainerData = {
       Name: containerName,
@@ -843,6 +863,7 @@ exports.hcreateContainer = function( req, res){
       StdinOnce: StdinOnce,
       Env: Env,
       Cmd: Cmd,
+      ExposedPorts:{"15000/tcp":{}},
       Dns: Dns,
       Image: Image.toString(),
       Volumes: Volumes,
@@ -850,6 +871,13 @@ exports.hcreateContainer = function( req, res){
       WorkingDir: WorkingDir
     };
 
+  var jsonPortBinding = {
+             "PortBindings": {
+                "15000/tcp": [ { "HostIp": "0.0.0.0"
+                       // ,"HostPort": "15000"
+              } ]}};
+
+  var newContainer_id  = null;
 
 
   async.series([
@@ -865,14 +893,15 @@ exports.hcreateContainer = function( req, res){
         });
       },
       function (callback) {
-          if (dockerHostList.length === 0) {
-            callback('No Docker host available yet.');
-            return;
-          }
+        if (dockerHostList.length === 0) {
+          callback('No Docker host available yet.');
+          return;
+        }
 
         hostToQuery= (dockerHostList.filter( function(item){
               return item.id === selectedHostId;
-          }))[0];
+        }))[0];
+        
         if( typeof hostToQuery === 'undefined' ){
              callback( "Host with id :'"+selectedHostId + "' not found.") ;
              return;
@@ -881,8 +910,7 @@ exports.hcreateContainer = function( req, res){
 
       },
       function(callback){
-        var cliMessage = null;
-        logger.info( "Retrieving containers from : " + JSON.stringify(hostToQuery) );  
+        logger.info("Creating Container...====================================" );  
         jsonContainerData.Hostname = hostToQuery.hostname;
         var str_ContainerData = JSON.stringify(jsonContainerData);
         //res.end( str_ContainerData);
@@ -908,6 +936,7 @@ exports.hcreateContainer = function( req, res){
               text: 'Container[' + jResult.Id + '] created successfully.  Warnings: ' + jResult.Warnings,
               type: 'alert'
             };
+            newContainer_id = jResult.Id;
             break;
           case 500:
             req.session.messages = {
@@ -927,6 +956,55 @@ exports.hcreateContainer = function( req, res){
 
         });
 
+      },
+      function(callback){
+        
+        //Start the container at specified port
+        if( newContainer_id === null || newContainer_id === ''){
+            callback("failed to obtain container id: " +  req.session.messages.text);
+            return;
+        }
+
+        logger.info("Starting container...====================================");
+        var str_jsonPortBinding = JSON.stringify( jsonPortBinding);
+        var headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': str_jsonPortBinding.length
+          };
+        var querystring = '/containers/' + newContainer_id + '/start';
+
+        appUtil.makePostRequestToHost(hostToQuery, querystring , headers, str_jsonPortBinding, function (result, statusCode, errorMessage) {
+          switch (statusCode) {
+          case 404:
+            req.session.messages = {
+              text: 'No such container : \'' + newContainer_id + '\' ',
+              type: 'error'
+            };
+            break;         
+          case 204:
+            logger.info( result);
+            req.session.messages = {
+              text: 'Container[' + newContainer_id + '] started successfully',
+              type: 'alert'
+            };
+            break;
+          case 500:
+            req.session.messages = {
+              text: 'Container created [' + newContainer_id + '] but failed to start it. Cause: Server error.' + result,
+              type: 'error',
+              oData: jsonContainerData
+            };
+            break;
+          default:
+            req.session.messages = {
+              text: 'Container created [' + newContainer_id + '] but Unable to query docker host to start it. Please check network connection. : <' + errorMessage + '>',
+              type: 'error',
+              oData: jsonContainerData
+            };
+          }
+          callback();
+        });
+
       }], 
       function(err){
         if( err){
@@ -935,9 +1013,11 @@ exports.hcreateContainer = function( req, res){
               type: 'error',
             }          
            res.redirect(req.headers.referer);
-        }else
-          res.redirect('hosts/' + selectedHostId + '/dockers/'+ imgIdentifier + '/containers');
-
+        }else{
+            var redirectUrl = util.format("hosts/%s/dockers/%s/containers?repository=%s&created=%s", selectedHostId, imgIdentifier, repository, createdOn);
+            logger.info( "Redirecting to: %s", redirectUrl);
+           res.redirect(redirectUrl);
+         }
       }
   );
 

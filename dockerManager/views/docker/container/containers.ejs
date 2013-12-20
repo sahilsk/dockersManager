@@ -24,7 +24,7 @@
 
 <% } %>
 
-<h3> <a href="/hosts/<%= imgInfo.runningOn.id %>/dockers/<%= imgInfo.id %>/containers/new"> Create new container </a> </h3>
+<h3> <a href="/hosts/<%= imgInfo.runningOn.id %>/dockers/<%= imgInfo.id %>/containers/new?repository=<%= imgInfo.repository %>&created=<%= imgInfo.created %>"> Create new container </a> </h3>
 			
 <% if( statusCode == 404 ) { %>
 	<h3> Containers not found  </h3>
@@ -56,13 +56,17 @@
 			<% for(var k in item){ %>
 				<td>
 					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
-						<%= item[k] %>
+						<%= JSON.stringify(item[k]) %>
 					</div>			
 				
 				</td>
 			<% } %>
 				<td>
 					<Div class="operation_menu"> 	
+						<% if( item.Ports && item.Ports !== 'null'){ %>
+								<span > <a href="http://<%= imgInfo.runningOn.hostname %>:<%= (item.Ports[0]).PublicPort %>/static/term.html" target="_blank" > Launch </a> </span>
+						<% }%>
+
 						<span class="inspect"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
 						<span class="status" >  <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
 						<span class="kill"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>

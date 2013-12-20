@@ -5,8 +5,12 @@
 <h1> Create New Container </h1>
 
 	<fieldset>
+	 	<legend> <h2> Fill in container detail </h2></legend>
+	<form method="Post" action="/hosts/<%= hostId %>/dockers/<%= imgInfo.id %>/containers/create" >
 
-	<form method="Post" action="/hosts/<%= hostId %>/dockers/<%= imageId %>/containers/create" >
+		<!-- REPOSITORY INFORMATION -->
+		<input type="hidden" name="repository" value='<%= imgInfo.repository %>' />
+		<input type="hidden" name="created" value='<%= imgInfo.created %>' />
 
 		<label> Container Name </label>
 		<input type="text" name="name"  id="name"  placeholder="name"  value="<% if( messages && messages.oData){ %><%= unescape(messages.oData.Name) %><% } %>" />
@@ -74,7 +78,7 @@
 		<br/> <br/>	
 
 		<label> Image </label>
-		<input type="text" name="Image"  id="Image"  placeholder="name"  value="<%= imageId %>" />
+		<input type="text" name="Image"  id="Image"  placeholder="name"  value="<%= imgInfo.id %>" />
 		<br/> <br/>
 
 		<label> Volumes </label>
