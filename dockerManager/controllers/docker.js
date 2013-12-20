@@ -732,9 +732,9 @@ exports.hcontainers = function (req, res) {
             case 200:
               viewData = JSON.parse(data);
               viewData.forEach(function (container, index) {
-                logger.info("Comparing with repository: :::::::::::::::::: >> " + container.Image + ":" + repository);
+                logger.info( util.format("Comparing with repository: :::::>> <%s>===<%s> ", container.Image, repository));
 
-                if (container.Image === imgIdentifier.substr(0, 12) || container.Image === repository) { // TODO
+                if (container.Image  === imgIdentifier.substr(0, 12) || container.Image === repository) { // TODO
                   containerList.push(container);
                 }
               });
@@ -816,11 +816,10 @@ exports.hcreateContainer = function( req, res){
 
 
   var repository, createdOn = "";
-  try{
-     repository = req.body.repository;
-   }catch(err){
-      repository = "";
-   }
+   repository = req.body.repository;
+   if( repository === "<none>:<none>")
+        repository = "";
+
   createdOn = req.body.created;
 
 
@@ -839,15 +838,15 @@ exports.hcreateContainer = function( req, res){
   var StdinOnce = typeof req.body.StdinOnce === 'undefined' ? false : true;
   var Env = req.body.Env === 'null' ? null : req.body.Env;
   var Cmd = ["node", "index.js"];
-//  Cmd.push(req.body.Cmd);
+  //  Cmd.push(req.body.Cmd);
   
   var Dns = req.body.Dns === 'null' ? null : req.body.Dns;
-  var Image = req.body.Image;
   var Volumes = null;
   // req.body.Volumes ;
   var VolumesFrom = req.body.VolumesFrom;
   var WorkingDir = "/home/dockworker"  ; //req.body.WorkingDir;
   console.log('AttachStdin : ' + req.body.AttachStdin);
+
   var jsonContainerData = {
       Name: containerName,
       User: User,
@@ -865,11 +864,19 @@ exports.hcreateContainer = function( req, res){
       Cmd: Cmd,
       ExposedPorts:{"15000/tcp":{}},
       Dns: Dns,
-      Image: Image.toString(),
       Volumes: Volumes,
       VolumesFrom: VolumesFrom,
       WorkingDir: WorkingDir
     };
+
+
+  if( repository !== "")
+      jsonContainerData.Image = repository
+  else
+      jsonContainerData.Image = imgIdentifier;
+
+
+  logger.info( jsonContainerData);
 
   var jsonPortBinding = {
              "PortBindings": {
