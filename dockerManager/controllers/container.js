@@ -538,7 +538,7 @@ exports.create = function (req, res) {
 };
 exports.toggleStatus = function (req, res) {
   isContainerRunning(req.params.id, function (running) {
-    var taskToPerform = running ? 'stop' : 'start';
+    var taskToPerform = running ? 'stop?t=5' : 'start';
     console.log(running ? 'Stopping container...' : 'Starting container...');
     appUtil.makePostRequest('/containers/' + req.params.id + '/' + taskToPerform, null, null, function (result, statusCode, errorMessage) {
       switch (statusCode) {
@@ -551,7 +551,7 @@ exports.toggleStatus = function (req, res) {
       case 204:
         req.session.messages = {
           text: '\'' + req.params.id + '\' container ' + (running ? 'stopped' : 'started') + ' successfully. ',
-          type: 'alert'
+          type: 'success'
         };
         break;
       case 500:
@@ -615,7 +615,7 @@ exports.htoggleStatus = function (req, res) {
         logger.info( "Retrieving image data from : " + hostToQuery);  
 
           isContainerRunningInHost(hostToQuery, containerId, function (running) {
-            var taskToPerform = running ? 'stop' : 'start';
+            var taskToPerform = running ? 'stop?t=5' : 'start';
             console.log(running ? 'Stopping container...' : 'Starting container...');
             var querystring =  '/containers/' + containerId + '/' + taskToPerform;
             appUtil.makePostRequestToHost(hostToQuery, querystring, null, null, function (result, statusCode, errorMessage) {
@@ -629,7 +629,7 @@ exports.htoggleStatus = function (req, res) {
               case 204:
                 req.session.messages = {
                   text: '\'' + containerId + '\' container ' + (running ? 'stopped' : 'started') + ' successfully. ',
-                  type: 'alert'
+                  type: 'success'
                 };
                 break;
               case 500:
@@ -921,7 +921,7 @@ function isContainerRunning(containerID, onResult) {
 }
 function isContainerRunningInHost(host, containerID, onResult) {
   var running = false;
-  appUtil.makeGetRequestToHost(host, '/containers/' + containerID + '/json', function (data, statusCode) {
+  appUtil.makeGetRequestToHost(host, '/containers/' + containerID + '/json', function (errorMessage, data, statusCode) {
     if (statusCode === 200) {
       running = JSON.parse(data).State.Running;
     }

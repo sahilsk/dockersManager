@@ -841,10 +841,10 @@ exports.hcreateContainer = function( req, res){
   //  Cmd.push(req.body.Cmd);
   
   var Dns = req.body.Dns === 'null' ? null : req.body.Dns;
-  var Volumes = null;
+  var Volumes =  { "/dockworker": {} };
   // req.body.Volumes ;
   var VolumesFrom = req.body.VolumesFrom;
-  var WorkingDir = "/home/dockworker"  ; //req.body.WorkingDir;
+  var WorkingDir = "/dockworker"  ; //req.body.WorkingDir;
   console.log('AttachStdin : ' + req.body.AttachStdin);
 
   var jsonContainerData = {
@@ -879,9 +879,10 @@ exports.hcreateContainer = function( req, res){
   logger.info( jsonContainerData);
 
   var jsonPortBinding = {
+             "Binds":["/home/dockworker:/dockworker"],
              "PortBindings": {
                 "15000/tcp": [ { "HostIp": "0.0.0.0"
-                       // ,"HostPort": "15000"
+                       // ,"HostPort": "15000"p
               } ]}};
 
   var newContainer_id  = null;
