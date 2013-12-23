@@ -172,6 +172,9 @@
 
 				<td>
 					<Div class="operation_menu"> 	
+						<% if( item.Ports && item.Ports !== 'null'){ %>
+								<span > <a href="http://<%= item.runningOn.hostname %>:<%= (item.Ports[0]).PublicPort %>/static/term.html" target="_blank" > Launch </a> </span>
+						<% }%>
 						<span class="inspect"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
 						<span class="status" >  <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
 						<span class="kill"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>
