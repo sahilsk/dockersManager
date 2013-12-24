@@ -655,6 +655,7 @@ exports.htoggleStatus = function (req, res) {
         if( err)
           errMessages.push({text:err, type:'error'});
 
+        console.log("::::::::::::::::::: req.headers.referer: " , req.headers.referer);
         res.redirect(req.headers.referer);
         res.end();
 
