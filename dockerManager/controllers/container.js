@@ -716,6 +716,7 @@ exports.hkill = function (req, res) {
             type: 'error'
           };
         }
+        callback();
 
       });
     }
