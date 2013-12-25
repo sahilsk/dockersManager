@@ -531,7 +531,7 @@ exports.htoggleStatus = function (req, res) {
   if( req.query.redirectURL !== 'undefined' )
     redirectURL = req.query.redirectURL ;
   else
-    redirectURL =  util.format("hosts/%d/containers/%s/inspect", selectedHostId, containerId ); 
+    redirectURL =  util.format("/hosts/%d/containers/%s/inspect", selectedHostId, containerId ); 
 
   
 
@@ -574,45 +574,34 @@ exports.htoggleStatus = function (req, res) {
         appUtil.makePostRequestToHost(hostToQuery, querystring, null, null, function (result, statusCode, errorMessage) {
           switch (statusCode) {
           case 404:
-            req.session.messages = {
-              text: 'No such container : \'' + containerId + '\' ',
-              type: 'error'
-            };
+            callback('No such container : \'' + containerId + '\' ');
             break;
           case 204:
             req.session.messages = {
               text: '\'' + containerId + '\' container ' + (running ? 'stopped' : 'started') + ' successfully. ',
               type: 'success'
             };
+            callback();
             break;
           case 500:
-            req.session.messages = {
-              text: 'Server error. ' + result,
-              type: 'error'
-            };
+            callback('Server error. ' + result );
             break;
           default:
-            req.session.messages = {
-              text: 'Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>',
-              type: 'error'
-            };
+            callback('Unable to query list of containers. Please check your network connection. : <' + errorMessage + '>');
             break;
           }
-          callback();
         });
       });  //  end 'isContainerRunning'
     }
   ], function (err) {
     if (err)
-      errMessages.push({
+      req.session.messages = {
         text: err,
         type: 'error'
-      });
-
+      };
 
     console.log(':::::::::::::::::::Redirecting to : ', redirectURL);
     res.redirect(redirectURL);
-    res.end();
   });
 };
 exports.kill = function (req, res) {
