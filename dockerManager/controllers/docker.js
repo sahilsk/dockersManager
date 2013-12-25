@@ -522,8 +522,7 @@ exports.hdelete = function (req, res) {
       req.session.messages = {
         text: err,
         type: 'error'
-      };  //res.redirect(req.headers.referer);
-          //return;
+      };  
     }
     res.redirect('/hosts/' + hostToQuery.id + '/dockers/list');
   });
@@ -681,6 +680,8 @@ exports.hcontainers = function (req, res) {
         text: err,
         type: 'error'
       });
+        console.log("||||||||||||||||||||||" + req.url);
+
     res.render('docker/container/containers', {
       'containerList': containerList,
       title: 'List of Containers',
@@ -695,8 +696,9 @@ exports.hcontainers = function (req, res) {
         created: req.query.created,
         runningOn: hostToQuery
       },
-      fullURL : req.protocol + "://" + req.get('host') + req.url
+      redirectTo : req.url
     });
+
   });
 };
 exports.hnewContainer = function (req, res) {
