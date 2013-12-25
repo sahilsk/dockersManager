@@ -37,7 +37,6 @@ exports.inspect = function (req, res) {
         type: 'error'
       };
       res.redirect('docker/' + req.params.id);
-      res.end();
     }
     console.log(viewData);
     res.render('container/inspect', {
@@ -470,7 +469,6 @@ exports.create = function (req, res) {
         type: 'alert'
       };
       res.redirect('/containers/list');
-      res.end();
       return;
       break;
     case 500:
@@ -520,7 +518,6 @@ exports.toggleStatus = function (req, res) {
         };
       }
       res.redirect(req.headers.referer);
-      res.end();
     });
   });  //  end 'isContainerRunning'
 };
@@ -632,8 +629,7 @@ exports.kill = function (req, res) {
       };
     }
     res.redirect(req.headers.referer);
-    //res.redirect("/containers/list");
-    res.end();
+
   });
 };
 exports.hkill = function (req, res) {
@@ -717,7 +713,6 @@ exports.hkill = function (req, res) {
       });
     logger.info("Redirecting to: ", redirectURL);
     res.redirect(redirectURL);
-    res.end();
   });
 };
 exports.delete = function (req, res) {
@@ -754,7 +749,6 @@ exports.delete = function (req, res) {
       };
     }
     res.redirect('/containers/list');
-    res.end();
   });
 };
 exports.hdelete = function (req, res) {
@@ -842,7 +836,6 @@ exports.hdelete = function (req, res) {
       });
     logger.info("Redirecting to: ", redirectURL);
     res.redirect(redirectURL);
-    res.end();
   });
 };
 function isContainerRunning(containerID, onResult) {

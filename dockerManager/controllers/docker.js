@@ -425,7 +425,6 @@ exports.delete = function (req, res) {
         text: util.format('<%s:%s> : Image[%s] deleted successfully.', dockerHost.hostname, dockerHost.dockerPort, imgIdentifier),
         type: 'alert'
       };
-      // res.redirect('/');
       break;
     case 500:
       req.session.messages = {
@@ -680,13 +679,13 @@ exports.hcontainers = function (req, res) {
         text: err,
         type: 'error'
       });
-        console.log("||||||||||||||||||||||" + req.url);
+    console.log("||||||||||||||||||||||" + req.url);
 
     res.render('docker/container/containers', {
       'containerList': containerList,
       title: 'List of Containers',
       page: 'containers_list',
-      id: imgIdentifier,
+      id: imgIdentifier,  
       'data': viewData,
       'statusCode': hostStatusCode,
       errorMessages: errMessages,

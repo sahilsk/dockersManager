@@ -36,7 +36,6 @@ exports.upload = function (req, res) {
       type: 'error'
     };
     res.redirect('/');
-    res.end();
     return true;
   }
   if (req.files.dockerfile.name === undefined || req.files.dockerfile.name.length == 0) {
@@ -57,7 +56,6 @@ exports.upload = function (req, res) {
         type: 'alert'
       };
       res.redirect('/dockers/' + buildTagName);
-      res.end();
       return true;
       break;
     case 500:
@@ -84,7 +82,6 @@ exports.upload = function (req, res) {
       break;
     }
     res.redirect('/');
-    res.end();
   });
   req.on('error', function (e) {
     req.session.messages = {
@@ -92,7 +89,6 @@ exports.upload = function (req, res) {
       type: 'error'
     };
     res.redirect('/' + req.params.id);
-    res.end();
   });
 };
 /*
@@ -256,8 +252,7 @@ exports.uploadToAll = function (req, res) {
     } else {
       res.redirect('/dockerfiles');
     }
-    //        res.redirect('/dockerfiles/'+ encodeURIComponent(buildTagName) );
-    res.end();
+
     return;
   });
 };
@@ -270,7 +265,6 @@ exports.list = function (req, res) {
         type: 'error'
       };
       res.redirect('/');
-      res.end();
       return;
     }
     if (result.length === 0)
