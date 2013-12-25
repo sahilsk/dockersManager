@@ -808,7 +808,7 @@ exports.hdelete = function (req, res) {
     },
     function (callback) {
       var cliMessage = null;
-      logger.info('Retrieving image data from : ' + hostToQuery);
+      logger.info('Retrieving image data from : %j' , hostToQuery);
       var querystring = '/containers/' + containerId;
       appUtil.makeDELETERequestToHost(hostToQuery, '/containers/' + containerId, function (errorMessage, result, statusCode) {
         switch (statusCode) {
