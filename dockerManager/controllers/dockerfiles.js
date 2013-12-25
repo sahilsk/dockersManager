@@ -21,7 +21,6 @@ var progress = 0;
 || 	Description:  Upload dockerfile and build it
 */
 exports.upload = function (req, res) {
-
   var newFilePath = path.join(__dirname, '../uploads');
   var newFileName = 'dockerfile_copy';
   var uploadedBytes = '';
@@ -115,8 +114,6 @@ exports.upload = function (req, res) {
 ||
 */
 exports.uploadToAll = function (req, res) {
-
-
   var newFilePath = path.join(__dirname, '../uploads');
   var newFileName = 'dockerfile_copy';
   var uploadedBytes = '';
@@ -246,7 +243,7 @@ exports.uploadToAll = function (req, res) {
           });
         }
       });
-    } 
+    }
   ], function (err, results) {
     if (err) {
       req.session.messages = {
@@ -276,9 +273,8 @@ exports.list = function (req, res) {
       res.end();
       return;
     }
-    if (result.length === 0) 
+    if (result.length === 0)
       logger.info('No image uploaded yet.');
-    
     async.each(result, function (key, cb) {
       //verify if is valid id
       if (key.indexOf('Image_') != -1) {
@@ -315,7 +311,6 @@ exports.show = function (req, res) {
   var buildTagName = req.params.buildTag;
 };
 exports.push = function (req, res) {
-
   var recordID = decodeURIComponent(req.params.recordID);
   logger.info('reocrdID: ' + recordID);
   var record = null;
@@ -376,7 +371,6 @@ exports.push = function (req, res) {
       // end 'switch'
       res.redirect('/dockerfiles');
     });  // end 'pushImageOnRegistry'
-
   });  // end 'rdsClient.hgetall'
 };
 /*
@@ -578,7 +572,6 @@ exports.delete = function (req, res) {
 };
 function updateSubmittedImageRecord(record) {
 }
-
 /*
 ||  buildDockerfileOnHost(host, filepath, buildname) 
 ||  Description:  build dockerfile (filePath) and built it with tag 'buildName'
@@ -601,13 +594,8 @@ function buildDockerfileOnHost(host, filePath, buildName, onResult) {
   });
 }
 function pushImageOnRegistry(host, tagWithRepository, callback) {
-  
- var queryString = util.format('/images/%s/push', tagWithRepository );
-  
-  var headers = {
-    'X-Registry-Auth':null
-  };
-
+  var queryString = util.format('/images/%s/push', tagWithRepository);
+  var headers = { 'X-Registry-Auth': null };
   appUtil.makePostRequestToHost(host, queryString, headers, null, function (data, statusCode, error) {
     callback(data, statusCode, error);
   });

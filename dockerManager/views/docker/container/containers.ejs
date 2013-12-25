@@ -68,9 +68,9 @@
 						<% }%>
 
 						<span class="inspect"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
-						<span class="status" >  <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/toggle" title="toggle"> &Phi;	 </a>  </span>
-						<span class="kill"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/kill"  title="kill"> &dagger;	 </a> </span>
-						<span class="delete"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/delete" title="remove"> &cross;  </a></span>
+						<span class="status" >  <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/toggle?redirectURL=<%= fullURL%>" title="toggle"> &Phi;	 </a>  </span>
+						<span class="kill"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/kill?redirectURL=<%= fullURL%>" title="kill"> &dagger;	 </a> </span>
+						<span class="delete"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/delete?redirectURL=<%= fullURL%>" title="remove"> &cross;  </a></span>
 					</Div>
 
 				</td>

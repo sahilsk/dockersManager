@@ -2,21 +2,13 @@
 
 <div class="inspectDataWrapper">
 
-
-<% if( errorMessages && errorMessages.length >= 1 ){ %>
-   	<ul class="flash" >
-   		<% errorMessages.forEach( function(error, index){ %> 
-   			<li class="<%= error.type %>" >
-   				<%= error.text %>
-				<span> &cross; </span>
-			</li>
-   		<%  }); %>
-	</ul>
-<% } else if( statusCode && statusCode !== 200 ) { %>
+<%  if( !statusCode || statusCode !== 200 ) { %>
 	<div class="somethingWentWrong">
 		<span ><%= data %> </span>
 	</div>
-<% }else{ %>
+<% } %>
+
+<% if( statusCode === 200) { %>
 
 	<Div class="operation_menu"> Selected Container: 
 		<span class="id" > <%= containerInfo.id %> <strong>  ( <%= data.State.Running? "Running.." : "Stoppped" %>) </strong> </span> 

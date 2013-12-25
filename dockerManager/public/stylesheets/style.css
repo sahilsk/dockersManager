@@ -94,7 +94,7 @@ ul.flash li {
 .somethingWentWrong {
   border: 1px dashed #CCC;
   background-color: #eee;
-  padding: 10;
+  padding: 10px;
   text-align: center;
 }
 .somethingWentWrong span {
