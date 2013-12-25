@@ -300,7 +300,7 @@ exports.hlistAll = function (req, res) {
     },
     function (callback) {
       if (dockerHostList.length === 0) {
-        callback('No Docker host available yet.');
+        callback('No Docker host available yet.', null);
         return;
       }
       async.map(dockerHostList, function (host, cb) {
@@ -316,11 +316,11 @@ exports.hlistAll = function (req, res) {
     },
     function (callback) {
       if (c_DockerHostList.length === 0) {
-        callback('No Docker Server is available yet. Please try again later. ');
+        callback('No Docker Server is available yet. Please try again later.', null);
         return;
       }
       if (selectedHostId === -1) {
-        callback('Select Docker Host. ');
+        callback('Select Docker Host. ', null);
         return;
       }
       logger.info(' c_DockerHostList length: %d/%d', dockerHostList.length, c_DockerHostList.length);
@@ -328,7 +328,7 @@ exports.hlistAll = function (req, res) {
         return item.id === selectedHostId;
       })[0];
       if (typeof hostToQuery === 'undefined') {
-        callback('Invalid Host Id');
+        callback('Invalid Host Id', null);
         return;
       }
       logger.info('++++++++++++ ' + JSON.stringify(hostToQuery));
@@ -370,18 +370,8 @@ exports.hlistAll = function (req, res) {
       });
     }
   ], function (err) {
-    if (err) {
-      res.render('docker/list', {
-        title: 'List of images',
-        page: 'images_list',
-        criticalError: err,
-        hostList: c_DockerHostList,
-        statusCode: hostStatusCode,
-        fullURL : req.protocol + "://" + req.get('host') + req.url
-      });
-      return;
-    } else
-      res.render('container/list', {
+
+    var jViewData = {
         title: 'List of Containers',
         'areAll': areAll,
         'data': hostContainersList,
@@ -389,9 +379,26 @@ exports.hlistAll = function (req, res) {
         hostList: c_DockerHostList,
         statusCode: hostStatusCode,
         errorMessages: errMessages,
-        fullURL : req.protocol + "://" + req.get('host') + req.url
+        redirectTo : req.url
+      };
 
+    if (err) {
+      logger.error(err);
+      /*
+      res.render('docker/list', {
+        title: 'List of images',
+        page: 'images_list',
+        criticalError: err,
+        hostList: c_DockerHostList,
+        statusCode: hostStatusCode,
+        redirectTo : req.url
       });
+    */
+      jViewData.criticalError = err;
+    }
+
+    res.render('container/list', jViewData);
+    
   });
 };
 exports.index = function (req, res) {
@@ -1033,12 +1040,12 @@ exports.createInAll = function (req, res) {
       req.session.messages = {
         text: err ? JSON.stringify(err) : '',
         type: 'error',
-        oData: jsonContainerData
+        oData: jsonContainerData,
+        hostsReport: hostResponseResultArr
       };
       res.redirect('/containers/new');
     } else
       res.redirect('/hosts/-1/containers/list');
-    res.end();
     return;
   });
 };

@@ -779,6 +779,7 @@ exports.hcreateContainer = function (req, res) {
     jsonContainerData.Image = repository;
   else
     jsonContainerData.Image = imgIdentifier;
+
   logger.info(jsonContainerData);
   var jsonPortBinding = {
       'Binds': ['/home/dockworker:/dockworker'],
@@ -829,7 +830,7 @@ exports.hcreateContainer = function (req, res) {
           var jResult = JSON.parse(result);
           console.log(jResult);
           logger.info('Container[' + jResult.Id + '] created successfully. ');
-          if (jResult.Warnings !== 'undefined') {
+          if ( typeof jResult.Warnings !== 'undefined') {
             logger.info(util.format(' Warnings: %j', jResult.Warnings));
           }
           newContainer_id = jResult.Id;

@@ -1,6 +1,5 @@
 <% include ../../layouts/dashboard_layout_top %>
 
-
 <% if( messages && typeof messages.hostsReport !== "undefined" && messages.hostsReport ){ %>
            <ul class="flash" >
                    <% messages.hostsReport.forEach( function(item, index){ %> 
@@ -58,15 +57,12 @@
 
 
 
-<% if( typeof criticalError != 'undefined' && criticalError) { %>
+<% if( typeof criticalError !== 'undefined' && criticalError) { %>
 	<div class="somethingWentWrong">
 		<span ><%= criticalError %> </span>
 	</div>	
 
-<% } %>
-
-
-<% if( typeof data === "object" && data.length == 0 ){ %>
+<% } else  if( typeof data === "object" && data.length == 0 ){ %>
 	
 	<div class="somethingWentWrong">
 		<span > No container Created Yet. </span>
@@ -177,9 +173,9 @@
 						<% }%>
 						<span class="inspect"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
 
-						<span class="status" >  <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/toggle?redirectURL=<%= fullURL%>" title="toggle"> &Phi;	 </a>  </span>
-						<span class="kill"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/kill?redirectURL=<%= fullURL%>"  title="kill"> &dagger;	 </a> </span>
-						<span class="delete"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/delete?redirectURL=<%= fullURL%>" title="remove"> &cross;  </a></span>
+						<span class="status" >  <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/toggle?redirectURL=<%= redirectTo %>" title="toggle"> &Phi;	 </a>  </span>
+						<span class="kill"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/kill?redirectURL=<%= redirectTo %>"  title="kill"> &dagger;	 </a> </span>
+						<span class="delete"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/delete?redirectURL=<%= redirectTo %>" title="remove"> &cross;  </a></span>
 					</Div>
 
 			</td>
