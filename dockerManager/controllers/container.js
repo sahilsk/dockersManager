@@ -384,16 +384,6 @@ exports.hlistAll = function (req, res) {
 
     if (err) {
       logger.error(err);
-      /*
-      res.render('docker/list', {
-        title: 'List of images',
-        page: 'images_list',
-        criticalError: err,
-        hostList: c_DockerHostList,
-        statusCode: hostStatusCode,
-        redirectTo : req.url
-      });
-    */
       jViewData.criticalError = err;
     }
 
