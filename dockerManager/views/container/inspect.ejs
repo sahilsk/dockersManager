@@ -15,12 +15,12 @@
 		<span class="status" > 
 
 			<% if( statusCode === 200){ %>
-				<a href="/hosts/<%= containerInfo.runningOn.id %>/containers/<%= containerInfo.id %>/toggle" > <%= data.State.Running? "Stop" : "Run" %>  </a>
+				<a href="/hosts/<%= containerInfo.runningOn.id %>/containers/<%= containerInfo.id %>/toggle?redirectURL=<%= redirectTo %>" > <%= data.State.Running? "Stop" : "Run" %>  </a>
 			<% } %>
 
 		</span>
-		<span class="kill"> <a href="/hosts/<%= containerInfo.runningOn.id %>/containers/<%= containerInfo.id %>/kill"> Kill  </a> </span>
-		<span class="delete"> <a href="/hosts/<%= containerInfo.runningOn.id %>/containers/<%=containerInfo.id %>/delete"> Remove &cross;  </a> </span>
+		<span class="kill"> <a href="/hosts/<%= containerInfo.runningOn.id %>/containers/<%= containerInfo.id %>/kill?redirectURL=<%= redirectTo %>"> Kill  </a> </span>
+		<span class="delete"> <a href="/hosts/<%= containerInfo.runningOn.id %>/containers/<%=containerInfo.id %>/delete?redirectURL=<%= redirectTo %>"> Remove &cross;  </a> </span>
 	</Div>
 
 	<br/>

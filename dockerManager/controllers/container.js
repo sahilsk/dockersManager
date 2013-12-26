@@ -17,6 +17,7 @@ exports.index = function (req, res) {
     dockerfile_name: req.params.docfileName
   });
 };
+/*
 exports.inspect = function (req, res) {
   //makeGetRequest("/containers/json?all=1" , function(data){
   appUtil.makeGetRequest('/containers/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
@@ -47,6 +48,7 @@ exports.inspect = function (req, res) {
     });
   });
 };
+*/
 exports.hinspect = function (req, res) {
   var containerId = req.params.container_id;
   var selectedHostId = parseInt(req.params.host_id);
@@ -123,7 +125,9 @@ exports.hinspect = function (req, res) {
       containerInfo: {
         id: containerId,
         runningOn: hostToQuery
-      }
+      },
+      redirectTo : req.url
+
     });
   });
 };

@@ -103,15 +103,16 @@ exports.makeRoutes= function(app){
 	||Containers Operations
 	||
 	*/
-	app.get("/containers/:id/inspect", container.inspect);
-	app.get("/containers", container.index);
-	app.get("/containers/list", container.listAll);
-	app.get("/containers/:id/toggle", container.toggleStatus);
-	app.get("/containers/new", container.new);
+
+//	app.get("/containers/:id/inspect", container.inspect);
+//	app.get("/containers", container.index);
+//	app.get("/containers/list", container.listAll);
+//	app.get("/containers/:id/toggle", container.toggleStatus);
+//	app.get("/containers/new", container.new);
 //	app.post("/containers/create", container.create);
-	app.post("/containers/create", container.createInAll);
-	app.get("/containers/:id/kill", container.kill)
-	app.get("/containers/:id/delete", container.delete);
+//	app.post("/containers/create", container.createInAll);
+//	app.get("/containers/:id/kill", container.kill)
+//	app.get("/containers/:id/delete", container.delete);
 
 
 
