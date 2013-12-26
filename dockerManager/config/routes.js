@@ -51,14 +51,14 @@ exports.makeRoutes= function(app){
 		req.session.messages = {text: "Please upload dockerfile first", type: "warn"};
 	    res.redirect("/"); 
 	})
-	app.get("/dockers/list", docker.list);
-	app.get("/dockers/:id", docker.index);
-	app.get("/dockers/:id/inspect", docker.inspect);
-	//app.get("/dockers/:id/delete", docker.delete);
-	app.post("/dockers/delete", docker.delete);
+//	app.get("/dockers/list", docker.list);
+//	app.get("/dockers/:id", docker.index);
+//	app.get("/dockers/:id/inspect", docker.inspect);
+//	app.get("/dockers/:id/delete", docker.delete);
+//	app.post("/dockers/delete", docker.delete);
 //	app.get("/dockers/:id/containers", docker.containers);
-	app.get("/dockers/:id/containers", docker.containers);
-	app.get("/dockers/:id/containers", docker.containers);  // Used in Dockerfile Submitted Images
+//	app.get("/dockers/:id/containers", docker.containers);
+//	app.get("/dockers/:id/containers", docker.containers);  // Used in Dockerfile Submitted Images
 
 //	app.delete("/dockers/:id/delete", docker.delete)
 

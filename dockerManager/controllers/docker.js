@@ -9,6 +9,7 @@ var async = require('async');
 var appUtil = require('./app_util');
 var logger = require('../config/logger');
 var util = require('util');
+/*
 exports.index = function (req, res) {
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
     var viewData = '';
@@ -88,6 +89,7 @@ exports.inspect = function (req, res) {
     });
   });
 };
+*/
 exports.hinspect = function (req, res) {
   var imgIdentifier = req.params.imgIdentifier;
   var selectedHostId = parseInt(req.params.host_id);
@@ -185,6 +187,8 @@ exports.hinspect = function (req, res) {
     });
   });
 };
+
+/*
 exports.list = function (req, res) {
   var areAll = 1;
   if (req.query.all)
@@ -281,6 +285,7 @@ exports.list = function (req, res) {
     res.end();
   });
 };
+*/
 exports.hlist = function (req, res) {
   var areAll = 1;
   if (req.query.all)
@@ -386,6 +391,7 @@ exports.hlist = function (req, res) {
       });
   });
 };
+/*
 exports.delete = function (req, res) {
   var repository, querystring, imgIdentifier;
   try {
@@ -441,6 +447,7 @@ exports.delete = function (req, res) {
     res.redirect(req.headers.referer);
   });
 };
+*/
 /* Delete Image:
 ||  -> Delete first by repotags if present, else image id will be used to delete image
 ||
@@ -526,6 +533,7 @@ exports.hdelete = function (req, res) {
     res.redirect('/hosts/' + hostToQuery.id + '/dockers/list');
   });
 };
+/*
 exports.containers = function (req, res) {
   var repository, querystring, hostStatusCode;
   try {
@@ -586,6 +594,7 @@ exports.containers = function (req, res) {
     });
   });
 };
+*/
 exports.hcontainers = function (req, res) {
   var imgIdentifier = req.params.imgIdentifier;
   var selectedHostId = parseInt(req.params.host_id);

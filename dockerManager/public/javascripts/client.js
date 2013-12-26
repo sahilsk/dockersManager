@@ -67,7 +67,7 @@ function onServerChange(){
 		path = "containers";
 
 
-	window.location.href = window.location.origin + "/hosts/" + $("#hostList").find("option:selected").val() + "/"+ path + "/list" + queryString;
+	window.location.href = window.location.protocol + "//" + window.location.host + "/hosts/" + $("#hostList").find("option:selected").val() + "/"+ path + "/list" + queryString;
 
 }
 
