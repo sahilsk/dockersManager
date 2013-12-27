@@ -125,7 +125,7 @@
 		</td>		
 		<td>
 					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
-						<%= item.Ports %>
+						<%=  JSON.stringify(item.Ports )%>
 					</div>
 				
 		</td>	
@@ -173,9 +173,9 @@
 						<% }%>
 						<span class="inspect"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
 
-						<span class="status" >  <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/toggle?redirectURL=<%= redirectTo %>" title="toggle"> &Phi;	 </a>  </span>
-						<span class="kill"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/kill?redirectURL=<%= redirectTo %>"  title="kill"> &dagger;	 </a> </span>
-						<span class="delete"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/delete?redirectURL=<%= redirectTo %>" title="remove"> &cross;  </a></span>
+						<span class="status" >  <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/toggle?redirectURL=<%= encodeURIComponent(redirectTo ) %>" title="toggle"> &Phi;	 </a>  </span>
+						<span class="kill"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/kill?redirectURL=<%= encodeURIComponent(redirectTo ) %>"  title="kill"> &dagger;	 </a> </span>
+						<span class="delete"> <a href="/hosts/<%= data.runningOn.id %>/containers/<%=item.Id %>/delete?redirectURL=<%= encodeURIComponent(redirectTo ) %>" title="remove"> &cross;  </a></span>
 					</Div>
 
 			</td>
