@@ -1045,7 +1045,173 @@ exports.createInAll = function (req, res) {
 };
 
 
-exports.hlaunch = function(req, res){
+exports.hserviceLaunch = function(req, res){
+     //Add subdomaiin to container id 
+      var containerId = req.params.container_id;
+      var selectedHostId = parseInt(req.params.host_id);     
+
+      var frontEndURL = "service-" + containerId.substr(0, 12) + "." + config.domain.root +"." + config.domain.tld;
+      var backEndURL = null;
+      var publicPort = null;
+
+      var isNewEntry = false;
+
+      var dockerHostList;
+      var hostToQuery = null;
+
+
+
+      var redirectURL = null;
+      if( req.query.redirectURL !== 'undefined' )
+        redirectURL = req.body.redirectURL ;
+      else
+        redirectURL =  util.format("hosts/%d/containers/%s/inspect", selectedHostId, containerId ); 
+
+
+      async.series([
+        function (callback) {
+          appUtil.getDockerHosts(function (err, hostList) {
+            if (err)
+              callback(err);
+            else {
+              dockerHostList = hostList;
+              callback();
+            }
+          });
+        },
+        function (callback) {
+          if (dockerHostList.length === 0) {
+            callback('No Docker host available yet.');
+            return;
+          }
+          hostToQuery = dockerHostList.filter(function (item) {
+            return item.id === selectedHostId;
+          })[0];
+          if (typeof hostToQuery === 'undefined') {
+            callback('Host with id :\'' + selectedHostId + '\' not found.');
+            return;
+          }
+          callback();
+        },        
+        function (callback) {
+          logger.info('Starting Container...====================================');
+
+          var queryString = '/containers/' + containerId + '/start';
+          appUtil.makePostRequestToHost(hostToQuery, queryString, null, null, function (result, statusCode, errorMessage) {
+            switch (statusCode) {
+            case 404:
+              callback('No such container : \'' + containerId + '\' ');
+              break;
+            case 204:
+              logger.info(result);
+              logger.info('Container[' + containerId + '] started successfully' );
+              callback();
+              break;
+            case 500:
+              if( result.indexOf("is already running") === -1)
+               callback('Error: [' + containerId + '] ' + result);
+             else
+                callback();
+              break;
+            default:
+               callback(' Unable to query docker host to start it. Please check network connection. : <' + errorMessage + '>');
+            }
+          });
+        }, function(callback){
+           var queryString = "/containers/"+containerId+ "/json";
+            appUtil.makeGetRequestToHost(hostToQuery, queryString, function(errorMessage, data, statusCode){
+                if(statusCode === 200){
+                    var jContainerInfo = JSON.parse(data);
+                    logger.info(jContainerInfo);
+                    
+                    logger.info(jContainerInfo.Config.ExposedPorts);
+
+                    if( typeof jContainerInfo.Config.ExposedPorts !== "undefined" &&  
+                          jContainerInfo.Config.ExposedPorts !== null && 
+                          jContainerInfo.NetworkSettings.Ports !== null )
+                    {
+
+                      logger.info(Object.keys( jContainerInfo.Config.ExposedPorts ) );
+                      var exposedPort  =  Object.keys( jContainerInfo.Config.ExposedPorts )[0]; 
+                    
+                      publicPort = (jContainerInfo.NetworkSettings.Ports[exposedPort])[0].HostPort;
+                      backEndURL = "http://" + hostToQuery.hostname + ":" + publicPort;
+                      callback();
+                    }else{
+                      callback("Ports not exposed.");
+                    }
+                }else{
+                  callback("Failed to inspect container. " + data);
+                }
+            });
+        },function(callback){
+            //if already exist then skip
+
+            rdsClient.lrange( "frontend:"+frontEndURL, 0 ,-1, function(err, list){
+              logger.info("List length: %d", list.length);
+              if( list.length < 2){
+                isNewEntry = true;
+              }else
+                isNewEntry = false;
+
+              callback();
+            });
+
+
+        }, function( callback){
+          //Add frontend
+            if( !isNewEntry){
+                callback();
+                return;
+            }
+           logger.info("Adding frontend -----------------");
+            console.log("======================" +  backEndURL);
+            if( !publicPort) {
+                callback( util.format("No public port given in the container[%s]. Failed to launch", containerId));
+                return;
+            }
+            logger.info("Inserting record: %s => %s", frontEndURL, backEndURL);
+
+            rdsClient.rpush('frontend:'+ frontEndURL, containerId.substr(0, 12), function (err, reply) {
+              if (!err){ 
+                logger.info(  util.format('\'%s\' frontend successfully in hipache', containerId) );                   
+                callback();
+              }
+              else 
+                callback('Unable to create frontend in hipache. <' + err + '>');
+              
+            });
+
+        }, function(callback){
+          //Adding backend
+            if( !isNewEntry){
+                callback();
+                return;
+            }          
+             logger.info("Adding backend---------------");
+              rdsClient.rpush('frontend:'+ frontEndURL, backEndURL, function (err, reply) {
+                if (!err) {
+                   logger.info(  util.format('\'%s\' backend added successfully in hipache', containerId) );
+                   callback();
+                } else 
+                  callback('Unable to add backend hipache. Cause:  <' + err + '>');             
+             });
+        }
+      ], function(err, results){
+          if(err){
+              logger.info("ERRROR: " + err);
+              req.session.messages= { text: err, type:'error'};
+              res.redirect( decodeURIComponent(redirectURL));
+          }else{
+            res.redirect( util.format("http://%s/static/term.html",frontEndURL));
+            logger.info("REDIRECTING: " + util.format("http://%s/static/term.html", frontEndURL) );
+
+          }
+      });
+
+};
+
+exports.hwebLaunch = function(req, res){
      //Add subdomaiin to container id 
       var containerId = req.params.container_id;
       var selectedHostId = parseInt(req.params.host_id);     
@@ -1067,6 +1233,10 @@ exports.hlaunch = function(req, res){
       else
         redirectURL =  util.format("hosts/%d/containers/%s/inspect", selectedHostId, containerId ); 
 
+
+      var jsonPortBinding = {
+          'PortBindings': { '80/tcp': [{ 'HostIp': '0.0.0.0' }] }  // Let docker decide HostPort dynamically.
+        };
 
       async.series([
         function (callback) {
