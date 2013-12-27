@@ -73,8 +73,12 @@
 						<% }%>
 						<form action="/hosts/<%= imgInfo.runningOn.id %>/containers/<%= (item['Id']) %>/serviceLaunch" method="POST"  target="_blank" >
 							<input type='hidden' name="redirectURL" id="redirectURL" value="<%= encodeURIComponent(redirectTo ) %>" />
-								<button > &uArr; </button>
+								<button title="launch terminal"> tty&#187; </button>
 						</form>
+						<form action="/hosts/<%= imgInfo.runningOn.id %>/containers/<%= (item['Id']) %>/webLaunch" method="POST"  target="_blank" >
+							<input type='hidden' name="redirectURL" id="redirectURL" value="<%= encodeURIComponent(redirectTo ) %>" />
+								<button title="launch web"> web&#187; </button>
+						</form>						
 
 						<span class="inspect"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
 						<span class="status" >  <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/toggle?redirectURL=<%= encodeURIComponent(redirectTo ) %>" title="toggle"> &Phi;	 </a>  </span>

@@ -1053,6 +1053,8 @@ exports.hserviceLaunch = function(req, res){
       var frontEndURL = "service-" + containerId.substr(0, 12) + "." + config.domain.root +"." + config.domain.tld;
       var backEndURL = null;
       var publicPort = null;
+      var exposedServicePort  = "15000/tcp"; 
+
 
       var isNewEntry = false;
 
@@ -1065,9 +1067,14 @@ exports.hserviceLaunch = function(req, res){
       if( req.query.redirectURL !== 'undefined' )
         redirectURL = req.body.redirectURL ;
       else
-        redirectURL =  util.format("hosts/%d/containers/%s/inspect", selectedHostId, containerId ); 
+        redirectURL =  util.format("hosts/%d/containers/%s/inspect", selectedHostId, containerId );
 
+/*
+      var jsonPortBinding = {
+          'PortBindings': {  "15000/tcp": [{ 'HostIp': '0.0.0.0' }], '80/tcp': [{ 'HostIp': '0.0.0.0' }] }  // Let docker decide HostPort dynamically.
+        };
 
+*/
       async.series([
         function (callback) {
           appUtil.getDockerHosts(function (err, hostList) {
@@ -1096,6 +1103,13 @@ exports.hserviceLaunch = function(req, res){
         function (callback) {
           logger.info('Starting Container...====================================');
 
+          /*
+          var str_jsonPortBinding = JSON.stringify(jsonPortBinding);
+          var headers = {
+              'Content-Type': 'application/json',
+              'Content-Length': str_jsonPortBinding.length
+            };
+          */
           var queryString = '/containers/' + containerId + '/start';
           appUtil.makePostRequestToHost(hostToQuery, queryString, null, null, function (result, statusCode, errorMessage) {
             switch (statusCode) {
@@ -1131,10 +1145,9 @@ exports.hserviceLaunch = function(req, res){
                           jContainerInfo.NetworkSettings.Ports !== null )
                     {
 
-                      logger.info(Object.keys( jContainerInfo.Config.ExposedPorts ) );
-                      var exposedPort  =  Object.keys( jContainerInfo.Config.ExposedPorts )[0]; 
+                      logger.info(jContainerInfo.Config.ExposedPorts  );
                     
-                      publicPort = (jContainerInfo.NetworkSettings.Ports[exposedPort])[0].HostPort;
+                      publicPort = (jContainerInfo.NetworkSettings.Ports[exposedServicePort])[0].HostPort;
                       backEndURL = "http://" + hostToQuery.hostname + ":" + publicPort;
                       callback();
                     }else{
@@ -1216,9 +1229,11 @@ exports.hwebLaunch = function(req, res){
       var containerId = req.params.container_id;
       var selectedHostId = parseInt(req.params.host_id);     
 
-      var frontEndURL = containerId.substr(0, 12) + "." + config.domain.root +"." + config.domain.tld;
+      var frontendWeb = 'web-' + containerId.substr(0, 12) + "." + config.domain.root +"." + config.domain.tld;
       var backEndURL = null;
       var publicPort = null;
+      var exposedWebPort  = "80/tcp"; 
+
 
       var isNewEntry = false;
 
@@ -1233,11 +1248,11 @@ exports.hwebLaunch = function(req, res){
       else
         redirectURL =  util.format("hosts/%d/containers/%s/inspect", selectedHostId, containerId ); 
 
-
+/*
       var jsonPortBinding = {
-          'PortBindings': { '80/tcp': [{ 'HostIp': '0.0.0.0' }] }  // Let docker decide HostPort dynamically.
+          'PortBindings': {  "15000/tcp": [{ 'HostIp': '0.0.0.0' }], '80/tcp': [{ 'HostIp': '0.0.0.0' }] }  // Let docker decide HostPort dynamically.
         };
-
+*/
       async.series([
         function (callback) {
           appUtil.getDockerHosts(function (err, hostList) {
@@ -1266,8 +1281,15 @@ exports.hwebLaunch = function(req, res){
         function (callback) {
           logger.info('Starting Container...====================================');
 
+          /*
+          var str_jsonPortBinding = JSON.stringify(jsonPortBinding);
+          var headers = {
+              'Content-Type': 'application/json',
+              'Content-Length': str_jsonPortBinding.length
+          };
+          */
           var queryString = '/containers/' + containerId + '/start';
-          appUtil.makePostRequestToHost(hostToQuery, queryString, null, null, function (result, statusCode, errorMessage) {
+          appUtil.makePostRequestToHost(hostToQuery, queryString,  null, null, function (result, statusCode, errorMessage) {
             switch (statusCode) {
             case 404:
               callback('No such container : \'' + containerId + '\' ');
@@ -1301,10 +1323,11 @@ exports.hwebLaunch = function(req, res){
                           jContainerInfo.NetworkSettings.Ports !== null )
                     {
 
-                      logger.info(Object.keys( jContainerInfo.Config.ExposedPorts ) );
-                      var exposedPort  =  Object.keys( jContainerInfo.Config.ExposedPorts )[0]; 
+                      logger.info( "%j", jContainerInfo.Config.ExposedPorts );
                     
-                      publicPort = (jContainerInfo.NetworkSettings.Ports[exposedPort])[0].HostPort;
+                      publicPort = (jContainerInfo.NetworkSettings.Ports[exposedWebPort])[0].HostPort;
+                      if( publicPort === "")
+                          publicPort = "80";
                       backEndURL = "http://" + hostToQuery.hostname + ":" + publicPort;
                       callback();
                     }else{
@@ -1317,7 +1340,7 @@ exports.hwebLaunch = function(req, res){
         },function(callback){
             //if already exist then skip
 
-            rdsClient.lrange( "frontend:"+frontEndURL, 0 ,-1, function(err, list){
+            rdsClient.lrange( "frontend:"+frontendWeb, 0 ,-1, function(err, list){
               logger.info("List length: %d", list.length);
               if( list.length < 2){
                 isNewEntry = true;
@@ -1334,17 +1357,17 @@ exports.hwebLaunch = function(req, res){
                 callback();
                 return;
             }
-           logger.info("Adding frontend -----------------");
+           logger.info("Adding frontend-web -----------------");
             console.log("======================" +  backEndURL);
             if( !publicPort) {
                 callback( util.format("No public port given in the container[%s]. Failed to launch", containerId));
                 return;
             }
-            logger.info("Inserting record: %s => %s", frontEndURL, backEndURL);
+            logger.info("Inserting record: %s => %s", frontendWeb, backEndURL);
 
-            rdsClient.rpush('frontend:'+ frontEndURL, containerId.substr(0, 12), function (err, reply) {
+            rdsClient.rpush('frontend:'+ frontendWeb, containerId.substr(0, 12), function (err, reply) {
               if (!err){ 
-                logger.info(  util.format('\'%s\' frontend successfully in hipache', containerId) );                   
+                logger.info(  util.format('\'%s\' frontend-web successfully in hipache', containerId) );                   
                 callback();
               }
               else 
@@ -1358,10 +1381,10 @@ exports.hwebLaunch = function(req, res){
                 callback();
                 return;
             }          
-             logger.info("Adding backend---------------");
-              rdsClient.rpush('frontend:'+ frontEndURL, backEndURL, function (err, reply) {
+             logger.info("Adding backend-web---------------");
+              rdsClient.rpush('frontend:'+ frontendWeb, backEndURL, function (err, reply) {
                 if (!err) {
-                   logger.info(  util.format('\'%s\' backend added successfully in hipache', containerId) );
+                   logger.info(  util.format('\'%s\' backend-web added successfully in hipache', containerId) );
                    callback();
                 } else 
                   callback('Unable to add backend hipache. Cause:  <' + err + '>');             
@@ -1373,8 +1396,8 @@ exports.hwebLaunch = function(req, res){
               req.session.messages= { text: err, type:'error'};
               res.redirect( decodeURIComponent(redirectURL));
           }else{
-            res.redirect( util.format("http://%s.%s.%s/static/term.html", containerId.substr(0,12), config.domain.root, config.domain.tld));
-            logger.info("REDIRECTING: " + util.format("http://%s.%s.%s/static/term.html", containerId.substr(0,12), config.domain.root, config.domain.tld) );
+            res.redirect( util.format("http://%s/",frontendWeb));
+            logger.info("REDIRECTING: " + util.format("http://%s/",frontendWeb) );
 
           }
       });

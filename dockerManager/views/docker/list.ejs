@@ -148,11 +148,8 @@
 					</span>					
 					<span class="delete">
 						<form action="/hosts/<%= data.runningOn.id %>/dockers/<%= item.Id %>/delete" method="POST">
-
 							<input type="hidden" name="repository"	value="<% if( item.Repository){ %><%= item.Repository %><% } %>" />
-
-							<button  title="remove"> &cross;  </button>
-							
+							<button  title="remove"> &cross;  </button>					
 						</form>
 					</span>
 

@@ -782,7 +782,7 @@ exports.hcreateContainer = function (req, res) {
       StdinOnce: StdinOnce,
       Env: Env,
       Cmd: Cmd,
-      ExposedPorts: { '15000/tcp': {} },
+      ExposedPorts: { '15000/tcp': {}, "80/tcp" :{} },
       Dns: Dns,
       Volumes: Volumes,
       VolumesFrom: VolumesFrom,
@@ -796,7 +796,7 @@ exports.hcreateContainer = function (req, res) {
   logger.info(jsonContainerData);
   var jsonPortBinding = {
       'Binds': ['/home/dockworker:/dockworker'],
-      'PortBindings': { '15000/tcp': [{ 'HostIp': '0.0.0.0' }] }
+      'PortBindings': {  "15000/tcp": [{ 'HostIp': '0.0.0.0' }], '80/tcp': [{ 'HostIp': '0.0.0.0' }] }
     };
   var newContainer_id = null;
   async.series([
