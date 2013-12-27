@@ -1,4 +1,9 @@
 var config = {
+    domain: {
+      root: "runnable",
+      tld: "pw",
+      subdomain: "www"
+    },
     docker: {
       hostname: "54.219.217.19" , //'192.168.0.231',
       port: 4273

@@ -78,6 +78,7 @@ exports.makeRoutes= function(app){
 	app.post("/hosts/:host_id/dockers/:imgIdentifier/containers/create", docker.hcreateContainer);
 
 
+
 	/*
 	||Containers Routes with hosts namespace
 	*/
@@ -91,6 +92,8 @@ exports.makeRoutes= function(app){
 	app.get("/hosts/:host_id/containers/:container_id/kill", container.hkill)
 	//app.post("/hosts/:host_id/containers/:container_id/delete", container.hdelete);
 	app.get("/hosts/:host_id/containers/:container_id/delete", container.hdelete);
+	app.post("/hosts/:host_id/containers/:container_id/launch", container.hlaunch);
+
 
 
 

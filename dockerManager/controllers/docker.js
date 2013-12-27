@@ -9,6 +9,10 @@ var async = require('async');
 var appUtil = require('./app_util');
 var logger = require('../config/logger');
 var util = require('util');
+var config = require('../config/config');
+var rdsClient = require('../config/database');
+
+
 /*
 exports.index = function (req, res) {
   appUtil.makeGetRequest('/images/' + req.params.id + '/json', function (data, statusCode, errorMessage) {
@@ -898,6 +902,69 @@ exports.hcreateContainer = function (req, res) {
         callback();
       });
     }
+    /*,
+    function(callback){
+
+        //Add subdomaiin to container id 
+
+      var frontEndURL = newContainer_id.substr(0, 12) + "." + config.domain.root +"." + config.domain.tld;
+      var backEndURL = null;
+      var publicPort = null;
+
+      var queryString = "/containers/"+newContainer_id+ "/json";
+      appUtil.makeGetRequestToHost(hostToQuery, queryString, function(errorMessage, data, statusCode){
+          if(statusCode === 200){
+              var jContainerInfo = JSON.parse(data);
+              logger.info(jContainerInfo);
+              
+              logger.info(jContainerInfo.Config.ExposedPorts);
+
+              logger.info(Object.keys( jContainerInfo.Config.ExposedPorts ) );
+
+              var exposedPort  =  Object.keys( jContainerInfo.Config.ExposedPorts )[0]; 
+                
+              if( jContainerInfo.NetworkSettings.Ports !== null){
+                var publicPort = (jContainerInfo.NetworkSettings.Ports[exposedPort])[0].HostPort;
+                backEndURL = "http://" + hostToQuery.hostname + ":" + publicPort;
+              }
+
+              console.log("======================" +  backEndURL);
+
+
+              if( !!publicPort) {
+
+                logger.info("Inserting record: %s => %s", frontEndURL, backEndURL);
+
+                logger.info("Adding frontend-----------------");
+                rdsClient.rpush('frontend:'+ frontEndURL, newContainer_id.substr(0, 12), function (err, reply) {
+                  if (!err) {
+                     logger.info(  util.format('\'%s\' frontend successfully in hipache', newContainer_id) );
+                     logger.info("Adding backend---------------");
+                      rdsClient.rpush('frontend:'+ frontEndURL, backEndURL, function (err, reply) {
+                        if (!err) {
+                           logger.info(  util.format('\'%s\' backend added successfully in hipache', newContainer_id) );
+                        } else {
+                          req.session.messages = {
+                            text: 'Unable to add backend hipache. Cause:  <' + err + '>',
+                            type: 'error'
+                          };
+                        }
+                        callback();
+                     });                     
+                  } else {
+                    req.session.messages = {
+                      text: 'Unable to create frontend in hipache. Cause:  <' + err + '>',
+                      type: 'error'
+                    };
+                    callback();
+                  }
+                });
+              }              
+          }
+      });
+
+    }  
+  */
   ], function (err) {
     var redirectUrl = null;
     if (err) {
@@ -915,3 +982,4 @@ exports.hcreateContainer = function (req, res) {
     return;
   });
 };
+
