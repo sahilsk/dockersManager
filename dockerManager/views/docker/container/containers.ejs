@@ -65,17 +65,16 @@
 					<Div class="operation_menu"> 	
 						<% if( item.Ports && item.Ports !== 'null'){ %>
 								
-							<!--	
-								<span > <a href="http://<%= (item['Id']).substr(0,12)%>.runnable.pw/static/term.html" target="_blank" > Launch </a> </span> 
-							-->
+							<span > <a href="http://<%= (item['Id']).substr(0,12)%>.runnable.pw/static/term.html" target="_blank" > RUN </a> </span>
+
 							<!--
 								<span > <a href="http://<%= imgInfo.runningOn.hostname %>:<%= (item.Ports[0]).PublicPort %>/static/term.html" target="_blank" > Launch </a> </span>
 							-->
 						<% }%>
-							<form action="/hosts/<%= imgInfo.runningOn.id %>/containers/<%= (item['Id']) %>/launch" method="POST"  target="_blank" >
-								<input type='hidden' name="redirectURL" id="redirectURL" value="<%= encodeURIComponent(redirectTo ) %>" />
-									<button > Launch </button>
-							</form>
+						<form action="/hosts/<%= imgInfo.runningOn.id %>/containers/<%= (item['Id']) %>/launch" method="POST"  target="_blank" >
+							<input type='hidden' name="redirectURL" id="redirectURL" value="<%= encodeURIComponent(redirectTo ) %>" />
+								<button > &uArr; </button>
+						</form>
 
 						<span class="inspect"> <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/inspect" title="Inspect">  &equiv;	 </a> </span>					
 						<span class="status" >  <a href="/hosts/<%= imgInfo.runningOn.id %>/containers/<%=item.Id %>/toggle?redirectURL=<%= encodeURIComponent(redirectTo ) %>" title="toggle"> &Phi;	 </a>  </span>
