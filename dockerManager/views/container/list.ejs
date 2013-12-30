@@ -169,9 +169,11 @@
 				<td>
 					<Div class="operation_menu"> 	
 						<% if( item.Ports && item.Ports !== 'null'){ %>
+							
+							<!--
 							<span > <a href="http://service-<%= (item['Id']).substr(0,12)%>.runnable.pw/static/term.html" target="_blank" > RUN </a> </span>
 
-							<!--
+							
 								<span > <a href="http://<%= item.runningOn.hostname %>:<%= (item.Ports[0]).PublicPort %>/static/term.html" target="_blank" > RUN </a> </span>
 							-->
 						<% }%>
