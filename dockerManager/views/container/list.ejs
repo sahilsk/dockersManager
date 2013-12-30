@@ -84,7 +84,7 @@
 				<th> SizeRW </th>
 				<th> SizeRootFs </th>	
 				<th> Names </th>
-				<th> Running On </th>
+			<!--	<th> Running On </th> -->
 			</tr>
 		</thead>
 		<tbody>
@@ -93,7 +93,7 @@
 		<td>  <%= index + 1 %> </td>
 
 		<td>
-					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+					<div style="width:110px; overflow:hidden; word-wrap: break-word;">
 						<%= item.Id %>
 					</div>
 				
@@ -113,7 +113,12 @@
 		</td>	
 		<td>
 					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
-						<%= item.Created %>
+						<%=
+							new Date(item.Created).toISOString().
+							  replace(/T/, ' ').
+							  replace(/\..+/, '')
+
+						%>					
 					</div>
 				
 		</td>	
@@ -124,7 +129,7 @@
 				
 		</td>		
 		<td>
-					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+					<div style="width:110px; overflow:hidden; word-wrap: break-word;">
 						<%=  JSON.stringify(item.Ports )%>
 					</div>
 				
@@ -147,13 +152,14 @@
 					</div>
 				
 		</td>	
+		<!--
 		<td>
-					<div style="width:110px; overflow:hidden; text-overlow:ellipsis;">
+					<div style="width:110px; overflow:hidden;word-wrap: break-word;">
 						<%= item.runningOn.name %>
 					</div>
 				
 		</td>										
-
+		-->
 		<% /* %>
 		<% for(var k in item){ %>
 			<td>

@@ -102,7 +102,7 @@ exports.add = function (req, res) {
     if (!err) {
       var newHost = host;
       newHost.id = incrId;
-      rdsClient.lpush('hosts', JSON.stringify(newHost), 0, -1, function (err, reply) {
+      rdsClient.lpush('hosts', JSON.stringify(newHost), function (err, reply) {
         if (!err) {
           req.session.messages = {
             text: util.format('\'%s\' Added successfully', newHost.name),
@@ -243,7 +243,7 @@ exports.update = function (req, res) {
             dockerPort: parseInt(req.body.dockerPort),
             managerPort: parseInt(req.body.managerPort)
           };
-        rdsClient.lpush('hosts', JSON.stringify(newHost), 0, -1, function (err, reply) {
+        rdsClient.lpush('hosts', JSON.stringify(newHost), function (err, reply) {
           if (!err) {
             req.session.messages = {
               text: 'Host Updated successfully',

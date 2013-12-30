@@ -8,7 +8,6 @@ var config = {
       hostname: "54.219.217.19" , //'192.168.0.231',
       port: 4273
     },
-
     redis: {
       development:{
       	hostname:  "54.219.217.19" ,
@@ -33,8 +32,12 @@ var config = {
         name : "Docker App Server",
         hostname: "50.18.225.222" ,
         dockerPort: 4273
-    }
-    ,
+    },
+    frontdoor : {
+      name : "frontdoor-sk",
+      hostname: '50.18.15.145',
+      port:7050
+    },
     globalTimeout:5000
 
 
