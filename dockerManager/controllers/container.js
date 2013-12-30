@@ -1162,7 +1162,7 @@ exports.hserviceLaunch = function(req, res){
 
              rdsClient.lrange( "frontdoor:"+frontEndURL, 0 ,-1, function(err, list){
               logger.info("List length: %d", list.length);
-              if( list.length < 2){
+              if( list.length <= 0){
                 isNewEntry = true;
               }else
                 isNewEntry = false;
@@ -1377,7 +1377,17 @@ exports.hwebLaunch = function(req, res){
             });
         },function(callback){
             //if already exist then skip
+             rdsClient.lrange( "frontdoor:"+frontendWeb, 0 ,-1, function(err, list){
+              logger.info("List length: %d", list.length);
+              if( list.length <= 0){
+                isNewEntry = true;
+              }else
+                isNewEntry = false;
 
+              callback();
+            });                
+
+/*
             rdsClient.lrange( "frontend:"+frontendWeb, 0 ,-1, function(err, list){
               logger.info("List length: %d", list.length);
               if( list.length < 2){
@@ -1387,9 +1397,39 @@ exports.hwebLaunch = function(req, res){
 
               callback();
             });
-
+*/
 
         }, function( callback){
+
+          //Add frontdoor entry
+            if( !isNewEntry){
+                callback();
+                return;
+            }
+           console.log("======================" +  backEndURL);
+            if( !publicPort) {
+                callback( util.format("No public port given in the container[%s]. Failed to launch", containerId));
+                return;
+            }
+           logger.info("Adding frontdoor entry -----------------");
+
+           logger.info("Inserting record: %s => %s", frontendWeb, backEndURL);
+
+            rdsClient.rpush('frontdoor:'+ frontendWeb, backEndURL, function (err, reply) {
+              if (!err){ 
+                logger.info(  util.format('\'%s\' frontdoor entry pushed successfully.', containerId) );                   
+                callback();
+              }
+              else 
+                callback('Unable to create frontend entry in redis. <' + err + '>');
+              
+            });
+
+          }
+
+
+
+          /*
           //Add frontend
             if( !isNewEntry){
                 callback();
@@ -1428,6 +1468,7 @@ exports.hwebLaunch = function(req, res){
                   callback('Unable to add backend hipache. Cause:  <' + err + '>');             
              });
         }
+      */
       ], function(err, results){
           if(err){
               logger.info("ERRROR: " + err);
