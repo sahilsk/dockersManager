@@ -19,10 +19,10 @@
     "primus-rooms": "~2.2.0",
     "primus-emitter": "~2.0.5",
     "ws": "~0.4.31",
-    "primus": "~1.5.0",
+    "primus": "~1.5.1",
     "primus-resource": "~2.0.1"
   },
-  "scripts":{
-    "start" :"node app.js"
+  "devDependencies": {
+    "should": "~2.1.1"
   }
 }

@@ -15,10 +15,17 @@ exports.init = function (server) {
     transformer: 'websockets',
     parse: 'JSON'
   });
-  primus.send('foo', 'resources working.. from upload remote method');
+
+
+
   primus.use('resource', resource);
   primus.on('connection', function (client) {
     connectedClient = client;
+    primus.on('Tango', function(d){
+          cosole.log("from client: ", d);
+          primus.send("Charlie", "received");
+      }
+    );    
   });
   /**
  * Primus-Resource : Dockerfile
