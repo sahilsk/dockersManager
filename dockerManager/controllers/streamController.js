@@ -15,18 +15,21 @@ exports.init = function (server) {
     transformer: 'websockets',
     parse: 'JSON'
   });
-
-
-
   primus.use('resource', resource);
+  
+
   primus.on('connection', function (client) {
     connectedClient = client;
-    primus.on('Tango', function(d){
-          cosole.log("from client: ", d);
-          primus.send("Charlie", "received");
-      }
-    );    
+    logger.info("Client connected");
+    client.send("Tango", "WELCOME");  
+    client.on('Charlie', function(d){
+      logger.info("Handshake completed.", d);
+      client.send('ACK', "recieved");
+    });  
+
+    
   });
+  
   /**
  * Primus-Resource : Dockerfile
  *
@@ -334,6 +337,7 @@ var handle_push_into_Repository = function (client, data, oResult) {
   var record = null, recordID = data.dImage_id, cliResponse = {};
   logger.info('reocrdID: ' + recordID);
   rdsClient.hgetall(recordID, function (err, result) {
+
     if (err || !result) {
       oResult('Invalid Submitted Image Record Id. Cause: ' + err, null);
       client.send('push error', 'Invalid Submitted Image Record Id. Cause: ' + err);

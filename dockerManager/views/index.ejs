@@ -64,14 +64,19 @@
 
 <script>
 
-	var server = Primus.connect('ws://'+window.location.host + '/');
+	var server = Primus.connect('ws://'+window.location.host );
 
 	server.on('open', function () {
-	    server.send('Tango', 'hello world');
-	    server.on('Charlie', function(d){
-	    	console.log( "Handshake passed");
+	    server.on('Tango', function(d){
+	    	console.log("Tango recieved");
+	    	server.send('Charlie', "OK");
 	    });
+ 
+	 	server.on('ACK', function(d){
+			console.log("Handshake passed");
+		});	  
 	});
+ 
 
 	var Dockerfile = server.resource('Dockerfile');
 	var isDockerImageResourceReady = false;
