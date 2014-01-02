@@ -64,7 +64,7 @@
 
 <script>
 
-	var server = Primus.connect('ws://localhost:3000/');
+	var server = Primus.connect('ws://'+window.location.host + '/');
 
 	server.on('open', function () {
 	    server.send('Tango', 'hello world');
