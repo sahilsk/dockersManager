@@ -114,12 +114,14 @@
 	var isDockerImageResourceReady = false;
 	var server = Primus.connect('ws://'+ window.location.host + '/');
 	server.on('open', function () {
-	    server.send('Tango', 'hello world');
-	    server.on('Charlie', function(d){
-		    server.send('OK', true);
-	    	console.log( "Handshake passed");
+	    server.on('Tango', function(d){
+	    	console.log("Tango recieved");
+	    	server.send('Charlie', "OK");
 	    });
-
+ 
+	 	server.on('ACK', function(d){
+			console.log("Handshake passed");
+		});	  
 	});
 
 	var DockerImage = server.resource('DockerImage');
